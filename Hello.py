@@ -1,2 +1,1 @@
-print("Hello World")
-
+print("윤서야 그만 떨어트려라")
