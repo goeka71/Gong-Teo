@@ -1,1 +1,1 @@
-print("hello world!")
+print("해담이는 바보")
