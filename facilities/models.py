@@ -111,3 +111,18 @@ class Favorite(models.Model):
 
     def __str__(self):
         return f"{self.user.username} ♥ {self.facility.facility_name}"
+
+
+class SubFacilityDetail(models.Model):
+    facility = models.ForeignKey(
+        Facility, on_delete=models.CASCADE, related_name="subfacility_details"
+    )
+    subfacility = models.ForeignKey(
+        SubFacility, on_delete=models.CASCADE, related_name="details"
+    )
+    category = models.CharField("카테고리", max_length=50)
+    contents = models.TextField("내용")
+    created_at = models.DateTimeField("작성일시", auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.subfacility.subfacility_name} - {self.category}"
