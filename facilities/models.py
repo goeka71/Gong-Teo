@@ -31,16 +31,11 @@ class FacilityDetail(models.Model):
     facility = models.ForeignKey(
         Facility, on_delete=models.CASCADE, related_name="details"
     )
-    subfacility = models.ForeignKey(
-        SubFacility, on_delete=models.CASCADE,
-        related_name="details", null=True, blank=True
-    )
     op_hour = models.CharField("운영시간", max_length=100, blank=True)
     in_out = models.CharField("실내외 구분", max_length=20, blank=True)
     phone = models.CharField("전화번호", max_length=20, blank=True)
     website = models.URLField("URL", blank=True)
     fee = models.CharField("이용료", max_length=100, blank=True)
-    team_person = models.CharField("단체/개인", max_length=20, blank=True)
     shower = models.BooleanField("샤워실 유무", default=False)
     parking = models.BooleanField("주차장 유무", default=False)
     created_at = models.DateTimeField("작성일시", auto_now_add=True)
