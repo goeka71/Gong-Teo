@@ -16,3 +16,5 @@ db.sqlite3
 
 # VS Code
 .vscode/
+
+data/*.csv
