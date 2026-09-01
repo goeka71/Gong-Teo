@@ -2,6 +2,31 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## 프로젝트 맥락
+
+- 국민체육진흥공단 공공데이터 활용 경진대회 출품작 (마감: 10/2).
+- 3인 팀, 첫 팀 프로젝트. Django·React·Git 모두 학습하며 진행 중이므로,
+  새로운 개념이나 명령을 안내할 때는 짧은 설명을 곁들일 것.
+- 현재 각자 기능 개발 중:
+  시설 목록+필터 / 시설 상세 조회 / 원데이 양도 게시판(글 작성·조회).
+- Python은 팀 전체 3.14.5로 통일 (버전이 다르면 Django 6.1 설치가 실패함).
+
+## 협업 규칙 (중요)
+
+- **커밋 / 푸시 / 브랜치 생성·전환은 반드시 사람이 GitHub Desktop으로 수행한다.**
+  Claude Code는 코드 작성·수정까지만 담당하고, git 명령을 직접 실행하지 않는다.
+- 각자 자신의 기능 브랜치에서 작업한다.
+- `config/settings.py` 등 공통 파일은 꼭 필요한 부분만 최소로 수정한다 (병합 충돌 방지).
+- `data/*.csv`, `db.sqlite3`, `venv/`, `frontend/node_modules/`는 git에 올리지 않는다 (gitignore됨).
+
+## 작업 방식
+
+- 코드를 작성하기 전에, 무엇을 어떻게 만들지 먼저 설명하고 사용자의 확인을 받는다.
+- 큰 작업은 한 번에 처리하지 말고, 확인 가능한 작은 단위로 나눠 진행한다
+  (예: API 먼저 만들고 확인 → 그다음 프론트엔드).
+- 모델(models.py)을 변경하면 makemigrations → migrate가 필요함을 안내한다.
+- 새로 작성한 코드는, 요청 시 어떻게 동작하는지 간단히 설명한다.
+
 ## Overview
 
 Gong-Teo (공터) is a public sports-facility discovery and program-transfer platform.
@@ -26,8 +51,7 @@ python manage.py test facilities    # one app
 python manage.py createsuperuser    # admin at /admin/
 ```
 
-`requirements.txt` is UTF-16 encoded; install with
-`pip install django==6.1 djangorestframework==3.18.0 django-cors-headers==4.9.0 pillow==12.3.0` if pip chokes on it.
+Install dependencies with `pip install -r requirements.txt`.
 
 Frontend (from `frontend/`):
 

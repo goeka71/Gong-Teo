@@ -53,4 +53,11 @@ urlpatterns = [
         views.subfacility_detail_list,
         name="subfacility-detail-list"
     ),
+
+    # 시설 하나의 상세 정보 (기본정보 + FacilityDetail + 세부시설 + 종목)
+    path(
+        "<int:facility_id>/",
+        views.facility_detail,
+        name="facility-detail"
+    ),
 ]
