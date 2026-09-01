@@ -1,184 +1,1509 @@
-.counter {
-  font-size: 16px;
-  padding: 5px 10px;
-  border-radius: 5px;
-  color: var(--accent);
-  background: var(--accent-bg);
-  border: 2px solid transparent;
-  transition: border-color 0.3s;
-  margin-bottom: 24px;
+/* =========================================================
+   전체 기본 설정
+========================================================= */
 
-  &:hover {
-    border-color: var(--accent-border);
-  }
-  &:focus-visible {
-    outline: 2px solid var(--accent);
-    outline-offset: 2px;
-  }
+* {
+  box-sizing: border-box;
 }
 
-.hero {
-  position: relative;
-
-  .base,
-  .framework,
-  .vite {
-    inset-inline: 0;
-    margin: 0 auto;
-  }
-
-  .base {
-    width: 170px;
-    position: relative;
-    z-index: 0;
-  }
-
-  .framework,
-  .vite {
-    position: absolute;
-  }
-
-  .framework {
-    z-index: 1;
-    top: 34px;
-    height: 28px;
-    transform: perspective(2000px) rotateZ(300deg) rotateX(44deg) rotateY(39deg)
-      scale(1.4);
-  }
-
-  .vite {
-    z-index: 0;
-    top: 107px;
-    height: 26px;
-    width: auto;
-    transform: perspective(2000px) rotateZ(300deg) rotateX(40deg) rotateY(39deg)
-      scale(0.8);
-  }
-}
-
-#center {
-  display: flex;
-  flex-direction: column;
-  gap: 25px;
-  place-content: center;
-  place-items: center;
-  flex-grow: 1;
-
-  @media (max-width: 1024px) {
-    padding: 32px 20px 24px;
-    gap: 18px;
-  }
-}
-
-#next-steps {
-  display: flex;
-  border-top: 1px solid var(--border);
-  text-align: left;
-
-  & > div {
-    flex: 1 1 0;
-    padding: 32px;
-    @media (max-width: 1024px) {
-      padding: 24px 20px;
-    }
-  }
-
-  .icon {
-    margin-bottom: 16px;
-    width: 22px;
-    height: 22px;
-  }
-
-  @media (max-width: 1024px) {
-    flex-direction: column;
-    text-align: center;
-  }
-}
-
-#docs {
-  border-right: 1px solid var(--border);
-
-  @media (max-width: 1024px) {
-    border-right: none;
-    border-bottom: 1px solid var(--border);
-  }
-}
-
-#next-steps ul {
-  list-style: none;
+html {
+  margin: 0;
   padding: 0;
-  display: flex;
-  gap: 8px;
-  margin: 32px 0 0;
-
-  .logo {
-    height: 18px;
-  }
-
-  a {
-    color: var(--text-h);
-    font-size: 16px;
-    border-radius: 6px;
-    background: var(--social-bg);
-    display: flex;
-    padding: 6px 12px;
-    align-items: center;
-    gap: 8px;
-    text-decoration: none;
-    transition: box-shadow 0.3s;
-
-    &:hover {
-      box-shadow: var(--shadow);
-    }
-    .button-icon {
-      height: 18px;
-      width: 18px;
-    }
-  }
-
-  @media (max-width: 1024px) {
-    margin-top: 20px;
-    flex-wrap: wrap;
-    justify-content: center;
-
-    li {
-      flex: 1 1 calc(50% - 8px);
-    }
-
-    a {
-      width: 100%;
-      justify-content: center;
-      box-sizing: border-box;
-    }
-  }
 }
 
-#spacer {
-  height: 88px;
-  border-top: 1px solid var(--border);
-  @media (max-width: 1024px) {
-    height: 48px;
-  }
+body {
+  margin: 0;
+  padding: 0;
+
+  background: #f7f8fa;
+
+  color: #1f2937;
+
+  font-family:
+    Pretendard,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    sans-serif;
 }
 
-.ticks {
-  position: relative;
+button,
+input,
+select {
+  font: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+#root {
+  width: 100%;
+  min-height: 100vh;
+}
+
+
+/* =========================================================
+   전체 App
+========================================================= */
+
+.app {
+  width: 100%;
+  min-height: 100vh;
+}
+
+
+/* =========================================================
+   상단 헤더
+========================================================= */
+
+.header {
   width: 100%;
 
-  &::before,
-  &::after {
-    content: '';
-    position: absolute;
-    top: -4.5px;
-    border: 5px solid transparent;
+  background: #ffffff;
+
+  border-bottom: 1px solid #e8eaee;
+}
+
+.header-inner {
+  max-width: 1280px;
+
+  height: 76px;
+
+  margin: 0 auto;
+
+  padding: 0 32px;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: space-between;
+}
+
+
+/* =========================================================
+   로고
+========================================================= */
+
+.logo-area {
+  display: flex;
+
+  align-items: center;
+
+  gap: 10px;
+}
+
+.logo-mark {
+  width: 36px;
+  height: 36px;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  border-radius: 10px;
+
+  background: #176b55;
+
+  color: white;
+
+  font-weight: 800;
+}
+
+.logo-text {
+  color: #17211e;
+
+  font-size: 21px;
+
+  font-weight: 800;
+}
+
+
+/* =========================================================
+   상단 메뉴
+========================================================= */
+
+.nav {
+  display: flex;
+
+  align-items: center;
+
+  gap: 8px;
+}
+
+.nav button {
+  padding: 10px 15px;
+
+  border: 0;
+
+  border-radius: 10px;
+
+  background: transparent;
+
+  color: #565f5c;
+
+  font-size: 14px;
+
+  font-weight: 600;
+}
+
+.nav button:hover {
+  background: #f1f5f3;
+
+  color: #176b55;
+}
+
+
+/* =========================================================
+   메인
+========================================================= */
+
+.main {
+  width: 100%;
+
+  max-width: 1280px;
+
+  margin: 0 auto;
+
+  padding: 64px 32px 100px;
+}
+
+
+/* =========================================================
+   상단 소개 영역
+========================================================= */
+
+.intro {
+  margin-bottom: 35px;
+}
+
+.intro-label {
+  margin: 0 0 12px;
+
+  color: #1c8066;
+
+  font-size: 12px;
+
+  font-weight: 800;
+
+  letter-spacing: 1.8px;
+}
+
+.intro h1 {
+  margin: 0;
+
+  color: #17211e;
+
+  font-size: 42px;
+
+  line-height: 1.25;
+
+  letter-spacing: -1.5px;
+}
+
+.intro-description {
+  margin: 18px 0 0;
+
+  color: #747e7a;
+
+  font-size: 15px;
+
+  line-height: 1.7;
+}
+
+
+/* =========================================================
+   검색 / 필터 박스
+========================================================= */
+
+.search-section {
+  padding: 24px;
+
+  border: 1px solid #e8ecea;
+
+  border-radius: 18px;
+
+  background: white;
+
+  box-shadow: 0 7px 25px rgba(30, 60, 50, 0.05);
+}
+
+
+/* =========================================================
+   검색창
+========================================================= */
+
+.search-box {
+  height: 58px;
+
+  padding: 6px 7px 6px 18px;
+
+  display: flex;
+
+  align-items: center;
+
+  gap: 12px;
+
+  border: 1px solid #dce3e0;
+
+  border-radius: 13px;
+
+  background: #fafcfb;
+}
+
+.search-box:focus-within {
+  border-color: #247a64;
+
+  background: white;
+}
+
+.search-icon {
+  color: #7d8783;
+
+  font-size: 25px;
+}
+
+.search-box input {
+  flex: 1;
+
+  min-width: 0;
+
+  border: 0;
+
+  outline: none;
+
+  background: transparent;
+
+  color: #1f2926;
+
+  font-size: 15px;
+}
+
+.search-box input::placeholder {
+  color: #a1aaa6;
+}
+
+.search-button {
+  min-width: 92px;
+
+  height: 44px;
+
+  padding: 0 22px;
+
+  border: 0;
+
+  border-radius: 9px;
+
+  background: #176b55;
+
+  color: white;
+
+  font-weight: 700;
+}
+
+.search-button:hover {
+  background: #115744;
+}
+
+
+/* =========================================================
+   필터
+========================================================= */
+
+.filter-area {
+  margin-top: 18px;
+
+  display: flex;
+
+  align-items: flex-end;
+
+  gap: 12px;
+
+  flex-wrap: wrap;
+}
+
+.filter-group {
+  min-width: 170px;
+
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 7px;
+}
+
+.filter-label {
+  color: #5e6965;
+
+  font-size: 12px;
+
+  font-weight: 700;
+}
+
+.filter-group select {
+  height: 42px;
+
+  padding: 0 36px 0 13px;
+
+  border: 1px solid #dfe5e2;
+
+  border-radius: 9px;
+
+  outline: none;
+
+  background: white;
+
+  color: #3e4744;
+
+  cursor: pointer;
+}
+
+.filter-group select:hover {
+  border-color: #a9bbb4;
+}
+
+.filter-group select:focus {
+  border-color: #247a64;
+}
+
+.reset-button {
+  height: 42px;
+
+  padding: 0 17px;
+
+  border: 1px solid #dfe5e2;
+
+  border-radius: 9px;
+
+  background: white;
+
+  color: #65706c;
+
+  font-size: 13px;
+
+  font-weight: 600;
+}
+
+.reset-button:hover {
+  background: #f5f7f6;
+}
+
+
+/* =========================================================
+   검색 결과 상단
+========================================================= */
+
+.result-section {
+  margin-top: 45px;
+}
+
+.result-header {
+  margin-bottom: 20px;
+
+  display: flex;
+
+  justify-content: space-between;
+
+  align-items: flex-end;
+
+  gap: 20px;
+}
+
+.result-header h2 {
+  margin: 0 0 7px;
+
+  color: #1c2522;
+
+  font-size: 24px;
+}
+
+.result-header p {
+  margin: 0;
+
+  color: #79827f;
+
+  font-size: 14px;
+}
+
+.result-header strong {
+  color: #176b55;
+}
+
+
+/* =========================================================
+   선택된 필터 표시
+========================================================= */
+
+.selected-filters {
+  display: flex;
+
+  flex-wrap: wrap;
+
+  justify-content: flex-end;
+
+  gap: 7px;
+}
+
+.selected-filters span {
+  padding: 7px 11px;
+
+  border-radius: 50px;
+
+  background: #eaf5f1;
+
+  color: #176b55;
+
+  font-size: 12px;
+
+  font-weight: 700;
+}
+
+
+/* =========================================================
+   시설 카드 그리드
+========================================================= */
+
+.facility-grid {
+  display: grid;
+
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+
+  gap: 22px;
+}
+
+
+/* =========================================================
+   시설 카드
+========================================================= */
+
+.facility-card {
+  overflow: hidden;
+
+  border: 1px solid #e4e8e6;
+
+  border-radius: 16px;
+
+  background: #ffffff;
+
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    border-color 0.2s ease;
+}
+
+.facility-card:hover {
+  transform: translateY(-4px);
+
+  border-color: #cedbd6;
+
+  box-shadow: 0 13px 32px rgba(25, 70, 56, 0.1);
+}
+
+
+/* =========================================================
+   시설 이미지
+========================================================= */
+
+.facility-image {
+  position: relative;
+
+  width: 100%;
+
+  height: 195px;
+
+  overflow: hidden;
+
+  background: #edf2f0;
+}
+
+.facility-image img {
+  width: 100%;
+
+  height: 100%;
+
+  object-fit: cover;
+}
+
+.image-placeholder {
+  width: 100%;
+
+  height: 100%;
+
+  display: flex;
+
+  flex-direction: column;
+
+  align-items: center;
+
+  justify-content: center;
+
+  background:
+    linear-gradient(
+      135deg,
+      #e8f2ee,
+      #f6faf8
+    );
+
+  color: #678078;
+}
+
+.image-placeholder span {
+  margin-bottom: 5px;
+
+  font-size: 11px;
+
+  font-weight: 800;
+
+  letter-spacing: 2px;
+}
+
+.image-placeholder p {
+  margin: 0;
+
+  font-size: 19px;
+
+  font-weight: 800;
+}
+
+.indoor-badge {
+  position: absolute;
+
+  top: 13px;
+
+  right: 13px;
+
+  padding: 6px 11px;
+
+  border-radius: 50px;
+
+  background: rgba(255, 255, 255, 0.93);
+
+  color: #176b55;
+
+  font-size: 11px;
+
+  font-weight: 800;
+
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
+}
+
+
+/* =========================================================
+   카드 내용
+========================================================= */
+
+.facility-content {
+  padding: 20px;
+}
+
+.facility-content h3 {
+  margin: 0;
+
+  overflow: hidden;
+
+  color: #1c2522;
+
+  font-size: 18px;
+
+  line-height: 1.4;
+
+  text-overflow: ellipsis;
+
+  white-space: nowrap;
+}
+
+.address {
+  min-height: 40px;
+
+  margin: 8px 0 13px;
+
+  color: #7a8380;
+
+  font-size: 13px;
+
+  line-height: 1.55;
+}
+
+
+/* =========================================================
+   종목 태그
+========================================================= */
+
+.sport-tags {
+  min-height: 30px;
+
+  display: flex;
+
+  flex-wrap: wrap;
+
+  gap: 6px;
+}
+
+.sport-tag {
+  padding: 5px 9px;
+
+  border-radius: 6px;
+
+  background: #eef5f2;
+
+  color: #26735f;
+
+  font-size: 11px;
+
+  font-weight: 700;
+}
+
+.sport-tag.empty {
+  background: #f2f3f3;
+
+  color: #8a918f;
+}
+
+
+/* =========================================================
+   카드 교통정보
+========================================================= */
+
+.transport {
+  margin-top: 16px;
+
+  padding-top: 14px;
+
+  border-top: 1px solid #eff1f0;
+}
+
+.transport p {
+  margin: 0;
+
+  color: #747d7a;
+
+  font-size: 12px;
+}
+
+.transport strong {
+  color: #505a56;
+
+  font-weight: 700;
+}
+
+
+/* =========================================================
+   상세보기 버튼
+========================================================= */
+
+.detail-button {
+  width: 100%;
+
+  margin-top: 17px;
+
+  padding: 11px 0;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: space-between;
+
+  border: 0;
+
+  background: transparent;
+
+  color: #176b55;
+
+  font-size: 13px;
+
+  font-weight: 800;
+}
+
+.detail-button span {
+  font-size: 18px;
+
+  transition: transform 0.2s ease;
+}
+
+.detail-button:hover span {
+  transform: translateX(4px);
+}
+
+
+/* =========================================================
+   로딩 / 오류 / 결과없음
+========================================================= */
+
+.message-box {
+  padding: 60px 20px;
+
+  border: 1px solid #e4e8e6;
+
+  border-radius: 16px;
+
+  background: white;
+
+  color: #7a8380;
+
+  text-align: center;
+}
+
+.message-box h3 {
+  margin: 0 0 8px;
+
+  color: #404945;
+}
+
+.message-box p {
+  margin: 0;
+}
+
+.message-box.error {
+  color: #b14444;
+}
+
+
+/* =========================================================
+   시설 상세 페이지
+========================================================= */
+
+.detail-page {
+  width: 100%;
+
+  max-width: 1200px;
+
+  margin: 0 auto;
+
+  padding: 45px 32px 100px;
+}
+
+
+/* =========================================================
+   목록으로 돌아가기 버튼
+========================================================= */
+
+.back-button {
+  margin-bottom: 25px;
+
+  padding: 9px 0;
+
+  border: 0;
+
+  background: transparent;
+
+  color: #66716d;
+
+  font-weight: 700;
+}
+
+.back-button:hover {
+  color: #176b55;
+}
+
+
+/* =========================================================
+   상세화면 상단
+========================================================= */
+
+.detail-hero {
+  display: grid;
+
+  grid-template-columns: 420px 1fr;
+
+  gap: 42px;
+
+  align-items: center;
+
+  padding-bottom: 40px;
+
+  border-bottom: 1px solid #e3e8e5;
+}
+
+.detail-image {
+  width: 100%;
+
+  height: 280px;
+
+  overflow: hidden;
+
+  border-radius: 18px;
+
+  background: #edf3f0;
+}
+
+.detail-image img {
+  width: 100%;
+
+  height: 100%;
+
+  object-fit: cover;
+}
+
+.detail-image-placeholder {
+  width: 100%;
+
+  height: 100%;
+
+  display: flex;
+
+  flex-direction: column;
+
+  align-items: center;
+
+  justify-content: center;
+
+  background:
+    linear-gradient(
+      135deg,
+      #e4f0eb,
+      #f6faf8
+    );
+
+  color: #648077;
+}
+
+.detail-image-placeholder span {
+  font-size: 11px;
+
+  font-weight: 800;
+
+  letter-spacing: 2px;
+}
+
+.detail-image-placeholder p {
+  margin: 7px 0 0;
+
+  font-size: 23px;
+
+  font-weight: 800;
+}
+
+.detail-category {
+  margin: 0 0 10px;
+
+  color: #188066;
+
+  font-size: 11px;
+
+  font-weight: 800;
+
+  letter-spacing: 1.5px;
+}
+
+.detail-summary h1 {
+  margin: 0;
+
+  color: #17211e;
+
+  font-size: 34px;
+
+  line-height: 1.3;
+}
+
+.detail-address {
+  margin: 13px 0 18px;
+
+  color: #717b77;
+
+  line-height: 1.6;
+}
+
+.detail-sports {
+  display: flex;
+
+  flex-wrap: wrap;
+
+  gap: 7px;
+}
+
+.detail-sports span {
+  padding: 6px 10px;
+
+  border-radius: 7px;
+
+  background: #eaf5f1;
+
+  color: #176b55;
+
+  font-size: 12px;
+
+  font-weight: 700;
+}
+
+
+/* =========================================================
+   상세화면 본문
+========================================================= */
+
+.detail-layout {
+  margin-top: 38px;
+
+  display: grid;
+
+  grid-template-columns: minmax(0, 1fr) 320px;
+
+  gap: 30px;
+
+  align-items: start;
+}
+
+.detail-main {
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 24px;
+}
+
+.detail-section,
+.transport-card {
+  padding: 27px;
+
+  border: 1px solid #e3e8e5;
+
+  border-radius: 16px;
+
+  background: white;
+}
+
+.detail-section h2,
+.transport-card h2 {
+  margin: 0 0 20px;
+
+  color: #222b28;
+
+  font-size: 19px;
+}
+
+
+/* =========================================================
+   이용 정보
+========================================================= */
+
+.info-grid {
+  display: grid;
+
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+
+  gap: 12px;
+}
+
+.info-item {
+  padding: 15px;
+
+  border-radius: 10px;
+
+  background: #f7f9f8;
+
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 6px;
+}
+
+.info-label {
+  color: #8a938f;
+
+  font-size: 11px;
+
+  font-weight: 700;
+}
+
+.info-item strong {
+  color: #3e4844;
+
+  font-size: 14px;
+}
+
+.website-button {
+  margin-top: 17px;
+
+  display: inline-block;
+
+  color: #176b55;
+
+  font-size: 13px;
+
+  font-weight: 800;
+
+  text-decoration: none;
+}
+
+
+/* =========================================================
+   세부시설
+========================================================= */
+
+.section-title-row p {
+  margin: -12px 0 20px;
+
+  color: #87908c;
+
+  font-size: 13px;
+}
+
+.subfacility-list {
+  display: grid;
+
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+
+  gap: 10px;
+}
+
+.subfacility-button {
+  padding: 16px;
+
+  display: flex;
+
+  justify-content: space-between;
+
+  align-items: center;
+
+  border: 1px solid #dfe7e3;
+
+  border-radius: 10px;
+
+  background: #fbfcfc;
+
+  color: #3e4844;
+
+  font-weight: 700;
+}
+
+.subfacility-button:hover {
+  border-color: #7fa99b;
+
+  background: #f1f8f5;
+
+  color: #176b55;
+}
+
+.empty-information {
+  padding: 25px;
+
+  border-radius: 10px;
+
+  background: #f7f9f8;
+
+  color: #8b9490;
+
+  text-align: center;
+
+  font-size: 13px;
+}
+
+
+/* =========================================================
+   교통정보
+========================================================= */
+
+.transport-detail {
+  padding: 15px 0;
+
+  border-bottom: 1px solid #edf0ee;
+}
+
+.transport-detail:last-child {
+  border-bottom: 0;
+}
+
+.transport-detail span {
+  color: #929a97;
+
+  font-size: 11px;
+
+  font-weight: 700;
+}
+
+.transport-detail p {
+  margin: 6px 0 0;
+
+  color: #4f5955;
+
+  font-size: 13px;
+
+  line-height: 1.6;
+}
+
+
+/* =========================================================
+   반응형
+========================================================= */
+
+@media (max-width: 1000px) {
+  .facility-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+
+@media (max-width: 900px) {
+  .detail-hero {
+    grid-template-columns: 1fr;
   }
 
-  &::before {
-    left: 0;
-    border-left-color: var(--border);
+  .detail-layout {
+    grid-template-columns: 1fr;
   }
-  &::after {
-    right: 0;
-    border-right-color: var(--border);
+}
+
+
+@media (max-width: 700px) {
+  .header-inner {
+    padding: 0 18px;
+  }
+
+  .nav {
+    display: none;
+  }
+
+  .main {
+    padding: 42px 18px 70px;
+  }
+
+  .intro h1 {
+    font-size: 32px;
+  }
+
+  .search-section {
+    padding: 17px;
+  }
+
+  .search-box {
+    height: 54px;
+  }
+
+  .search-button {
+    min-width: 72px;
+
+    padding: 0 14px;
+  }
+
+  .filter-area {
+    align-items: stretch;
+  }
+
+  .filter-group {
+    width: 100%;
+  }
+
+  .reset-button {
+    width: 100%;
+  }
+
+  .result-header {
+    align-items: flex-start;
+
+    flex-direction: column;
+  }
+
+  .selected-filters {
+    justify-content: flex-start;
+  }
+
+  .facility-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+
+@media (max-width: 600px) {
+  .detail-page {
+    padding: 30px 18px 70px;
+  }
+
+  .detail-image {
+    height: 220px;
+  }
+
+  .detail-summary h1 {
+    font-size: 27px;
+  }
+
+  .info-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .subfacility-list {
+    grid-template-columns: 1fr;
+  }
+}
+/* =========================================================
+   세부시설 상세 페이지
+========================================================= */
+
+.sub-detail-page {
+  width: 100%;
+
+  max-width: 1100px;
+
+  margin: 0 auto;
+
+  padding: 45px 32px 100px;
+}
+
+
+/* =========================================================
+   세부시설 상세 상단
+========================================================= */
+
+.sub-detail-hero {
+  padding: 42px;
+
+  border-radius: 20px;
+
+  background:
+    linear-gradient(
+      135deg,
+      #e8f4ef,
+      #f8fbfa
+    );
+}
+
+.sub-detail-parent {
+  margin: 0 0 10px;
+
+  color: #218068;
+
+  font-size: 13px;
+
+  font-weight: 800;
+}
+
+.sub-detail-hero h1 {
+  margin: 0;
+
+  color: #182420;
+
+  font-size: 38px;
+
+  line-height: 1.3;
+}
+
+.sub-detail-description {
+  margin: 13px 0 0;
+
+  color: #75817c;
+
+  font-size: 14px;
+}
+
+
+/* =========================================================
+   세부시설 정보 영역
+========================================================= */
+
+.sub-detail-section {
+  margin-top: 25px;
+
+  padding: 30px;
+
+  border: 1px solid #e2e8e5;
+
+  border-radius: 17px;
+
+  background: white;
+}
+
+.sub-detail-title {
+  margin-bottom: 20px;
+
+  display: flex;
+
+  justify-content: space-between;
+
+  align-items: center;
+}
+
+.sub-detail-title h2 {
+  margin: 0 0 6px;
+
+  color: #222c28;
+
+  font-size: 20px;
+}
+
+.sub-detail-title p {
+  margin: 0;
+
+  color: #88928e;
+
+  font-size: 13px;
+}
+
+
+/* =========================================================
+   세부시설 상세정보 목록
+========================================================= */
+
+.sub-detail-info-list {
+  display: grid;
+
+  grid-template-columns:
+    repeat(2, minmax(0, 1fr));
+
+  gap: 12px;
+}
+
+.sub-detail-info-item {
+  padding: 18px;
+
+  border-radius: 12px;
+
+  background: #f6f9f7;
+}
+
+.sub-detail-info-item span {
+  color: #27816a;
+
+  font-size: 12px;
+
+  font-weight: 800;
+}
+
+.sub-detail-info-item p {
+  margin: 8px 0 0;
+
+  color: #424d49;
+
+  font-size: 14px;
+
+  line-height: 1.6;
+
+  white-space: pre-line;
+}
+
+
+/* =========================================================
+   정보가 없을 때
+========================================================= */
+
+.sub-detail-empty {
+  padding: 50px 25px;
+
+  border-radius: 12px;
+
+  background: #f7f9f8;
+
+  text-align: center;
+}
+
+.sub-detail-empty h3 {
+  margin: 0 0 8px;
+
+  color: #49534f;
+
+  font-size: 16px;
+}
+
+.sub-detail-empty p {
+  margin: 0;
+
+  color: #89928f;
+
+  font-size: 13px;
+
+  line-height: 1.7;
+}
+
+
+/* =========================================================
+   사용자 제보 예정 영역
+========================================================= */
+
+.user-info-section {
+  margin-top: 25px;
+
+  padding: 30px;
+
+  display: flex;
+
+  justify-content: space-between;
+
+  align-items: center;
+
+  gap: 30px;
+
+  border: 1px solid #dce8e3;
+
+  border-radius: 17px;
+
+  background: #f0f8f5;
+}
+
+.user-info-label {
+  margin: 0 0 7px;
+
+  color: #27816a;
+
+  font-size: 11px;
+
+  font-weight: 800;
+
+  letter-spacing: 1.5px;
+}
+
+.user-info-section h2 {
+  margin: 0 0 8px;
+
+  color: #24312c;
+
+  font-size: 18px;
+}
+
+.user-info-section > div > p:last-child {
+  margin: 0;
+
+  color: #74817c;
+
+  font-size: 13px;
+
+  line-height: 1.6;
+}
+
+.user-info-section button {
+  flex-shrink: 0;
+
+  padding: 11px 18px;
+
+  border: 0;
+
+  border-radius: 9px;
+
+  background: #d5e5df;
+
+  color: #7b8f87;
+
+  font-weight: 700;
+
+  cursor: not-allowed;
+}
+
+
+/* =========================================================
+   세부시설 상세 반응형
+========================================================= */
+
+@media (max-width: 700px) {
+  .sub-detail-page {
+    padding: 30px 18px 70px;
+  }
+
+  .sub-detail-hero {
+    padding: 28px 23px;
+  }
+
+  .sub-detail-hero h1 {
+    font-size: 30px;
+  }
+
+  .sub-detail-info-list {
+    grid-template-columns: 1fr;
+  }
+
+  .user-info-section {
+    align-items: flex-start;
+
+    flex-direction: column;
   }
 }
