@@ -54,6 +54,13 @@ urlpatterns = [
         name="subfacility-detail-list"
     ),
 
+    # 시설 하나의 상세정보(FacilityDetail) 조회 / 생성·수정
+    path(
+        "<int:facility_id>/detail/",
+        views.facility_detail_update,
+        name="facility-detail-update"
+    ),
+
     # 시설 하나의 상세 정보 (기본정보 + FacilityDetail + 세부시설 + 종목)
     path(
         "<int:facility_id>/",

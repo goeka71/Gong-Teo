@@ -31,6 +31,32 @@ class FacilityDetailSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
 
+class FacilityDetailWriteSerializer(serializers.ModelSerializer):
+    """시설 상세정보(FacilityDetail) 생성·수정 전용.
+
+    facility 는 URL 로 받고, created_at 은 자동 생성이므로 입력 필드에서 제외한다.
+    나머지 검증(website URL 형식, boolean, max_length 등)은 모델 정의대로
+    DRF 가 자동 처리한다.
+    """
+
+    class Meta:
+        model = FacilityDetail
+        fields = ["op_hour", "in_out", "phone", "website",
+                  "fee", "shower", "parking"]
+
+    def validate_fee(self, value):
+        # 모델상 fee 는 CharField 라 숫자 검증이 자동으로 안 됨 → 직접 검사.
+        # 값이 비어 있으면 통과. 쉼표·공백·'원' 을 떼고 숫자만 남는지 확인한다.
+        if not value:
+            return value
+        n = value.replace(",", "").replace(" ", "").removesuffix("원")
+        if not n.isdigit():
+            raise serializers.ValidationError(
+                "이용료는 숫자로 입력해 주세요. 예: 3000"
+            )
+        return value
+
+
 class SportSerializer(serializers.ModelSerializer):
     class Meta:
         model = Sport
