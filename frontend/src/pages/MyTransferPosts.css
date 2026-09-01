@@ -1,0 +1,103 @@
+.my-post-page {
+  min-height: 100vh;
+  background-color: #f7f7f7;
+  padding: 50px 20px;
+}
+
+.my-post-container {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.my-post-header {
+  margin-bottom: 30px;
+}
+
+.my-post-header h1 {
+  margin-top: 20px;
+  margin-bottom: 8px;
+}
+
+.my-post-header p {
+  color: #777;
+}
+
+.my-post-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.my-post-card {
+  background: white;
+  border-radius: 16px;
+  padding: 24px;
+  border: 1px solid #e8e8e8;
+}
+
+.my-post-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.status {
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 14px;
+}
+
+.status.open {
+  background: #e8f7ee;
+  color: #249b5d;
+}
+
+.status.closed {
+  background: #eeeeee;
+  color: #777;
+}
+
+.created-date {
+  font-size: 13px;
+  color: #999;
+}
+
+.my-post-card h2 {
+  margin-top: 18px;
+  margin-bottom: 15px;
+}
+
+.my-post-card p {
+  margin: 8px 0;
+  color: #555;
+}
+
+.my-post-buttons {
+  display: flex;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.edit-button,
+.delete-button {
+  border: none;
+  padding: 10px 18px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.edit-button {
+  background-color: #f1f1f1;
+}
+
+.delete-button {
+  background-color: #fff0f0;
+  color: #e74c3c;
+}
+
+.empty-post {
+  background: white;
+  padding: 60px 20px;
+  border-radius: 16px;
+  text-align: center;
+}

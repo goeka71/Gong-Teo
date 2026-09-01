@@ -1,0 +1,80 @@
+.edit-post-page {
+  min-height: 100vh;
+  background: #f8f9fb;
+  padding: 60px 20px;
+}
+
+.edit-post-container {
+  max-width: 600px;
+  margin: 0 auto;
+  background: white;
+  padding: 40px;
+  border-radius: 20px;
+}
+
+.edit-post-header {
+  margin-bottom: 30px;
+}
+
+.edit-post-header h1 {
+  margin-top: 25px;
+  margin-bottom: 8px;
+}
+
+.edit-post-header p {
+  color: #777;
+}
+
+.program-info-box {
+  background: #f5f6f8;
+  padding: 20px;
+  border-radius: 14px;
+  margin-bottom: 30px;
+}
+
+.program-info-box h2 {
+  margin-top: 0;
+}
+
+.edit-form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 25px;
+}
+
+.edit-form-group label {
+  font-weight: 600;
+}
+
+.edit-form-group input,
+.edit-form-group select {
+  padding: 13px;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  font-size: 15px;
+}
+
+.edit-button-group {
+  display: flex;
+  gap: 12px;
+  margin-top: 35px;
+}
+
+.cancel-edit-button,
+.save-edit-button {
+  flex: 1;
+  padding: 14px;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.cancel-edit-button {
+  background: #eeeeee;
+}
+
+.save-edit-button {
+  background: #ff6b9d;
+  color: white;
+}

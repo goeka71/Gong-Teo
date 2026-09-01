@@ -1,0 +1,102 @@
+.transfer-board {
+  min-height: 100vh;
+  background-color: #f8f9fb;
+  padding: 60px 100px;
+}
+
+.board-header {
+  text-align: center;
+  margin-bottom: 60px;
+}
+
+.board-header h1 {
+  font-size: 42px;
+  margin-bottom: 15px;
+}
+
+.board-header p {
+  font-size: 18px;
+  color: #777;
+}
+
+.board-content {
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+.board-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 25px;
+}
+
+.write-button {
+  border: none;
+  background-color: #ff6b9d;
+  color: white;
+  padding: 12px 20px;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.post-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 20px;
+}
+
+.post-card {
+  background-color: white;
+  border-radius: 20px;
+  padding: 25px;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+  transition: transform 0.2s ease;
+}
+
+.post-card:hover {
+  transform: translateY(-5px);
+}
+
+.card-header {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.status {
+  width: fit-content;
+  padding: 5px 10px;
+  border-radius: 20px;
+  font-size: 13px;
+}
+
+.open {
+  background-color: #ffe2ec;
+  color: #ff4f87;
+}
+
+.program-name {
+  font-size: 22px;
+  font-weight: bold;
+}
+
+.card-info {
+  margin-top: 20px;
+  color: #666;
+}
+
+.card-footer {
+  margin-top: 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.card-footer button {
+  border: none;
+  background-color: #f1f2f5;
+  padding: 8px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+}
