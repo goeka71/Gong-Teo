@@ -45,4 +45,13 @@ urlpatterns = [
         name="onedayapplication-list"
     ),
 
+        # ==========================================
+    # 새로운 프로그램 등록
+    # ==========================================
+    path(
+        "my-programs/create/",
+        views.create_my_program,
+        name="create-my-program"
+    ),
+
 ]

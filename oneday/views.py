@@ -8,7 +8,7 @@ from .models import (
     OnedayPost,
     OnedayApplication,
 )
-
+from facilities.models import Facility, Program
 from .serializers import (
     MyProgramSerializer,
     OnedayPostSerializer,
@@ -169,3 +169,130 @@ def onedayapplication_list(request):
     )
 
     return Response(serializer.data)
+# ==========================================
+# 새로운 프로그램 등록
+# ==========================================
+@api_view(["POST"])
+def create_my_program(request):
+
+    # 프론트에서 받은 데이터
+    program_name = request.data.get("program_name")
+    facility_name = request.data.get("facility_name")
+    program_day = request.data.get("program_day")
+    program_time = request.data.get("program_time")
+    start_date = request.data.get("start_date")
+    end_date = request.data.get("end_date")
+
+
+    # 필수값 확인
+    if not all([
+        program_name,
+        facility_name,
+        program_day,
+        program_time,
+        start_date,
+        end_date,
+    ]):
+
+        return Response(
+            {
+                "message": "모든 정보를 입력해주세요."
+            },
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+
+    # ==========================================
+    # 시설 찾기
+    # ==========================================
+
+    facility = Facility.objects.filter(
+        facility_name=facility_name
+    ).first()
+
+
+    # 시설이 DB에 없으면 생성
+    if not facility:
+
+        return Response(
+            {
+                "message": "해당 시설이 DB에 없습니다."
+            },
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+
+    # ==========================================
+    # Program 생성
+    # ==========================================
+
+    program = Program.objects.create(
+
+        facility=facility,
+
+        program_name=program_name,
+
+        program_day=program_day,
+
+        program_time=program_time,
+
+    )
+
+
+    # ==========================================
+    # MyProgram 생성
+    # ==========================================
+
+    # ⚠️ 현재 로그인 기능이 연결되지 않았으므로
+    # 임시 사용자 처리 필요
+
+    user = request.user
+
+
+    if not user.is_authenticated:
+
+        return Response(
+            {
+                "message": "로그인이 필요합니다."
+            },
+            status=status.HTTP_401_UNAUTHORIZED
+        )
+
+
+    my_program = MyProgram.objects.create(
+
+        user=user,
+
+        program=program,
+
+        start_date=start_date,
+
+        end_date=end_date,
+
+        program_day=program_day,
+
+        program_time=program_time,
+
+        status="approved",
+
+    )
+
+
+    return Response(
+        {
+            "message": "프로그램이 성공적으로 등록되었습니다.",
+
+            "id": my_program.id,
+
+            "program_name": program.program_name,
+
+            "facility_name": facility.facility_name,
+
+            "program_day": my_program.program_day,
+
+            "program_time": my_program.program_time,
+
+        },
+
+        status=status.HTTP_201_CREATED
+    )

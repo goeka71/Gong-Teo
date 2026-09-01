@@ -69,6 +69,8 @@ function WritePost({
     facility_name: '',
     program_day: '',
     program_time: '',
+    start_date: '',
+    end_date: '',
   });
 
 
@@ -742,6 +744,69 @@ function WritePost({
 
 
               </div>
+              {/* 수강 시작일 */}
+
+<div className="form-group">
+
+  <label>
+
+    수강 시작일
+
+  </label>
+
+  <input
+
+    type="date"
+
+    value={newProgram.start_date}
+
+    onChange={(e) =>
+
+      setNewProgram({
+
+        ...newProgram,
+
+        start_date: e.target.value,
+
+      })
+
+    }
+
+  />
+
+</div>
+
+{/* 수강 종료일 */}
+
+<div className="form-group">
+
+  <label>
+
+    수강 종료일
+
+  </label>
+
+  <input
+
+    type="date"
+
+    value={newProgram.end_date}
+
+    onChange={(e) =>
+
+      setNewProgram({
+
+        ...newProgram,
+
+        end_date: e.target.value,
+
+      })
+
+    }
+
+  />
+
+</div>
 
 
               {/* 선택 결과 */}
@@ -794,39 +859,196 @@ function WritePost({
 
 
             <button
+  className="next-button"
 
-              className="next-button"
+  onClick={() => {
 
-              onClick={() => {
+    // ==========================
+    // 필수 입력 확인
+    // ==========================
 
-                if (
-                  !newProgram.program_name ||
-                  !newProgram.facility_name ||
-                  !newProgram.program_day ||
-                  !startTime ||
-                  !endTime
-                ) {
+    if (
+      !newProgram.program_name ||
+      !newProgram.facility_name ||
+      !newProgram.program_day ||
+      !newProgram.program_time ||
+      !newProgram.start_date ||
+      !newProgram.end_date
+    ) {
 
-                  alert(
-                    '모든 정보를 입력해주세요!'
-                  );
+      alert(
+        '모든 정보를 입력해주세요!'
+      );
 
-                  return;
+      return;
 
-                }
+    }
 
 
-                alert(
-                  '프로그램 등록 기능은 다음 단계에서 DB와 연결할 예정입니다! 🎉'
-                );
+    // ==========================
+    // Django API로 프로그램 등록
+    // ==========================
 
-              }}
+    fetch(
+      'http://127.0.0.1:8000/api/oneday/my-programs/create/',
+      {
 
-            >
+        method: 'POST',
 
-              등록하기
+        headers: {
+          'Content-Type': 'application/json',
+        },
 
-            </button>
+        body: JSON.stringify({
+
+          program_name: newProgram.program_name,
+
+          facility_name: newProgram.facility_name,
+
+          program_day: newProgram.program_day,
+
+          program_time: newProgram.program_time,
+
+          start_date: newProgram.start_date,
+
+          end_date: newProgram.end_date,
+
+        }),
+
+      }
+    )
+
+      .then((response) => {
+
+        if (!response.ok) {
+
+          return response.json()
+            .then((data) => {
+
+              console.error(
+                '프로그램 등록 오류:',
+                data
+              );
+
+              throw new Error(
+                data.message ||
+                '프로그램 등록에 실패했습니다.'
+              );
+
+            });
+
+        }
+
+        return response.json();
+
+      })
+
+      .then((data) => {
+
+        console.log(
+          '프로그램 등록 성공:',
+          data
+        );
+
+
+        alert(
+          '🎉 수강 프로그램이 등록되었습니다!'
+        );
+
+
+        // ==========================
+        // 화면에 바로 추가
+        // ==========================
+
+        const addedProgram = {
+
+          id: data.id,
+
+          program_name: data.program_name,
+
+          facility_name: data.facility_name,
+
+          program_day: data.program_day,
+
+          program_time: data.program_time,
+
+          status: 'approved',
+
+        };
+
+
+        setPrograms((currentPrograms) => [
+
+          ...currentPrograms,
+
+          addedProgram,
+
+        ]);
+
+
+        // ==========================
+        // 새 프로그램 선택
+        // ==========================
+
+        setSelectedProgram(
+          addedProgram
+        );
+
+
+        // ==========================
+        // 입력값 초기화
+        // ==========================
+
+        setNewProgram({
+
+          program_name: '',
+
+          facility_name: '',
+
+          program_day: '',
+
+          program_time: '',
+
+          start_date: '',
+
+          end_date: '',
+
+        });
+
+
+        // ==========================
+        // 시작 / 종료 시간 초기화
+        // ==========================
+
+        setStartTime('');
+
+        setEndTime('');
+
+
+        // ==========================
+        // 프로그램 선택 화면으로 이동
+        // ==========================
+
+        setShowNewProgramForm(false);
+
+        setShowAddProgram(false);
+
+      })
+
+      .catch((error) => {
+
+        console.error(error);
+
+        alert(
+          `❌ 프로그램 등록 실패\n\n${error.message}`
+        );
+
+      });
+
+  }}
+>
+  등록하기
+</button>
 
 
           </div>
