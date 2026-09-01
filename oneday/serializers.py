@@ -13,9 +13,33 @@ from .models import (
 
 class MyProgramSerializer(serializers.ModelSerializer):
 
+    # 프로그램 이름
+    program_name = serializers.CharField(
+        source="program.program_name",
+        read_only=True
+    )
+
+    # 시설 이름
+    facility_name = serializers.CharField(
+        source="program.facility.facility_name",
+        read_only=True
+    )
+
     class Meta:
         model = MyProgram
-        fields = "__all__"
+
+        fields = [
+            "id",
+            "program",
+            "program_name",
+            "facility_name",
+            "program_day",
+            "program_time",
+            "start_date",
+            "end_date",
+            "status",
+            "user",
+        ]
 
 
 # ==========================
@@ -63,7 +87,6 @@ class OnedayPostSerializer(serializers.ModelSerializer):
             "enroll",
         ]
 
-        # 수정할 수 없는 정보
         read_only_fields = [
             "created_at",
         ]
