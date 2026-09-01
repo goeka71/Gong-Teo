@@ -1,0 +1,290 @@
+/* ============================================================
+   FacilityDetail 전용 스타일
+   - 모든 선택자에 .fd- 접두사를 붙여 팀원 CSS와 격리한다.
+     (CSS 클래스는 기본적으로 전역이므로 이름 충돌을 수동으로 막는 방식)
+   - 기본 스타일 = 모바일(세로 1열).
+   - @media (min-width: 768px) 에서 PC 2열 배치로 재구성.
+   ============================================================ */
+
+.fd-page {
+  --fd-text: #1f2d3d;
+  --fd-muted: #8a94a2;
+  --fd-line: #e6e8ec;
+  --fd-bg: #ffffff;
+  --fd-accent: #2f6fed;
+  --fd-star: #f5a623;
+
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: 0 16px 48px;
+  color: var(--fd-text);
+  font-size: 15px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* 상태 표시(로딩/에러) */
+.fd-status {
+  max-width: 480px;
+  margin: 64px auto;
+  text-align: center;
+  color: var(--fd-muted);
+}
+
+/* ---------- 1. 시설 기본정보 ---------- */
+
+.fd-hero {
+  width: 100%;
+  aspect-ratio: 3 / 2;
+  margin: 0 0 20px;
+  border-radius: 14px;
+  overflow: hidden;
+  background: #eef0f3;
+}
+
+.fd-hero img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* 이미지가 없을 때 회색 자리 표시 */
+.fd-hero--empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #b6bcc6;
+  font-size: 14px;
+  letter-spacing: 0.02em;
+}
+
+.fd-name {
+  margin: 0 0 12px;
+  font-size: 22px;
+  font-weight: 700;
+}
+
+.fd-access {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.fd-access li {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  color: #566473;
+  font-size: 14px;
+}
+
+.fd-access .fd-access-icon {
+  flex: none;
+  color: var(--fd-muted);
+}
+
+/* ---------- 2. 세부시설 바로가기 ---------- */
+
+.fd-section {
+  margin-top: 28px;
+}
+
+.fd-section-label {
+  margin: 0 0 12px;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--fd-muted);
+}
+
+.fd-shortcuts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.fd-shortcut-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 9px 16px;
+  border: 1px solid var(--fd-line);
+  border-radius: 999px;
+  background: var(--fd-bg);
+  font: inherit;
+  font-weight: 600;
+  color: var(--fd-text);
+  cursor: pointer;
+}
+
+.fd-shortcut-btn .fd-chevron {
+  color: var(--fd-muted);
+  font-weight: 400;
+}
+
+/* ---------- 공통: 섹션 제목 줄 ---------- */
+
+.fd-block-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 40px 0 14px;
+}
+
+.fd-block-title {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.fd-text-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  border: none;
+  background: none;
+  padding: 4px;
+  font: inherit;
+  color: #566473;
+  cursor: pointer;
+}
+
+.fd-text-btn--accent {
+  color: var(--fd-accent);
+  font-weight: 600;
+}
+
+/* ---------- 3. 시설 정보 카드 ---------- */
+
+.fd-info-card {
+  border: 1px solid var(--fd-line);
+  border-radius: 14px;
+  padding: 20px 22px;
+}
+
+.fd-info-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 11px 0;
+  border-bottom: 1px solid #f1f2f4;
+}
+
+.fd-info-row:last-child {
+  border-bottom: none;
+}
+
+.fd-info-row dt {
+  color: #566473;
+  font-size: 14px;
+}
+
+.fd-info-row dd {
+  margin: 0;
+  font-weight: 700;
+  text-align: right;
+  word-break: break-all;
+}
+
+.fd-info-row dd a {
+  color: var(--fd-accent);
+}
+
+/* ---------- 4. 리뷰 영역 (UI 자리만) ---------- */
+
+.fd-rating {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+  color: #566473;
+  font-weight: 600;
+}
+
+.fd-stars {
+  color: var(--fd-star);
+  letter-spacing: 1px;
+}
+
+.fd-review-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.fd-review-card {
+  border: 1px solid var(--fd-line);
+  border-radius: 12px;
+  padding: 16px 18px;
+}
+
+.fd-review-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 6px;
+}
+
+.fd-review-name {
+  font-weight: 700;
+}
+
+.fd-review-body {
+  margin: 0;
+  color: #566473;
+  font-size: 14px;
+}
+
+.fd-review-more {
+  width: 100%;
+  margin-top: 14px;
+  padding: 14px;
+  border: none;
+  background: none;
+  font: inherit;
+  font-weight: 700;
+  color: var(--fd-accent);
+  cursor: pointer;
+}
+
+/* ============================================================
+   PC 배치 (넓은 화면)
+   ============================================================ */
+
+@media (min-width: 768px) {
+  .fd-page {
+    padding-top: 32px;
+  }
+
+  /* 상단: 이미지(왼쪽) + 기본정보(오른쪽) 2열 */
+  .fd-top {
+    display: grid;
+    grid-template-columns: 55fr 45fr;
+    gap: 32px;
+    align-items: start;
+  }
+
+  .fd-hero {
+    margin-bottom: 0;
+  }
+
+  .fd-top .fd-section:first-of-type {
+    margin-top: 0;
+  }
+
+  /* 하단: 시설 정보 카드(왼쪽 고정) + 리뷰(오른쪽 가변) 2열 */
+  .fd-bottom {
+    display: grid;
+    grid-template-columns: 380px 1fr;
+    gap: 32px;
+    align-items: start;
+    margin-top: 8px;
+  }
+
+  .fd-bottom .fd-block-head {
+    margin-top: 24px;
+  }
+}
