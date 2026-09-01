@@ -6,7 +6,7 @@
 import FacilityDetail from './FacilityDetail'
 
 function App() {
-  return <FacilityDetail facilityId={16} />
+  return <FacilityDetail facilityId={12} />
 }
 
 export default App

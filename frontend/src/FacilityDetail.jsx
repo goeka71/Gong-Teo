@@ -15,6 +15,13 @@ const MOCK_REVIEWS = [
   { id: 2, name: "민아", rating: 4, content: "샤워실이 조금 좁지만 이용하기 좋아요." },
 ];
 
+// 역/정류장에서의 도보 시간은 DB에 '초' 단위로 저장돼 있다.
+// 60으로 나눈 몫이 1 이상이면 "도보 N분", 몫이 0이면 "도보 N초"로 표시한다.
+function walkText(seconds) {
+  const minutes = Math.floor(seconds / 60);
+  return minutes > 0 ? `도보 ${minutes}분` : `도보 ${seconds}초`;
+}
+
 // 별점(0~5)을 ★/☆ 문자열로 표시하는 작은 헬퍼
 function Stars({ rating }) {
   const full = Math.round(rating);
@@ -86,7 +93,13 @@ function FacilityDetail({ facilityId = 1 }) {
 
   return (
     <div className="fd-page">
-      {/* ---------- 상단: 이미지 + 기본정보 (PC에서 2열) ---------- */}
+      {/* ==========================================================
+          왼쪽: 상세 정보 패널.
+          PC(넓은 화면)에서는 고정 폭으로 왼쪽에 붙고 이 안에서만
+          세로 스크롤된다. 모바일에서는 그냥 한 줄로 위→아래로 흐른다.
+         ========================================================== */}
+      <div className="fd-detail">
+      {/* ---------- 상단: 이미지 + 기본정보 ---------- */}
       <div className="fd-top">
         {/* 1. 시설 이미지 (없으면 회색 placeholder) */}
         {data.image ? (
@@ -108,7 +121,7 @@ function FacilityDetail({ facilityId = 1 }) {
                 </span>
                 <span>
                   {data.station}
-                  {data.station_wt != null && ` · 도보 ${data.station_wt}분`}
+                  {data.station_wt != null && ` · ${walkText(data.station_wt)}`}
                 </span>
               </li>
             )}
@@ -119,7 +132,7 @@ function FacilityDetail({ facilityId = 1 }) {
                 </span>
                 <span>
                   {data.bus}
-                  {data.bus_wt != null && ` · 도보 ${data.bus_wt}분`}
+                  {data.bus_wt != null && ` · ${walkText(data.bus_wt)}`}
                 </span>
               </li>
             )}
@@ -225,6 +238,17 @@ function FacilityDetail({ facilityId = 1 }) {
           </button>
         </section>
       </div>
+      </div>
+
+      {/* ==========================================================
+          오른쪽: 지도 영역.
+          이 프로젝트의 메인 화면은 지도 기반이며, 추후 지도 API를
+          연결할 자리다. 지금은 회색 격자 placeholder만 둔다.
+          지도 화면/컴포넌트가 생기면 이 <aside> 하나만 들어낸다.
+         ========================================================== */}
+      <aside className="fd-map" aria-label="지도 (준비 중)">
+        <div className="fd-map-grid" aria-hidden="true" />
+      </aside>
     </div>
   );
 }
