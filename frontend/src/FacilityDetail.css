@@ -268,6 +268,99 @@
   cursor: pointer;
 }
 
+/* ---------- 시설 정보 추가·수정 폼 (임시 스타일 — 동작 확인용) ---------- */
+
+.fd-edit-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 16px;
+  padding: 16px;
+  border: 1px solid var(--fd-line);
+  border-radius: 12px;
+}
+
+.fd-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 14px;
+  color: #566473;
+}
+
+.fd-field input[type="text"] {
+  padding: 8px 10px;
+  border: 1px solid var(--fd-line);
+  border-radius: 6px;
+  font: inherit;
+}
+
+.fd-field--check {
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+}
+
+.fd-form-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.fd-form-actions button {
+  padding: 10px 20px;
+  border-radius: 8px;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    background-color 0.15s,
+    border-color 0.15s;
+}
+
+/* 저장 = 주요 동작: 사이트 강조색(파랑) 채움 */
+.fd-form-actions button[type="submit"] {
+  border: 1px solid var(--fd-accent);
+  background: var(--fd-accent);
+  color: #fff;
+}
+
+.fd-form-actions button[type="submit"]:hover:not(:disabled) {
+  background: #285fd0;
+  border-color: #285fd0;
+}
+
+/* 취소 = 보조 동작: 흰 배경 + 회색 테두리 */
+.fd-form-actions button[type="button"] {
+  border: 1px solid var(--fd-line);
+  background: var(--fd-bg);
+  color: #566473;
+}
+
+.fd-form-actions button[type="button"]:hover:not(:disabled) {
+  background: #f7f8fa;
+}
+
+.fd-form-actions button:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+
+.fd-form-error {
+  margin: 0;
+  color: #d64545;
+  font-size: 13px;
+  white-space: pre-wrap;
+}
+
+.fd-form-ok {
+  margin: 0 0 12px;
+  color: #1a7f37;
+  font-size: 14px;
+  font-weight: 600;
+}
+
 /* ============================================================
    PC 배치 (가로 ≥ 세로)
    와이어프레임: 왼쪽 = 상세 정보 패널(고정 폭, 독립 스크롤),

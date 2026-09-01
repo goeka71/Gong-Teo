@@ -48,10 +48,162 @@ function InfoRow({ label, children }) {
   );
 }
 
+// DRF 응답의 검증 에러({ 필드명: ["메시지", ...] })를 사람이 읽을 한 줄로 바꾼다.
+// 예) { fee: ["이용료는 숫자로..."], website: ["Enter a valid URL."] }
+//   → "fee: 이용료는 숫자로... / website: Enter a valid URL."
+function formatApiError(body, status) {
+  if (body && typeof body === "object") {
+    const parts = Object.entries(body).map(([field, msgs]) => {
+      const text = Array.isArray(msgs) ? msgs.join(" ") : String(msgs);
+      return field === "detail" ? text : `${field}: ${text}`;
+    });
+    if (parts.length > 0) return parts.join(" / ");
+  }
+  return `저장 실패 (HTTP ${status})`;
+}
+
+// 시설 정보(FacilityDetail) 추가·수정 폼.
+// PATCH /api/facilities/<id>/detail/ 로 전송한다.
+//   facilityId : 대상 시설 id
+//   initial    : 현재 저장돼 있는 detail 값 (없으면 빈 객체)
+//   onSaved    : 저장 성공 시 호출 (부모가 폼 닫기 + 정보 재조회)
+//   onCancel   : 취소/닫기
+function FacilityInfoForm({ facilityId, initial, onSaved, onCancel }) {
+  // 폼이 열릴 때(이 컴포넌트가 새로 mount 될 때) 현재 값으로 입력칸을 채운다.
+  const [form, setForm] = useState({
+    op_hour: initial.op_hour ?? "",
+    in_out: initial.in_out ?? "",
+    phone: initial.phone ?? "",
+    website: initial.website ?? "",
+    fee: initial.fee ?? "",
+    shower: Boolean(initial.shower),
+    parking: Boolean(initial.parking),
+  });
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState(null);
+
+  // 입력칸 하나가 바뀌면 form 에서 해당 키만 갱신.
+  // 체크박스는 checked, 나머지는 value 를 쓴다.
+  function handleChange(e) {
+    const { name, type, value, checked } = e.target;
+    setForm((prev) => ({
+      ...prev,
+      [name]: type === "checkbox" ? checked : value,
+    }));
+  }
+
+  async function handleSubmit(e) {
+    e.preventDefault(); // 폼 기본 제출(페이지 새로고침) 막기
+    setSaving(true);
+    setError(null);
+    try {
+      const res = await fetch(
+        `${API_BASE}/api/facilities/${facilityId}/detail/`,
+        {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(form),
+        },
+      );
+      if (!res.ok) {
+        const body = await res.json().catch(() => null);
+        throw new Error(formatApiError(body, res.status));
+      }
+      onSaved();
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <form className="fd-edit-form" onSubmit={handleSubmit}>
+      <label className="fd-field">
+        <span>운영시간</span>
+        <input
+          name="op_hour"
+          type="text"
+          value={form.op_hour}
+          onChange={handleChange}
+        />
+      </label>
+      <label className="fd-field">
+        <span>실내/야외</span>
+        <input
+          name="in_out"
+          type="text"
+          value={form.in_out}
+          onChange={handleChange}
+        />
+      </label>
+      <label className="fd-field">
+        <span>전화번호</span>
+        <input
+          name="phone"
+          type="text"
+          value={form.phone}
+          onChange={handleChange}
+        />
+      </label>
+      <label className="fd-field">
+        <span>홈페이지 URL</span>
+        <input
+          name="website"
+          type="text"
+          value={form.website}
+          onChange={handleChange}
+        />
+      </label>
+      <label className="fd-field">
+        <span>이용료(1회)</span>
+        <input
+          name="fee"
+          type="text"
+          value={form.fee}
+          onChange={handleChange}
+        />
+      </label>
+      <label className="fd-field fd-field--check">
+        <input
+          name="shower"
+          type="checkbox"
+          checked={form.shower}
+          onChange={handleChange}
+        />
+        <span>샤워실 있음</span>
+      </label>
+      <label className="fd-field fd-field--check">
+        <input
+          name="parking"
+          type="checkbox"
+          checked={form.parking}
+          onChange={handleChange}
+        />
+        <span>주차장 있음</span>
+      </label>
+
+      {error && <p className="fd-form-error">{error}</p>}
+
+      <div className="fd-form-actions">
+        <button type="submit" disabled={saving}>
+          {saving ? "저장 중…" : "저장"}
+        </button>
+        <button type="button" onClick={onCancel} disabled={saving}>
+          취소
+        </button>
+      </div>
+    </form>
+  );
+}
+
 function FacilityDetail({ facilityId = 1 }) {
   const [data, setData] = useState(null); // API 응답(JSON)
   const [loading, setLoading] = useState(true); // 불러오는 중인가
   const [error, setError] = useState(null); // 에러 메시지
+  const [reloadKey, setReloadKey] = useState(0); // 저장 후 정보를 다시 불러오는 트리거
+  const [editing, setEditing] = useState(false); // 수정 폼 열림 여부
+  const [saveOk, setSaveOk] = useState(false); // "저장됐습니다" 표시 여부
 
   // facilityId 가 바뀔 때마다 API를 다시 호출한다.
   // ignore 플래그: 응답이 늦게 왔을 때 이미 사라졌거나 바뀐 화면에
@@ -81,7 +233,7 @@ function FacilityDetail({ facilityId = 1 }) {
     return () => {
       ignore = true;
     };
-  }, [facilityId]);
+  }, [facilityId, reloadKey]);
 
   if (loading) return <p className="fd-status">불러오는 중…</p>;
   if (error) return <p className="fd-status">에러: {error}</p>;
@@ -171,11 +323,29 @@ function FacilityDetail({ facilityId = 1 }) {
             <button
               type="button"
               className="fd-text-btn"
-              // TODO: 정보 추가·수정 기능 (아직 구현 안 함, 자리만)
+              onClick={() => {
+                setSaveOk(false);
+                setEditing((v) => !v);
+              }}
             >
-              ✎ 정보 추가·수정
+              {editing ? "닫기" : "✎ 정보 추가·수정"}
             </button>
           </div>
+
+          {saveOk && <p className="fd-form-ok">저장됐습니다</p>}
+
+          {editing && (
+            <FacilityInfoForm
+              facilityId={facilityId}
+              initial={detail}
+              onCancel={() => setEditing(false)}
+              onSaved={() => {
+                setEditing(false);
+                setSaveOk(true);
+                setReloadKey((k) => k + 1); // 기존 GET 을 다시 호출 → 카드 갱신
+              }}
+            />
+          )}
 
           <dl className="fd-info-card">
             <InfoRow label="운영시간">{detail.op_hour}</InfoRow>
