@@ -1,122 +1,42 @@
-import { useState } from 'react'
-import heroImg from './assets/hero.png'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import './App.css'
+import { Routes, Route, Outlet, useParams } from "react-router-dom";
+import Navbar from "./components/Navbar";
+import MainMap from "./facilities/MainMap";
+import FacilityDetail from "./facilities/FacilityDetail";
+import OnedayBoard from "./oneday/OnedayBoard";
+import Login from "./user/Login";
+import MyPage from "./user/MyPage";
 
-function App() {
-  const [count, setCount] = useState(0)
-
+// 공통 레이아웃: 모든 화면 위에 상단바(Navbar)를 두고,
+// 그 아래(Outlet)에 현재 경로에 해당하는 화면을 끼워 넣는다.
+function Layout() {
   return (
     <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.jsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
-
-      <div className="ticks"></div>
-
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
-
-      <div className="ticks"></div>
-      <section id="spacer"></section>
+      <Navbar />
+      <Outlet />
     </>
-  )
+  );
 }
 
-export default App
+// "/facility/:id" 경로 전용 래퍼.
+// URL 의 :id 를 꺼내 FacilityDetail 에 facilityId prop 으로 전달한다.
+// (FacilityDetail 자체는 facilityId 를 prop 으로 받는 구조를 유지)
+function FacilityDetailRoute() {
+  const { id } = useParams();
+  return <FacilityDetail facilityId={Number(id)} />;
+}
+
+function App() {
+  return (
+    <Routes>
+      <Route element={<Layout />}>
+        <Route path="/" element={<MainMap />} />
+        <Route path="/facility/:id" element={<FacilityDetailRoute />} />
+        <Route path="/oneday" element={<OnedayBoard />} />
+        <Route path="/mypage" element={<MyPage />} />
+        <Route path="/login" element={<Login />} />
+      </Route>
+    </Routes>
+  );
+}
+
+export default App;
