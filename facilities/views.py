@@ -1,3 +1,4 @@
+from django.shortcuts import get_object_or_404
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 
@@ -23,6 +24,7 @@ from .serializers import (
     ReviewSerializer,
     FavoriteSerializer,
     SubFacilityDetailSerializer,
+    FacilityDetailPageSerializer,
 )
 
 
@@ -30,6 +32,14 @@ from .serializers import (
 def facility_list(request):
     data = Facility.objects.all()
     serializer = FacilitySerializer(data, many=True)
+    return Response(serializer.data)
+
+
+@api_view(["GET"])
+def facility_detail(request, facility_id):
+    # 해당 id 시설이 없으면 자동으로 404 응답
+    facility = get_object_or_404(Facility, pk=facility_id)
+    serializer = FacilityDetailPageSerializer(facility)
     return Response(serializer.data)
 
 
