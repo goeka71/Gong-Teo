@@ -15,6 +15,17 @@ const MOCK_REVIEWS = [
   { id: 2, name: "민아", rating: 4, content: "샤워실이 조금 좁지만 이용하기 좋아요." },
 ];
 
+// DB의 website 값에 스킴이 없거나("gssi.or.kr") 콜론이 빠진 채
+// 저장된 경우가 있다("http//life.gangnam.go.kr"). 이걸 그대로 <a href>에
+// 쓰면 절대경로가 아니라 상대경로로 해석돼 "/facility/gssi.or.kr" 같은
+// 엉뚱한 주소로 이동해버리므로, 스킴이 없으면 https:// 를 붙여준다.
+function withProtocol(url) {
+  if (!url) return url;
+  if (/^https?:\/\//i.test(url)) return url;
+  const stripped = url.replace(/^https?:?\/*/i, "");
+  return `https://${stripped}`;
+}
+
 // 역/정류장에서의 도보 시간은 DB에 '초' 단위로 저장돼 있다.
 // 60으로 나눈 몫이 1 이상이면 "도보 N분", 몫이 0이면 "도보 N초"로 표시한다.
 function walkText(seconds) {
@@ -215,13 +226,10 @@ function FacilityDetail({ facilityId = 1 }) {
   const subs = data.sub_facilities ?? [];
 
   return (
-    <div className="fd-page">
-      {/* ==========================================================
-          왼쪽: 상세 정보 패널.
-          PC(넓은 화면)에서는 고정 폭으로 왼쪽에 붙고 이 안에서만
-          세로 스크롤된다. 모바일에서는 그냥 한 줄로 위→아래로 흐른다.
-         ========================================================== */}
-      <div className="fd-detail">
+    // 상세 정보 패널. 지도는 이제 FacilityMapLayout 이 담당하므로
+    // 여기서는 패널 내용만 렌더링한다(래핑하는 페이지/지도 영역 없음).
+    // "/" 는 목록이 아니라 검색/필터 패널이라 "목록으로" 버튼은 두지 않는다.
+    <div className="fd-detail">
       {/* ---------- 상단: 이미지 + 기본정보 ---------- */}
       <div className="fd-top">
         {/* 1. 시설 이미지 (없으면 회색 placeholder) */}
@@ -324,7 +332,11 @@ function FacilityDetail({ facilityId = 1 }) {
             <InfoRow label="전화번호">{detail.phone}</InfoRow>
             <InfoRow label="홈페이지">
               {detail.website && (
-                <a href={detail.website} target="_blank" rel="noreferrer">
+                <a
+                  href={withProtocol(detail.website)}
+                  target="_blank"
+                  rel="noreferrer"
+                >
                   {detail.website.replace(/^https?:\/\//, "")}
                 </a>
               )}
@@ -379,17 +391,6 @@ function FacilityDetail({ facilityId = 1 }) {
           </button>
         </section>
       </div>
-      </div>
-
-      {/* ==========================================================
-          오른쪽: 지도 영역.
-          이 프로젝트의 메인 화면은 지도 기반이며, 추후 지도 API를
-          연결할 자리다. 지금은 회색 격자 placeholder만 둔다.
-          지도 화면/컴포넌트가 생기면 이 <aside> 하나만 들어낸다.
-         ========================================================== */}
-      <aside className="fd-map" aria-label="지도 (준비 중)">
-        <div className="fd-map-grid" aria-hidden="true" />
-      </aside>
     </div>
   );
 }

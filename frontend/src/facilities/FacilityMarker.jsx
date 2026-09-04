@@ -6,8 +6,9 @@
 import { CustomOverlayMap } from "react-kakao-maps-sdk";
 import "./FacilityMarker.css";
 
-// 와이어프레임에서 쓰던 색 그대로.
-const DEFAULT_COLOR = "#a7b3c2";
+// 와이어프레임 색(#a7b3c2)은 카카오맵 배경 위에서 너무 눈에 안 띄어서
+// 사이트 기본 강조색(--color-primary)으로 바꿨다. 선택색은 그대로 유지.
+const DEFAULT_COLOR = "#1d4e89";
 const SELECTED_COLOR = "#e2685f";
 
 // 물방울(핀) 모양 SVG path. viewBox 기준 뾰족한 끝이 정확히 (12, 24) 라서

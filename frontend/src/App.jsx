@@ -1,6 +1,7 @@
 import { Routes, Route, Outlet, useParams } from "react-router-dom";
 import Navbar from "./components/Navbar";
-import MainMap from "./facilities/MainMap";
+import FacilityMapLayout from "./facilities/FacilityMapLayout";
+import FacilityListPanel from "./facilities/FacilityListPanel";
 import FacilityDetail from "./facilities/FacilityDetail";
 import OnedayBoard from "./oneday/OnedayBoard";
 import Login from "./user/Login";
@@ -29,8 +30,12 @@ function App() {
   return (
     <Routes>
       <Route element={<Layout />}>
-        <Route path="/" element={<MainMap />} />
-        <Route path="/facility/:id" element={<FacilityDetailRoute />} />
+        {/* 지도(FacilityMapLayout)를 한 번만 마운트하고, 좌측 패널만
+            자식 라우트(목록 ↔ 상세)에 따라 <Outlet/>으로 교체한다. */}
+        <Route element={<FacilityMapLayout />}>
+          <Route index element={<FacilityListPanel />} />
+          <Route path="/facility/:id" element={<FacilityDetailRoute />} />
+        </Route>
         <Route path="/oneday" element={<OnedayBoard />} />
         <Route path="/mypage" element={<MyPage />} />
         <Route path="/login" element={<Login />} />

@@ -1,0 +1,65 @@
+/* FacilityListPanel 전용 스타일. 색상 변수는 FacilityMapLayout.css 에서 정의한다.
+   검색/필터는 아직 틀만 있는 상태라 disabled 인 채로 흐리게 보이게 한다. */
+
+.flp-title {
+  margin: 0 0 16px;
+  font-size: 22px;
+  font-weight: 700;
+}
+
+.flp-search {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.flp-search-input {
+  flex: 1;
+  padding: 10px 14px;
+  border: 1px solid var(--fd-line);
+  border-radius: 10px;
+  font: inherit;
+}
+
+.flp-search-btn {
+  padding: 10px 18px;
+  border: 1px solid var(--fd-line);
+  border-radius: 10px;
+  background: var(--fd-bg);
+  font: inherit;
+  font-weight: 600;
+  color: var(--fd-muted);
+}
+
+.flp-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.flp-filter-chip {
+  padding: 8px 16px;
+  border: 1px solid var(--fd-line);
+  border-radius: 999px;
+  background: var(--fd-bg);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--fd-muted);
+}
+
+/* 검색/필터 틀은 아직 동작하지 않으므로 시각적으로도 비활성 상태임을 드러낸다. */
+.flp-search-input:disabled,
+.flp-search-btn:disabled,
+.flp-filter-chip:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.flp-placeholder {
+  margin: 40px 0 0;
+  text-align: center;
+  color: var(--fd-muted);
+  font-size: 14px;
+}

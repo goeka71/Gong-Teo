@@ -1,0 +1,83 @@
+/* ============================================================
+   FacilityMapLayout 전용 스타일
+   - "/" (목록)와 "/facility/:id" (상세)가 공유하는 좌측 패널 + 우측
+     지도 뼈대. 색상 변수도 여기서 정의해서 FacilityListPanel/
+     FacilityDetail 이 그대로 가져다 쓴다(.fd- 접두사는 기존 상세
+     화면과의 호환을 위해 유지).
+   - 기본 스타일 = 모바일(세로 1열, 지도 숨김).
+   - 화면의 가로가 세로보다 길어지면(@media min-aspect-ratio: 1/1)
+     PC 좌우 2열 배치로 재구성한다.
+   ============================================================ */
+
+.fml-layout {
+  --fd-text: #1f2d3d;
+  --fd-muted: #8a94a2;
+  --fd-line: #e6e8ec;
+  --fd-bg: #ffffff;
+  --fd-accent: #2f6fed;
+  --fd-star: #f5a623;
+
+  color: var(--fd-text);
+  font-size: 15px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* 모바일: 패널만 보이고 지도는 숨긴다 (PC 전용 배치). */
+.fml-panel {
+  padding: 0 14px 32px;
+}
+
+.fml-map {
+  display: none;
+}
+
+.fml-map-status {
+  padding: 24px 16px;
+  color: var(--fd-muted);
+}
+
+/* ============================================================
+   PC 배치 (가로 ≥ 세로)
+   와이어프레임: 왼쪽 = 패널(고정 폭, 독립 스크롤), 오른쪽 = 지도(나머지 폭).
+   ============================================================ */
+
+@media (min-aspect-ratio: 1 / 1) {
+  .fml-layout {
+    /* Navbar(--gnb-height) 아래 남는 뷰포트만 채운다. */
+    height: calc(100vh - var(--gnb-height));
+    display: flex;
+    align-items: stretch;
+  }
+
+  .fml-panel {
+    flex: none;
+    width: clamp(400px, 34vw, 560px);
+    height: 100%;
+    overflow-y: auto;
+    padding: 20px 20px 32px;
+    box-sizing: border-box;
+    border-right: 1px solid var(--fd-line);
+  }
+
+  .fml-map {
+    display: block;
+    position: relative;
+    flex: 1;
+    height: 100%;
+  }
+
+  .fml-map .kakao-map {
+    width: 100%;
+    height: 100%;
+  }
+
+  .fml-map-status {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+  }
+}
