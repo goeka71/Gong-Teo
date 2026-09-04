@@ -16,6 +16,11 @@
   gap: 24px;
 }
 
+/* "로그인"은 남는 가로 공간을 밀어내고 네비바 맨 오른쪽에 붙는다 */
+.gnb-link--right {
+  margin-left: auto;
+}
+
 /* 로고는 링크 hover 색(파랑)으로 변하지 않도록 고정 */
 .gnb-logo:hover {
   color: var(--color-heading);
