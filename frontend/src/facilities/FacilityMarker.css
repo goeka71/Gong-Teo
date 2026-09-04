@@ -1,0 +1,23 @@
+/* 시설 마커(핀) 스타일. 색상 자체는 FacilityMarker.jsx 에서 fill 로 넣는다. */
+
+.facility-marker {
+  position: relative;
+
+  width: 28px;
+  height: 28px;
+
+  cursor: pointer;
+}
+
+.facility-marker__pin {
+  display: block;
+
+  filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.25));
+}
+
+/* 나중에 찜 아이콘 등을 얹을 배지 자리. */
+.facility-marker__badge {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+}
