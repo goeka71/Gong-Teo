@@ -35,10 +35,19 @@ export function apiPost(path, data) {
   });
 }
 
-// PUT 요청 공통 함수. (POST 와 동일한 패턴, 수정용)
+// PUT 요청 공통 함수. (POST 와 동일한 패턴, 전체 수정용)
 export function apiPut(path, data) {
   return request(path, {
     method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data),
+  });
+}
+
+// PATCH 요청 공통 함수. (일부 필드만 수정할 때)
+export function apiPatch(path, data) {
+  return request(path, {
+    method: "PATCH",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(data),
   });

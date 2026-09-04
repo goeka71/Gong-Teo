@@ -1,0 +1,25 @@
+/* Navbar 전용 보완 스타일.
+   레이아웃/색은 global.css 의 .gnb 계열이 담당하고,
+   여기서는 로고와 링크 사이 간격만 잡아준다. */
+
+.gnb-logo {
+  margin-right: 40px;
+}
+
+/* 메뉴 링크 묶음 */
+.gnb-nav {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+
+/* 작은 화면에서는 간격만 좁힌다 (.gnb 좌우 패딩은 global.css 가 처리) */
+@media (max-width: 768px) {
+  .gnb-logo {
+    margin-right: 24px;
+  }
+
+  .gnb-nav {
+    gap: 16px;
+  }
+}
