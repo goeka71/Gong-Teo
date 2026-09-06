@@ -24,4 +24,6 @@ urlpatterns = [
     ),
 
     path("coin-history/", views.coin_history_list, name="coin-history-list"),
+path("me/", views.my_info, name="my-info"),
 ]
+
