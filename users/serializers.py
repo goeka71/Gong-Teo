@@ -47,3 +47,12 @@ class CoinHistorySerializer(serializers.ModelSerializer):
     class Meta:
         model = CoinHistory
         fields = "__all__"
+
+class UserUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = [
+            "name",
+            "birth",
+            "phone",
+        ]

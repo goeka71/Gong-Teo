@@ -1,4 +1,5 @@
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import status
 
@@ -6,6 +7,7 @@ from .models import User, CoinHistory
 from .serializers import (
     UserSerializer,
     SignupSerializer,
+    UserUpdateSerializer,
     CoinHistorySerializer,
 )
 from rest_framework.decorators import api_view, permission_classes
@@ -45,8 +47,21 @@ def coin_history_list(request):
 
     return Response(serializer.data)
 
-@api_view(["GET"])
+@api_view(["GET", "PATCH"])
 @permission_classes([IsAuthenticated])
 def my_info(request):
-    serializer = UserSerializer(request.user)
-    return Response(serializer.data)
+    if request.method == "GET":
+        serializer = UserSerializer(request.user)
+        return Response(serializer.data)
+
+    serializer = UserUpdateSerializer(
+        request.user,
+        data=request.data,
+        partial=True
+    )
+
+    if serializer.is_valid():
+        serializer.save()
+        return Response(UserSerializer(request.user).data)
+
+    return Response(serializer.errors, status=400)
