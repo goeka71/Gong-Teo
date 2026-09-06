@@ -8,6 +8,8 @@ from .serializers import (
     SignupSerializer,
     CoinHistorySerializer,
 )
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
 
 
 @api_view(["GET"])
@@ -41,4 +43,10 @@ def coin_history_list(request):
     data = CoinHistory.objects.all()
     serializer = CoinHistorySerializer(data, many=True)
 
+    return Response(serializer.data)
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def my_info(request):
+    serializer = UserSerializer(request.user)
     return Response(serializer.data)
