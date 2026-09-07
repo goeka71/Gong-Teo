@@ -37,6 +37,16 @@
   color: var(--fd-muted);
 }
 
+/* 지도 위 "내 위치" 파란 점 (CustomOverlayMap 안에 들어간다). */
+.fml-user-dot {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #1d4e89;
+  border: 3px solid #fff;
+  box-shadow: 0 0 0 2px rgba(29, 78, 137, 0.35);
+}
+
 /* ============================================================
    PC 배치 (가로 ≥ 세로)
    와이어프레임: 왼쪽 = 패널(고정 폭, 독립 스크롤), 오른쪽 = 지도(나머지 폭).

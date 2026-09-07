@@ -204,7 +204,188 @@
 }
 
 .flp-card-station {
-  margin: 0;
   font-size: 12px;
   color: var(--fd-muted);
+}
+
+/* 카드 하단 메타 줄: 거리 · 인근역을 한 줄에 모은다. */
+.flp-card-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 8px;
+  margin: 0;
+}
+
+.flp-card-meta:empty {
+  display: none;
+}
+
+.flp-card-distance {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--color-primary);
+}
+
+/* ---------- 섹션 제목 (추천 시설 / 주변 공공 체육시설) ---------- */
+
+.flp-section-title {
+  margin: 0 0 10px;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--fd-text);
+}
+
+.flp-section-count {
+  color: var(--color-primary);
+  font-weight: 700;
+}
+
+/* ---------- 별점 · 리뷰 수 (리뷰 기능 대비 자리) ---------- */
+
+.flp-rating {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 6px;
+  font-size: 13px;
+}
+
+.flp-rating-star {
+  font-weight: 700;
+  color: var(--color-star);
+}
+
+.flp-rating-count {
+  color: var(--fd-muted);
+}
+
+/* ---------- 추천 시설 큰 카드 ---------- */
+
+.flp-reco {
+  margin-bottom: 24px;
+}
+
+.flp-reco-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.flp-reco-header .flp-section-title {
+  margin: 0;
+}
+
+.flp-reco-refresh {
+  flex: none;
+  padding: 6px 12px;
+  border: 1px solid var(--fd-line);
+  border-radius: 999px;
+  background: var(--fd-bg);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--fd-muted);
+  cursor: pointer;
+  transition: border-color 0.15s ease, color 0.15s ease;
+}
+
+.flp-reco-refresh:hover:not(:disabled) {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
+.flp-reco-card {
+  display: block;
+  width: 100%;
+  margin-top: 10px;
+  padding: 0;
+  overflow: hidden;
+  border: 1px solid var(--fd-line);
+  border-radius: 16px;
+  background: var(--fd-bg);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.flp-reco-card:hover {
+  border-color: var(--color-primary);
+  box-shadow: var(--shadow-card);
+}
+
+.flp-reco-thumb {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  background: #eef0f3;
+  color: var(--fd-muted);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+.flp-reco-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.flp-reco-body {
+  padding: 14px 16px 16px;
+}
+
+.flp-reco-name {
+  margin: 0 0 3px;
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--fd-text);
+}
+
+.flp-reco-addr {
+  margin: 0 0 8px;
+  font-size: 13px;
+  color: var(--fd-muted);
+}
+
+/* ---------- 주변 시설 섹션 ---------- */
+
+.flp-nearby {
+  margin-bottom: 8px;
+}
+
+/* ---------- 위치 권한 안내 ---------- */
+
+.flp-location-cta {
+  margin-bottom: 20px;
+  padding: 16px;
+  border: 1px solid var(--fd-line);
+  border-radius: 14px;
+  background: var(--color-primary-soft);
+}
+
+.flp-location-cta-text {
+  margin: 0 0 10px;
+  font-size: 13px;
+  color: var(--fd-text);
+}
+
+.flp-location-cta-btn {
+  padding: 8px 16px;
+  border: 1px solid var(--color-primary);
+  border-radius: 10px;
+  background: var(--color-primary);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  color: #fff;
+  cursor: pointer;
+}
+
+.flp-location-cta-btn:hover {
+  background: var(--color-primary-hover);
 }
