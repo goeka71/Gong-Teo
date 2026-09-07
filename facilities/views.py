@@ -1,4 +1,6 @@
+from django.db.models import F
 from django.shortcuts import get_object_or_404
+from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 
@@ -92,8 +94,44 @@ def favorite_list(request):
     return Response(serializer.data)
 
 
-@api_view(["GET"])
+@api_view(["GET", "POST"])
 def subfacility_detail_list(request):
+    # POST: 세부시설 기여 정보 작성. 로그인 불필요 - 작성자 필드 없음.
+    # facility 는 body 로 받지 않고 subfacility 로부터 서버에서 채운다.
+    if request.method == "POST":
+        serializer = SubFacilityDetailSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        subfacility = serializer.validated_data["subfacility"]
+        serializer.save(facility=subfacility.facility)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+    # GET: ?subfacility=<id> 로 특정 세부시설의 기여 정보만 필터링.
+    # 쿼리 파라미터가 없으면 기존과 동일하게 전체 반환.
     data = SubFacilityDetail.objects.all()
+    subfacility_id = request.query_params.get("subfacility")
+    if subfacility_id:
+        data = data.filter(subfacility_id=subfacility_id)
     serializer = SubFacilityDetailSerializer(data, many=True)
+    return Response(serializer.data)
+
+
+@api_view(["POST"])
+def subfacility_detail_agree(request, pk):
+    # 중복 방지 로직 없이 단순히 +1 만 한다 (의도된 설계).
+    detail = get_object_or_404(SubFacilityDetail, pk=pk)
+    detail.agree_count = F("agree_count") + 1
+    detail.save(update_fields=["agree_count"])
+    detail.refresh_from_db()
+    serializer = SubFacilityDetailSerializer(detail)
+    return Response(serializer.data)
+
+
+@api_view(["POST"])
+def subfacility_detail_disagree(request, pk):
+    # 중복 방지 로직 없이 단순히 +1 만 한다 (의도된 설계).
+    detail = get_object_or_404(SubFacilityDetail, pk=pk)
+    detail.disagree_count = F("disagree_count") + 1
+    detail.save(update_fields=["disagree_count"])
+    detail.refresh_from_db()
+    serializer = SubFacilityDetailSerializer(detail)
     return Response(serializer.data)

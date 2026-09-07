@@ -122,6 +122,8 @@ class SubFacilityDetail(models.Model):
     )
     category = models.CharField("카테고리", max_length=50)
     contents = models.TextField("내용")
+    agree_count = models.IntegerField("동의수", default=0)
+    disagree_count = models.IntegerField("비동의수", default=0)
     created_at = models.DateTimeField("작성일시", auto_now_add=True)
 
     def __str__(self):

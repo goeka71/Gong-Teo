@@ -54,6 +54,18 @@ urlpatterns = [
         name="subfacility-detail-list"
     ),
 
+    path(
+        "subfacility-details/<int:pk>/agree/",
+        views.subfacility_detail_agree,
+        name="subfacility-detail-agree"
+    ),
+
+    path(
+        "subfacility-details/<int:pk>/disagree/",
+        views.subfacility_detail_disagree,
+        name="subfacility-detail-disagree"
+    ),
+
     # 시설 하나의 상세 정보 (기본정보 + FacilityDetail + 세부시설 + 종목)
     # 숫자 id 만 매칭되므로 위의 고정 경로들과 충돌하지 않는다. 항상 맨 끝에 둔다.
     path(

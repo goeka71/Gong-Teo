@@ -65,6 +65,9 @@ class SubFacilityDetailSerializer(serializers.ModelSerializer):
     class Meta:
         model = SubFacilityDetail
         fields = "__all__"
+        # facility 는 subfacility 로부터 서버에서 채워주고(생성 시 클라이언트가 안 보내도 됨),
+        # agree_count/disagree_count 는 전용 동의/비동의 엔드포인트로만 바뀐다.
+        read_only_fields = ("facility", "agree_count", "disagree_count", "created_at")
 
 
 class FacilityDetailPageSerializer(serializers.ModelSerializer):
