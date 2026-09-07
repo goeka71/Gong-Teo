@@ -3,6 +3,7 @@ import Navbar from "./components/Navbar";
 import FacilityMapLayout from "./facilities/FacilityMapLayout";
 import FacilityListPanel from "./facilities/FacilityListPanel";
 import FacilityDetail from "./facilities/FacilityDetail";
+import SubFacilityDetailPanel from "./facilities/SubFacilityDetailPanel";
 import OnedayBoard from "./oneday/OnedayBoard";
 import Login from "./user/Login";
 import MyPage from "./user/MyPage";
@@ -26,6 +27,14 @@ function FacilityDetailRoute() {
   return <FacilityDetail facilityId={Number(id)} />;
 }
 
+// "/facility/:id/subfacility/:subId" 경로 전용 래퍼.
+function SubFacilityDetailRoute() {
+  const { id, subId } = useParams();
+  return (
+    <SubFacilityDetailPanel facilityId={Number(id)} subfacilityId={Number(subId)} />
+  );
+}
+
 function App() {
   return (
     <Routes>
@@ -35,6 +44,10 @@ function App() {
         <Route element={<FacilityMapLayout />}>
           <Route index element={<FacilityListPanel />} />
           <Route path="/facility/:id" element={<FacilityDetailRoute />} />
+          <Route
+            path="/facility/:id/subfacility/:subId"
+            element={<SubFacilityDetailRoute />}
+          />
         </Route>
         <Route path="/oneday" element={<OnedayBoard />} />
         <Route path="/mypage" element={<MyPage />} />

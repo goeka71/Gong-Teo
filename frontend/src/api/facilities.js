@@ -2,7 +2,7 @@
 // 시설(facility) 관련 백엔드 API 호출 함수 모음.
 // 컴포넌트에서 fetch 를 직접 쓰지 말고 이 파일의 함수를 import 해서 사용할 것.
 
-import { apiGet, apiPatch } from "./client";
+import { apiGet, apiPatch, apiPost } from "./client";
 
 // 시설 목록 조회.
 // GET /api/facilities/
@@ -46,4 +46,29 @@ export function getFacilityDetail(id) {
 // (백엔드 detail 엔드포인트는 아직 없음 - 추가되면 바로 연결된다)
 export function updateFacilityDetail(id, data) {
   return apiPatch(`/api/facilities/${id}/detail/`, data);
+}
+
+// 세부시설(SubFacility) 기여 정보 목록. subfacilityId 기준으로 필터링해서 받는다.
+// GET /api/facilities/subfacility-details/?subfacility=${subfacilityId}
+export function getSubFacilityDetailList(subfacilityId) {
+  return apiGet(`/api/facilities/subfacility-details/?subfacility=${subfacilityId}`);
+}
+
+// 세부시설 기여 정보 작성. 로그인 없이 작성 가능 - 작성자 필드 없음.
+// POST /api/facilities/subfacility-details/
+// data 예: { subfacility, category, contents }
+export function createSubFacilityDetail(data) {
+  return apiPost("/api/facilities/subfacility-details/", data);
+}
+
+// 세부시설 기여 정보 동의. 중복 방지 없이 agree_count 를 +1 한다.
+// POST /api/facilities/subfacility-details/${id}/agree/
+export function agreeSubFacilityDetail(id) {
+  return apiPost(`/api/facilities/subfacility-details/${id}/agree/`);
+}
+
+// 세부시설 기여 정보 비동의. 중복 방지 없이 disagree_count 를 +1 한다.
+// POST /api/facilities/subfacility-details/${id}/disagree/
+export function disagreeSubFacilityDetail(id) {
+  return apiPost(`/api/facilities/subfacility-details/${id}/disagree/`);
 }

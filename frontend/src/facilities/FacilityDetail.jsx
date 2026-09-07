@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { getFacilityDetail, updateFacilityDetail } from "../api/facilities";
 import "./FacilityDetail.css";
 
@@ -184,6 +185,7 @@ function FacilityInfoForm({ facilityId, initial, onSaved, onCancel }) {
 }
 
 function FacilityDetail({ facilityId = 1 }) {
+  const navigate = useNavigate();
   const [data, setData] = useState(null); // API 응답(JSON)
   const [loading, setLoading] = useState(true); // 불러오는 중인가
   const [error, setError] = useState(null); // 에러 메시지
@@ -279,7 +281,9 @@ function FacilityDetail({ facilityId = 1 }) {
                     type="button"
                     className="fd-shortcut-btn"
                     key={s.id}
-                    // TODO: 세부시설 상세로 이동 (라우터 도입 후 연결)
+                    onClick={() =>
+                      navigate(`/facility/${facilityId}/subfacility/${s.id}`)
+                    }
                   >
                     {s.subfacility_name}
                     <span className="fd-chevron" aria-hidden="true">

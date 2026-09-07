@@ -1,0 +1,105 @@
+/* ============================================================
+   SubFacilityDetailPanel 전용 스타일
+   - 레이아웃/여백/공통 섹션 제목 등은 FacilityDetail.css 의 .fd-*
+     클래스를 그대로 재사용한다 (이 파일에서는 중복 정의하지 않음).
+   - 이 화면에만 있는 게시판(카드/투표) 요소만 .sfd- 접두사로 추가한다.
+   ============================================================ */
+
+.sfd-back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-bottom: 12px;
+  padding: 0;
+  border: none;
+  background: none;
+  font: inherit;
+  font-weight: 600;
+  color: #566473;
+  cursor: pointer;
+}
+
+.sfd-placeholder {
+  margin: 0;
+  padding: 20px;
+  border: 1px dashed var(--fd-line);
+  border-radius: 12px;
+  color: var(--fd-muted);
+  font-size: 14px;
+  text-align: center;
+}
+
+.sfd-card-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.sfd-card {
+  border: 1px solid var(--fd-line);
+  border-radius: 12px;
+  padding: 16px 18px;
+}
+
+.sfd-card-category {
+  display: inline-block;
+  margin-bottom: 8px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: #eef1f6;
+  color: #566473;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.sfd-card-contents {
+  margin: 0 0 12px;
+  color: var(--fd-text);
+  font-size: 14px;
+  line-height: 1.5;
+  white-space: pre-wrap;
+}
+
+.sfd-card-votes {
+  display: flex;
+  gap: 8px;
+}
+
+.sfd-vote-btn {
+  padding: 6px 12px;
+  border: 1px solid var(--fd-line);
+  border-radius: 999px;
+  background: var(--fd-bg);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  color: #566473;
+  cursor: pointer;
+}
+
+.sfd-vote-btn:hover:not(:disabled) {
+  background: #f7f8fa;
+}
+
+.sfd-vote-btn:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+
+.sfd-textarea {
+  padding: 8px 10px;
+  border: 1px solid var(--fd-line);
+  border-radius: 6px;
+  font: inherit;
+  resize: vertical;
+}
+
+.sfd-review-placeholder {
+  margin: 0;
+  padding: 20px;
+  border: 1px dashed var(--fd-line);
+  border-radius: 12px;
+}
