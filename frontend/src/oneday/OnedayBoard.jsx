@@ -1,6 +1,9 @@
 import { useEffect, useMemo, useState } from "react";
 import { apiGet } from "../api/client";
+
 import OnedayDetail from "./OnedayDetail";
+import OnedayRegister from "./OnedayRegister";
+
 import "./OnedayBoard.css";
 
 
@@ -69,7 +72,8 @@ function calculateDistance(lat1, lon1, lat2, lon2) {
     Math.sin(dLat / 2) ** 2 +
     Math.cos((lat1 * Math.PI) / 180) *
       Math.cos((lat2 * Math.PI) / 180) *
-      Math.sin(dLon / 2) ** 2;
+      Math.sin(dLon / 2) *
+      Math.sin(dLon / 2);
 
   const c =
     2 *
@@ -145,19 +149,34 @@ function getSportIcon(programName = "") {
 // ==========================================
 function OnedayBoard() {
 
-  // API 데이터
-  const [posts, setPosts] = useState([]);
+  // ==========================================
+  // 화면 전환 상태
+  // ==========================================
 
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
-
-
-  // ⭐ 선택된 게시글
+  // 선택된 게시글
   const [selectedPost, setSelectedPost] =
     useState(null);
 
+  // 원데이 등록 화면
+  const [isRegistering, setIsRegistering] =
+    useState(false);
 
+
+  // ==========================================
+  // API 데이터
+  // ==========================================
+  const [posts, setPosts] = useState([]);
+
+  const [loading, setLoading] =
+    useState(true);
+
+  const [error, setError] =
+    useState("");
+
+
+  // ==========================================
   // 필터
+  // ==========================================
   const [searchKeyword, setSearchKeyword] =
     useState("");
 
@@ -174,7 +193,9 @@ function OnedayBoard() {
     useState(false);
 
 
+  // ==========================================
   // GPS
+  // ==========================================
   const [userLocation, setUserLocation] =
     useState(null);
 
@@ -182,7 +203,9 @@ function OnedayBoard() {
     useState("latest");
 
 
+  // ==========================================
   // 페이지네이션
+  // ==========================================
   const POSTS_PER_PAGE = 6;
 
   const [currentPage, setCurrentPage] =
@@ -530,8 +553,23 @@ function OnedayBoard() {
 
 
   // ==========================================
-  // ⭐ 상세페이지가 선택되었으면
-  // App.jsx 수정 없이 상세 화면 표시
+  // 원데이 등록 화면
+  // ==========================================
+  if (isRegistering) {
+
+    return (
+      <OnedayRegister
+        onBack={() =>
+          setIsRegistering(false)
+        }
+      />
+    );
+
+  }
+
+
+  // ==========================================
+  // 원데이 상세 화면
   // ==========================================
   if (selectedPost) {
 
@@ -547,6 +585,9 @@ function OnedayBoard() {
   }
 
 
+  // ==========================================
+  // 원데이 게시판
+  // ==========================================
   return (
 
     <main className="oneday-page">
@@ -806,7 +847,13 @@ function OnedayBoard() {
           </div>
 
 
-          <button className="register-button">
+          {/* ⭐ 원데이 등록 화면으로 이동 */}
+          <button
+            className="register-button"
+            onClick={() =>
+              setIsRegistering(true)
+            }
+          >
             + 원데이 등록하기
           </button>
 
@@ -996,7 +1043,6 @@ function OnedayBoard() {
                       </strong>
 
 
-                      {/* ⭐ 여기서 상세페이지 */}
                       <button
                         className="view-button"
                         onClick={() =>
