@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { apiGet } from "../api/client";
+import OnedayDetail from "./OnedayDetail";
 import "./OnedayBoard.css";
 
 
@@ -11,11 +12,7 @@ function getRegion(address) {
 
   const match = address.match(/([가-힣]+구)/);
 
-  if (match) {
-    return match[1];
-  }
-
-  return "";
+  return match ? match[1] : "";
 }
 
 
@@ -31,20 +28,15 @@ function getTimeCategory(programTime) {
 
   const hour = Number(match[1]);
 
-  if (hour < 12) {
-    return "morning";
-  }
-
-  if (hour < 18) {
-    return "afternoon";
-  }
+  if (hour < 12) return "morning";
+  if (hour < 18) return "afternoon";
 
   return "evening";
 }
 
 
 // ==========================================
-// 날짜 표시 형식
+// 날짜 표시
 // ==========================================
 function formatDate(dateString) {
   if (!dateString) return "";
@@ -65,7 +57,7 @@ function formatDate(dateString) {
 
 
 // ==========================================
-// 두 GPS 좌표 사이 거리 계산
+// GPS 거리 계산
 // ==========================================
 function calculateDistance(lat1, lon1, lat2, lon2) {
   const R = 6371;
@@ -107,7 +99,7 @@ function formatDistance(distanceKm) {
 
 
 // ==========================================
-// 종목별 아이콘
+// 종목 아이콘
 // ==========================================
 function getSportIcon(programName = "") {
   const name = programName.toLowerCase();
@@ -127,7 +119,7 @@ function getSportIcon(programName = "") {
   if (name.includes("댄스")) return "💃";
   if (name.includes("복싱")) return "🥊";
   if (name.includes("태권도")) return "🥋";
-  if (name.includes("검도")) return "🥋";
+  if (name.includes("검도")) return "⚔️";
   if (name.includes("클라이밍")) return "🧗";
   if (name.includes("러닝") || name.includes("달리기")) return "🏃";
   if (name.includes("스케이트")) return "⛸️";
@@ -142,10 +134,9 @@ function getSportIcon(programName = "") {
     "🏆",
   ];
 
-  const index =
-    programName.length % defaultIcons.length;
-
-  return defaultIcons[index];
+  return defaultIcons[
+    programName.length % defaultIcons.length
+  ];
 }
 
 
@@ -154,20 +145,19 @@ function getSportIcon(programName = "") {
 // ==========================================
 function OnedayBoard() {
 
-
-  // ==========================================
   // API 데이터
-  // ==========================================
   const [posts, setPosts] = useState([]);
 
   const [loading, setLoading] = useState(true);
-
   const [error, setError] = useState("");
 
 
-  // ==========================================
-  // 필터 상태
-  // ==========================================
+  // ⭐ 선택된 게시글
+  const [selectedPost, setSelectedPost] =
+    useState(null);
+
+
+  // 필터
   const [searchKeyword, setSearchKeyword] =
     useState("");
 
@@ -184,9 +174,7 @@ function OnedayBoard() {
     useState(false);
 
 
-  // ==========================================
-  // GPS / 정렬
-  // ==========================================
+  // GPS
   const [userLocation, setUserLocation] =
     useState(null);
 
@@ -194,9 +182,7 @@ function OnedayBoard() {
     useState("latest");
 
 
-  // ==========================================
   // 페이지네이션
-  // ==========================================
   const POSTS_PER_PAGE = 6;
 
   const [currentPage, setCurrentPage] =
@@ -229,7 +215,7 @@ function OnedayBoard() {
         console.error(err);
 
         setError(
-          "원데이 게시글을 불러오지 못했습니다. Django 서버가 실행 중인지 확인해주세요."
+          "원데이 게시글을 불러오지 못했습니다."
         );
 
       } finally {
@@ -246,7 +232,7 @@ function OnedayBoard() {
 
 
   // ==========================================
-  // 필터 변경 시 페이지 1로 이동
+  // 필터 변경 시 1페이지
   // ==========================================
   useEffect(() => {
 
@@ -263,7 +249,7 @@ function OnedayBoard() {
 
 
   // ==========================================
-  // 지역 목록 자동 생성
+  // 지역 목록
   // ==========================================
   const regions = useMemo(() => {
 
@@ -292,7 +278,6 @@ function OnedayBoard() {
 
     return posts.filter((post) => {
 
-      // 검색
       const keyword =
         searchKeyword.trim().toLowerCase();
 
@@ -302,13 +287,13 @@ function OnedayBoard() {
       const facilityName =
         (post.facility_name || "").toLowerCase();
 
+
       const searchMatch =
         !keyword ||
         programName.includes(keyword) ||
         facilityName.includes(keyword);
 
 
-      // 지역
       const postRegion =
         getRegion(post.facility_addr);
 
@@ -317,13 +302,11 @@ function OnedayBoard() {
         postRegion === selectedRegion;
 
 
-      // 날짜
       const dateMatch =
         !selectedDate ||
         post.transfer_date === selectedDate;
 
 
-      // 시간대
       const postTimeCategory =
         getTimeCategory(post.program_time);
 
@@ -332,7 +315,6 @@ function OnedayBoard() {
         postTimeCategory === selectedTime;
 
 
-      // 신청 가능
       const openMatch =
         !onlyOpen ||
         post.status === "open";
@@ -359,23 +341,14 @@ function OnedayBoard() {
 
 
   // ==========================================
-  // 사용자 위치 기준 거리 계산
+  // 거리 추가
   // ==========================================
   const postsWithDistance = useMemo(() => {
 
     return filteredPosts.map((post) => {
 
-      if (!userLocation) {
-
-        return {
-          ...post,
-          distance: null,
-        };
-
-      }
-
-
       if (
+        !userLocation ||
         post.latit === null ||
         post.latit === undefined ||
         post.longit === null ||
@@ -417,41 +390,31 @@ function OnedayBoard() {
   // ==========================================
   const sortedPosts = useMemo(() => {
 
-    const result =
-      [...postsWithDistance];
+    const result = [...postsWithDistance];
 
 
-    // 최신 등록순
     if (sortType === "latest") {
 
-      return result.sort((a, b) => {
-
-        return (
+      return result.sort(
+        (a, b) =>
           new Date(b.created_at) -
           new Date(a.created_at)
-        );
-
-      });
+      );
 
     }
 
 
-    // 날짜 빠른순
     if (sortType === "date") {
 
-      return result.sort((a, b) => {
-
-        return (
+      return result.sort(
+        (a, b) =>
           new Date(a.transfer_date) -
           new Date(b.transfer_date)
-        );
-
-      });
+      );
 
     }
 
 
-    // GPS 거리순
     if (sortType === "gps") {
 
       return result.sort((a, b) => {
@@ -463,13 +426,8 @@ function OnedayBoard() {
           return 0;
         }
 
-        if (a.distance === null) {
-          return 1;
-        }
-
-        if (b.distance === null) {
-          return -1;
-        }
+        if (a.distance === null) return 1;
+        if (b.distance === null) return -1;
 
         return a.distance - b.distance;
 
@@ -487,7 +445,7 @@ function OnedayBoard() {
 
 
   // ==========================================
-  // 전체 페이지 수
+  // 페이지네이션
   // ==========================================
   const totalPages =
     Math.ceil(
@@ -496,23 +454,16 @@ function OnedayBoard() {
     );
 
 
-  // ==========================================
-  // 현재 페이지 게시글
-  // ==========================================
   const currentPosts = useMemo(() => {
 
-    const startIndex =
+    const start =
       (currentPage - 1) *
       POSTS_PER_PAGE;
 
-    const endIndex =
-      startIndex +
-      POSTS_PER_PAGE;
+    const end =
+      start + POSTS_PER_PAGE;
 
-    return sortedPosts.slice(
-      startIndex,
-      endIndex
-    );
+    return sortedPosts.slice(start, end);
 
   }, [
     sortedPosts,
@@ -556,44 +507,19 @@ function OnedayBoard() {
 
       (position) => {
 
-        const latitude =
-          position.coords.latitude;
-
-        const longitude =
-          position.coords.longitude;
-
-
-        console.log(
-          "현재 위치:",
-          latitude,
-          longitude
-        );
-
-
         setUserLocation({
-          lat: latitude,
-          lng: longitude,
+          lat: position.coords.latitude,
+          lng: position.coords.longitude,
         });
-
 
         setSortType("gps");
 
-
-        setCurrentPage(1);
-
       },
 
-
-      (error) => {
-
-        console.error(
-          "위치 정보 오류:",
-          error
-        );
-
+      () => {
 
         alert(
-          "현재 위치를 가져올 수 없습니다. 브라우저에서 위치 권한을 허용해주세요."
+          "현재 위치를 가져올 수 없습니다. 위치 권한을 허용해주세요."
         );
 
       }
@@ -604,13 +530,18 @@ function OnedayBoard() {
 
 
   // ==========================================
-  // 게시글 조회
+  // ⭐ 상세페이지가 선택되었으면
+  // App.jsx 수정 없이 상세 화면 표시
   // ==========================================
-  function handleViewPost(post) {
+  if (selectedPost) {
 
-    console.log(
-      "선택한 게시글:",
-      post
+    return (
+      <OnedayDetail
+        post={selectedPost}
+        onBack={() =>
+          setSelectedPost(null)
+        }
+      />
     );
 
   }
@@ -621,9 +552,9 @@ function OnedayBoard() {
     <main className="oneday-page">
 
 
-      {/* ======================================
+      {/* ======================
           왼쪽 필터
-      ====================================== */}
+      ====================== */}
       <aside className="oneday-filter">
 
         <h2>필터</h2>
@@ -636,22 +567,16 @@ function OnedayBoard() {
             검색
           </label>
 
-
           <div className="search-box">
 
-            <span className="search-icon">
-              🔍
-            </span>
-
+            <span>🔍</span>
 
             <input
               type="text"
               placeholder="프로그램명 또는 기관명 검색"
               value={searchKeyword}
               onChange={(e) =>
-                setSearchKeyword(
-                  e.target.value
-                )
+                setSearchKeyword(e.target.value)
               }
             />
 
@@ -670,21 +595,17 @@ function OnedayBoard() {
             지역
           </label>
 
-
           <select
             className="region-select"
             value={selectedRegion}
             onChange={(e) =>
-              setSelectedRegion(
-                e.target.value
-              )
+              setSelectedRegion(e.target.value)
             }
           >
 
             <option value="">
               전체 지역
             </option>
-
 
             {regions.map((region) => (
 
@@ -712,15 +633,12 @@ function OnedayBoard() {
             양도 날짜
           </label>
 
-
           <input
             className="date-input"
             type="date"
             value={selectedDate}
             onChange={(e) =>
-              setSelectedDate(
-                e.target.value
-              )
+              setSelectedDate(e.target.value)
             }
           />
 
@@ -730,13 +648,12 @@ function OnedayBoard() {
         <div className="filter-line" />
 
 
-        {/* 시간대 */}
+        {/* 시간 */}
         <div className="filter-section">
 
           <label className="filter-label">
             시간대
           </label>
-
 
           <div className="time-buttons">
 
@@ -808,7 +725,6 @@ function OnedayBoard() {
             신청 가능만 보기
           </span>
 
-
           <button
             className={
               onlyOpen
@@ -825,7 +741,6 @@ function OnedayBoard() {
         </div>
 
 
-        {/* 필터 초기화 */}
         <button
           className="reset-button"
           onClick={resetFilters}
@@ -834,44 +749,39 @@ function OnedayBoard() {
         </button>
 
 
-        {/* ======================================
-            양도 안내 카드
-        ====================================== */}
+        {/* 양도 안내 */}
         <div className="transfer-guide">
 
           <div className="transfer-guide-icon">
             💡
           </div>
 
-
-          <div className="transfer-guide-content">
+          <div>
 
             <h3>
               양도는 어떻게 되나요?
             </h3>
 
-
             <p>
               등록한 정기 수강 프로그램의
-              결석일을 양도하면,
-              신청자가 확정될 때 코인이 지급됩니다.
+              결석일을 양도하면 신청자가
+              확정될 때 코인이 지급됩니다.
             </p>
 
           </div>
 
         </div>
 
-
       </aside>
 
 
-      {/* ======================================
-          오른쪽 콘텐츠
-      ====================================== */}
+      {/* ======================
+          오른쪽
+      ====================== */}
       <section className="oneday-content">
 
 
-        {/* 제목 */}
+        {/* 헤더 */}
         <div className="oneday-header">
 
           <div>
@@ -882,13 +792,11 @@ function OnedayBoard() {
                 원데이 클래스
               </h1>
 
-
               <span className="post-count">
                 {sortedPosts.length}개
               </span>
 
             </div>
-
 
             <p>
               결석하는 날의 자리를 양도하고
@@ -905,18 +813,14 @@ function OnedayBoard() {
         </div>
 
 
-        {/* ======================================
-            정렬
-        ====================================== */}
+        {/* 정렬 */}
         <div className="sort-row">
 
           <span className="sort-label">
             정렬
           </span>
 
-
           <div className="sort-buttons">
-
 
             <button
               className={
@@ -964,25 +868,21 @@ function OnedayBoard() {
 
         {/* 로딩 */}
         {loading && (
-
           <div className="state-message">
             게시글을 불러오는 중입니다...
           </div>
-
         )}
 
 
         {/* 에러 */}
         {error && (
-
           <div className="state-message error">
             {error}
           </div>
-
         )}
 
 
-        {/* 게시글 없음 */}
+        {/* 없음 */}
         {!loading &&
           !error &&
           sortedPosts.length === 0 && (
@@ -994,9 +894,7 @@ function OnedayBoard() {
           )}
 
 
-        {/* ======================================
-            카드 목록
-        ====================================== */}
+        {/* 카드 */}
         {!loading &&
           !error &&
           currentPosts.length > 0 && (
@@ -1008,11 +906,8 @@ function OnedayBoard() {
                 const isOpen =
                   post.status === "open";
 
-
                 const sportIcon =
-                  getSportIcon(
-                    post.program_name
-                  );
+                  getSportIcon(post.program_name);
 
 
                 return (
@@ -1022,14 +917,11 @@ function OnedayBoard() {
                     key={post.id}
                   >
 
-
-                    {/* 카드 상단 */}
                     <div className="card-top">
 
                       <div className="sport-icon">
                         {sportIcon}
                       </div>
-
 
                       <span
                         className={
@@ -1046,28 +938,21 @@ function OnedayBoard() {
                     </div>
 
 
-                    {/* 프로그램명 */}
-                    <h3>
+                    <h3 className="program-title">
                       {post.program_name ||
                         "프로그램명 없음"}
                     </h3>
 
 
-                    {/* 시설명 */}
-                    <p className="facility-name">
-
+                    <p className="facility-info">
                       {post.facility_name ||
                         "기관 정보 없음"}
-
                     </p>
 
 
-                    {/* 날짜 + 시간 */}
                     <p className="program-info">
 
-                      {formatDate(
-                        post.transfer_date
-                      )}
+                      {formatDate(post.transfer_date)}
 
                       {post.program_time &&
                         ` · ${post.program_time}`}
@@ -1075,7 +960,6 @@ function OnedayBoard() {
                     </p>
 
 
-                    {/* 가까운 역 */}
                     {post.station && (
 
                       <p className="station-info">
@@ -1091,7 +975,6 @@ function OnedayBoard() {
                     )}
 
 
-                    {/* GPS 거리 */}
                     {post.distance !== null &&
                       post.distance !== undefined && (
 
@@ -1099,16 +982,13 @@ function OnedayBoard() {
 
                           📍 현재 위치에서{" "}
 
-                          {formatDistance(
-                            post.distance
-                          )}
+                          {formatDistance(post.distance)}
 
                         </p>
 
                       )}
 
 
-                    {/* 카드 하단 */}
                     <div className="card-bottom">
 
                       <strong>
@@ -1116,10 +996,11 @@ function OnedayBoard() {
                       </strong>
 
 
+                      {/* ⭐ 여기서 상세페이지 */}
                       <button
                         className="view-button"
                         onClick={() =>
-                          handleViewPost(post)
+                          setSelectedPost(post)
                         }
                       >
                         조회
@@ -1138,18 +1019,13 @@ function OnedayBoard() {
           )}
 
 
-        {/* ======================================
-            실제 페이지네이션
-            페이지가 2개 이상일 때만 표시
-        ====================================== */}
+        {/* 페이지네이션 */}
         {!loading &&
           !error &&
           totalPages > 1 && (
 
             <div className="pagination">
 
-
-              {/* 페이지 번호 */}
               {Array.from(
                 { length: totalPages },
                 (_, index) => index + 1
@@ -1179,7 +1055,6 @@ function OnedayBoard() {
               ))}
 
 
-              {/* 다음 페이지 */}
               {currentPage < totalPages && (
 
                 <button
@@ -1205,7 +1080,6 @@ function OnedayBoard() {
             </div>
 
           )}
-
 
       </section>
 
