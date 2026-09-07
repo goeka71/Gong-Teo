@@ -6,8 +6,32 @@ import { apiGet, apiPatch } from "./client";
 
 // 시설 목록 조회.
 // GET /api/facilities/
+//
+// 주의: 이 엔드포인트는 검색/필터 쿼리 파라미터를 지원하지 않는다
+// (백엔드 facility_list 뷰가 Facility.objects.all() 을 그대로 반환).
+// 검색·필터는 아래 목록들을 같이 불러와 프론트에서 직접 처리한다.
 export function getFacilityList() {
   return apiGet("/api/facilities/");
+}
+
+// 전체 종목 목록. 필터 칩의 "종목" 선택지로 쓴다.
+// GET /api/facilities/sports/
+export function getSportList() {
+  return apiGet("/api/facilities/sports/");
+}
+
+// 시설-종목 매핑. 시설 목록 응답에는 종목이 들어있지 않아서, 종목으로
+// 필터링하려면 이 매핑을 따로 불러와 facility.id 기준으로 합쳐야 한다.
+// GET /api/facilities/facility-sports/
+export function getFacilitySportList() {
+  return apiGet("/api/facilities/facility-sports/");
+}
+
+// 시설 상세정보(FacilityDetail) 목록. 실내외/샤워실/주차장 여부처럼
+// 시설 목록 응답에 없는 필터 조건이 여기 들어있다.
+// GET /api/facilities/details/
+export function getFacilityDetailList() {
+  return apiGet("/api/facilities/details/");
 }
 
 // 시설 상세 조회. (기본정보 + FacilityDetail + 세부시설 + 종목)
