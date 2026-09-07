@@ -68,7 +68,6 @@ function loadKakaoMapScript() {
 
   return new Promise((resolve, reject) => {
 
-    // 이미 카카오맵이 로딩되어 있으면 바로 사용
     if (
       window.kakao &&
       window.kakao.maps
@@ -83,7 +82,6 @@ function loadKakaoMapScript() {
     }
 
 
-    // 이미 script 태그가 있으면 기다리기
     const existingScript =
       document.getElementById("kakao-map-script");
 
@@ -195,8 +193,20 @@ function OnedayDetail({ post, onBack }) {
 
   const mapRef = useRef(null);
 
+
+  // 지도 오류
   const [mapError, setMapError] =
     useState("");
+
+
+  // 신청 모달 열기/닫기
+  const [isApplyModalOpen, setIsApplyModalOpen] =
+    useState(false);
+
+
+  // 확인 체크박스
+  const [isConfirmed, setIsConfirmed] =
+    useState(false);
 
 
   // ==========================================
@@ -206,7 +216,6 @@ function OnedayDetail({ post, onBack }) {
 
     async function createMap() {
 
-      // 좌표 확인
       if (
         post.latit === null ||
         post.latit === undefined ||
@@ -241,7 +250,6 @@ function OnedayDetail({ post, onBack }) {
           Number(post.longit);
 
 
-        // 숫자가 아니면 지도 생성 불가
         if (
           Number.isNaN(latitude) ||
           Number.isNaN(longitude)
@@ -272,7 +280,6 @@ function OnedayDetail({ post, onBack }) {
         };
 
 
-        // 지도 생성
         const map =
           new kakao.maps.Map(
             mapRef.current,
@@ -280,7 +287,6 @@ function OnedayDetail({ post, onBack }) {
           );
 
 
-        // 마커 생성
         const marker =
           new kakao.maps.Marker({
 
@@ -292,7 +298,6 @@ function OnedayDetail({ post, onBack }) {
         marker.setMap(map);
 
 
-        // 정보창 생성
         const infoWindow =
           new kakao.maps.InfoWindow({
 
@@ -379,6 +384,50 @@ function OnedayDetail({ post, onBack }) {
   }
 
 
+  // ==========================================
+  // 신청 모달 열기
+  // ==========================================
+  function openApplyModal() {
+
+    setIsConfirmed(false);
+
+    setIsApplyModalOpen(true);
+
+  }
+
+
+  // ==========================================
+  // 신청 모달 닫기
+  // ==========================================
+  function closeApplyModal() {
+
+    setIsApplyModalOpen(false);
+
+    setIsConfirmed(false);
+
+  }
+
+
+  // ==========================================
+  // 신청 확정
+  // ==========================================
+  function handleApplyConfirm() {
+
+    if (!isConfirmed) {
+      return;
+    }
+
+
+    alert(
+      "원데이 신청이 완료되었습니다!"
+    );
+
+
+    closeApplyModal();
+
+  }
+
+
   const isOpen =
     post.status === "open";
 
@@ -407,6 +456,7 @@ function OnedayDetail({ post, onBack }) {
 
         <div className="detail-hero-left">
 
+
           <div className="detail-icon">
 
             {getSportIcon(post.program_name)}
@@ -415,6 +465,7 @@ function OnedayDetail({ post, onBack }) {
 
 
           <div className="detail-title-area">
+
 
             <div className="detail-badge-row">
 
@@ -434,14 +485,18 @@ function OnedayDetail({ post, onBack }) {
 
 
             <h1>
+
               {post.program_name ||
                 "프로그램명 없음"}
+
             </h1>
 
 
             <p>
+
               {post.facility_name ||
                 "시설 정보 없음"}
+
             </p>
 
           </div>
@@ -478,6 +533,7 @@ function OnedayDetail({ post, onBack }) {
 
           {/* 프로그램 정보 */}
           <div className="detail-card">
+
 
             <h2>
               프로그램 정보
@@ -581,6 +637,7 @@ function OnedayDetail({ post, onBack }) {
           {/* 시설 정보 */}
           <div className="detail-card">
 
+
             <h2>
               시설 정보
             </h2>
@@ -595,7 +652,9 @@ function OnedayDetail({ post, onBack }) {
 
                 <div>
 
-                  <strong>시설명</strong>
+                  <strong>
+                    시설명
+                  </strong>
 
                   <p>
                     {post.facility_name ||
@@ -613,7 +672,9 @@ function OnedayDetail({ post, onBack }) {
 
                 <div>
 
-                  <strong>주소</strong>
+                  <strong>
+                    주소
+                  </strong>
 
                   <p>
                     {post.facility_addr ||
@@ -690,7 +751,9 @@ function OnedayDetail({ post, onBack }) {
           {/* 오시는 길 */}
           <div className="detail-card">
 
+
             <div className="map-title-row">
+
 
               <div>
 
@@ -715,14 +778,12 @@ function OnedayDetail({ post, onBack }) {
             </div>
 
 
-            {/* 카카오 지도 */}
             <div
               className="kakao-map"
               ref={mapRef}
             />
 
 
-            {/* 지도 오류 */}
             {mapError && (
 
               <div className="map-empty">
@@ -790,6 +851,7 @@ function OnedayDetail({ post, onBack }) {
             <button
               className="apply-button"
               disabled={!isOpen}
+              onClick={openApplyModal}
             >
 
               {isOpen
@@ -801,7 +863,7 @@ function OnedayDetail({ post, onBack }) {
 
             <span className="apply-notice">
 
-              신청 후에는 양도 조건을
+              신청 전 양도 조건을
               확인해주세요.
 
             </span>
@@ -811,7 +873,9 @@ function OnedayDetail({ post, onBack }) {
 
           <div className="detail-guide">
 
-            <span>💡</span>
+            <span>
+              💡
+            </span>
 
             <div>
 
@@ -831,6 +895,172 @@ function OnedayDetail({ post, onBack }) {
         </aside>
 
       </div>
+
+
+      {/* ======================
+          신청 확인 모달
+      ====================== */}
+      {isApplyModalOpen && (
+
+        <div
+          className="apply-modal-overlay"
+          onClick={closeApplyModal}
+        >
+
+
+          <div
+            className="apply-modal"
+            onClick={(event) => event.stopPropagation()}
+          >
+
+
+            {/* 모달 헤더 */}
+            <div className="apply-modal-header">
+
+
+              <h2>
+                신청 확인
+              </h2>
+
+
+              <button
+                className="apply-modal-close"
+                onClick={closeApplyModal}
+                aria-label="닫기"
+              >
+                ✕
+              </button>
+
+            </div>
+
+
+            {/* 신청 정보 */}
+            <div className="apply-confirm-info">
+
+
+              <div className="apply-confirm-row">
+
+                <span>
+                  프로그램
+                </span>
+
+                <strong>
+                  {post.program_name ||
+                    "정보 없음"}
+                </strong>
+
+              </div>
+
+
+              <div className="apply-confirm-row">
+
+                <span>
+                  장소
+                </span>
+
+                <strong>
+                  {post.facility_name ||
+                    "정보 없음"}
+                </strong>
+
+              </div>
+
+
+              <div className="apply-confirm-row">
+
+                <span>
+                  날짜
+                </span>
+
+                <strong>
+                  {formatDate(post.transfer_date)}
+                </strong>
+
+              </div>
+
+
+              <div className="apply-confirm-row">
+
+                <span>
+                  시간
+                </span>
+
+                <strong>
+                  {post.program_time ||
+                    "시간 정보 없음"}
+                </strong>
+
+              </div>
+
+
+              <div className="apply-confirm-row coin-row">
+
+                <span>
+                  차감 코인
+                </span>
+
+                <strong>
+                  1 coin
+                </strong>
+
+              </div>
+
+            </div>
+
+
+            {/* 확인 체크 */}
+            <label className="apply-confirm-check">
+
+
+              <input
+                type="checkbox"
+                checked={isConfirmed}
+                onChange={(event) =>
+                  setIsConfirmed(
+                    event.target.checked
+                  )
+                }
+              />
+
+
+              <span>
+                위 내용을 모두 확인했습니다.
+              </span>
+
+            </label>
+
+
+            {/* 버튼 */}
+            <div className="apply-modal-buttons">
+
+
+              <button
+                className="apply-cancel-button"
+                onClick={closeApplyModal}
+              >
+                취소
+              </button>
+
+
+              <button
+                className={
+                  isConfirmed
+                    ? "apply-confirm-button active"
+                    : "apply-confirm-button"
+                }
+                disabled={!isConfirmed}
+                onClick={handleApplyConfirm}
+              >
+                신청 확정
+              </button>
+
+            </div>
+
+          </div>
+
+        </div>
+
+      )}
 
     </main>
 
