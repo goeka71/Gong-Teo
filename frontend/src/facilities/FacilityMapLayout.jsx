@@ -145,6 +145,20 @@ function FacilityMapLayout() {
     return [...regionSet].sort();
   }, [facilities]);
 
+  // 선택된 시설이 있으면 그 좌표를, 없으면 기본 중심 좌표를 지도에 넘긴다.
+  // (react-kakao-maps-sdk 의 Map 은 center prop 이 바뀔 때마다 자동으로
+  //  map.panTo/setCenter 를 호출해주므로, 여기서는 좌표만 계산해서 넘기면 된다.)
+  const mapCenter = useMemo(() => {
+    if (selectedFacilityId == null) return DEFAULT_CENTER;
+
+    const selected = joinedFacilities.find(
+      (facility) => facility.id === selectedFacilityId
+    );
+    if (!selected) return DEFAULT_CENTER;
+
+    return { lat: selected.latit, lng: selected.longit };
+  }, [joinedFacilities, selectedFacilityId]);
+
   // =====================================================
   // 쿼리 상태를 실제로 적용한 결과. 지도 마커와 목록 패널이 이 배열을 같이 본다.
   // =====================================================
@@ -219,7 +233,12 @@ function FacilityMapLayout() {
           <p className="fml-map-status">지도를 불러오는 중입니다...</p>
         )}
         {!error && !loading && (
-          <KakaoMap center={DEFAULT_CENTER} level={4} className="kakao-map">
+          <KakaoMap
+            center={mapCenter}
+            isPanto
+            level={4}
+            className="kakao-map"
+          >
             <MapTypeControl position="TOPRIGHT" />
             <ZoomControl position="RIGHT" />
             {/* 클러스터 옵션은 지정하지 않고 라이브러리 기본값(그리드 60px,
