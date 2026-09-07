@@ -50,28 +50,32 @@ function ContributionForm({ subfacilityId, onSaved, onCancel }) {
 
   return (
     <form className="fd-edit-form" onSubmit={handleSubmit}>
-      <label className="fd-field">
-        <span>카테고리</span>
-        <input
-          name="category"
-          type="text"
-          placeholder="예: 이용팁, 시설상태"
-          value={form.category}
-          onChange={handleChange}
-          required
-        />
-      </label>
-      <label className="fd-field">
-        <span>내용</span>
-        <textarea
-          name="contents"
-          className="sfd-textarea"
-          rows={4}
-          value={form.contents}
-          onChange={handleChange}
-          required
-        />
-      </label>
+      {/* 항목명·값이 한 쌍을 이루는 표의 한 행을 채우는 느낌이라
+          두 입력칸을 나란히 절반씩 배치한다. */}
+      <div className="sfd-form-row">
+        <label className="fd-field">
+          <span>항목명</span>
+          <input
+            name="category"
+            type="text"
+            placeholder="예: 수심, 레인 수"
+            value={form.category}
+            onChange={handleChange}
+            required
+          />
+        </label>
+        <label className="fd-field">
+          <span>값</span>
+          <input
+            name="contents"
+            type="text"
+            placeholder="예: 1.2m ~ 1.5m, 8레인"
+            value={form.contents}
+            onChange={handleChange}
+            required
+          />
+        </label>
+      </div>
 
       {error && <p className="fd-form-error">{error}</p>}
 
@@ -87,8 +91,11 @@ function ContributionForm({ subfacilityId, onSaved, onCancel }) {
   );
 }
 
-// 기여 정보 게시판의 카드 한 장. 동의/비동의 버튼과 현재 카운트를 보여준다.
-function ContributionCard({ item, onVote }) {
+// 기여 정보 표의 한 행. 상위 시설 "시설 정보" 표(.fd-info-row, dt/dd 로 항목당
+// 값이 하나)와 생김새는 맞추되, 같은 항목명(예: "수심")이 여러 사용자에게서
+// 중복으로 올라올 수 있고 동의/비동의가 붙는다는 점이 다르므로 dl 대신
+// div 행으로 구성하고, 항목명은 뱃지로 살짝 구분해준다.
+function ContributionRow({ item, onVote }) {
   const [voting, setVoting] = useState(false);
 
   async function handleVote(direction) {
@@ -102,17 +109,17 @@ function ContributionCard({ item, onVote }) {
   }
 
   return (
-    <li className="sfd-card">
-      <span className="sfd-card-category">{item.category}</span>
-      <p className="sfd-card-contents">{item.contents}</p>
-      <div className="sfd-card-votes">
+    <div className="sfd-info-row">
+      <span className="sfd-info-label">{item.category}</span>
+      <span className="sfd-info-value">{item.contents}</span>
+      <div className="sfd-info-votes">
         <button
           type="button"
           className="sfd-vote-btn"
           disabled={voting}
           onClick={() => handleVote("agree")}
         >
-          👍 동의 {item.agree_count}
+          👍 {item.agree_count}
         </button>
         <button
           type="button"
@@ -120,10 +127,10 @@ function ContributionCard({ item, onVote }) {
           disabled={voting}
           onClick={() => handleVote("disagree")}
         >
-          👎 비동의 {item.disagree_count}
+          👎 {item.disagree_count}
         </button>
       </div>
-    </li>
+    </div>
   );
 }
 
@@ -231,11 +238,11 @@ function SubFacilityDetailPanel({ facilityId, subfacilityId }) {
           아직 등록된 정보가 없어요. 첫 정보를 남겨보세요.
         </p>
       ) : (
-        <ul className="sfd-card-list">
+        <div className="sfd-info-card">
           {contributions.map((item) => (
-            <ContributionCard key={item.id} item={item} onVote={handleVote} />
+            <ContributionRow key={item.id} item={item} onVote={handleVote} />
           ))}
-        </ul>
+        </div>
       )}
 
       {/* ---------- c) 리뷰 (준비중 — 다른 팀원 담당, 여기서는 자리만) ---------- */}
