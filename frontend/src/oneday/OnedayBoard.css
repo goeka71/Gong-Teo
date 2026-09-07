@@ -1,0 +1,1026 @@
+/* =========================
+   전체 페이지
+========================= */
+
+.oneday-page {
+  min-height: calc(100vh - 80px);
+
+  display: flex;
+  gap: 40px;
+
+  padding: 42px 8% 70px;
+
+  background-color: #f6f7fb;
+
+  box-sizing: border-box;
+}
+
+
+/* =========================
+   왼쪽 필터
+========================= */
+
+.oneday-filter {
+  width: 270px;
+  min-width: 270px;
+
+  height: fit-content;
+
+  background: #ffffff;
+
+  border: 1px solid #e3e7ed;
+  border-radius: 20px;
+
+  padding: 26px;
+
+  box-sizing: border-box;
+
+  box-shadow: 0 4px 18px rgba(30, 45, 70, 0.04);
+}
+
+
+.oneday-filter h2 {
+  margin: 0 0 28px;
+
+  font-size: 20px;
+  font-weight: 800;
+
+  color: #273548;
+}
+
+
+/* =========================
+   필터 공통
+========================= */
+
+.filter-section {
+  display: flex;
+  flex-direction: column;
+
+  gap: 12px;
+}
+
+
+.filter-label {
+  font-size: 15px;
+  font-weight: 700;
+
+  color: #435166;
+}
+
+
+.filter-line {
+  width: 100%;
+  height: 1px;
+
+  background-color: #edf0f4;
+
+  margin: 22px 0;
+}
+
+
+/* =========================
+   검색
+========================= */
+
+.search-box {
+  height: 48px;
+
+  display: flex;
+  align-items: center;
+
+  gap: 8px;
+
+  padding: 0 13px;
+
+  border: 1px solid #d9dfe8;
+  border-radius: 12px;
+
+  background-color: #fafbfc;
+
+  box-sizing: border-box;
+}
+
+
+.search-icon {
+  font-size: 15px;
+}
+
+
+.search-box input {
+  width: 100%;
+
+  border: none;
+  outline: none;
+
+  background: transparent;
+
+  font-size: 13px;
+
+  color: #273548;
+}
+
+
+.search-box input::placeholder {
+  color: #a5afbd;
+}
+
+
+/* =========================
+   지역 선택
+========================= */
+
+.region-select {
+  width: 100%;
+  height: 48px;
+
+  padding: 0 13px;
+
+  border: 1px solid #d9dfe8;
+  border-radius: 12px;
+
+  background-color: #fafbfc;
+
+  color: #596779;
+
+  font-size: 14px;
+
+  outline: none;
+
+  cursor: pointer;
+}
+
+
+/* =========================
+   날짜
+========================= */
+
+.date-input {
+  width: 100%;
+  height: 48px;
+
+  padding: 0 13px;
+
+  border: 1px solid #d9dfe8;
+  border-radius: 12px;
+
+  background-color: #fafbfc;
+
+  box-sizing: border-box;
+
+  color: #596779;
+
+  font-size: 14px;
+
+  outline: none;
+}
+
+
+/* =========================
+   시간대 버튼
+========================= */
+
+.time-buttons {
+  display: flex;
+
+  gap: 8px;
+}
+
+
+.time-button {
+  flex: 1;
+
+  height: 40px;
+
+  border: none;
+  border-radius: 20px;
+
+  background-color: #f0f2f6;
+
+  color: #697586;
+
+  font-size: 14px;
+
+  cursor: pointer;
+
+  transition: 0.2s ease;
+}
+
+
+.time-button:hover {
+  background-color: #e5e9ef;
+}
+
+
+.time-button.active {
+  background-color: #294d77;
+
+  color: #ffffff;
+}
+
+
+/* =========================
+   신청 가능 토글
+========================= */
+
+.open-filter {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  margin: 24px 0;
+}
+
+
+.open-filter span {
+  font-size: 14px;
+  font-weight: 700;
+
+  color: #4b5868;
+}
+
+
+.toggle-button {
+  width: 48px;
+  height: 26px;
+
+  padding: 3px;
+
+  border: none;
+  border-radius: 20px;
+
+  background-color: #d7dde6;
+
+  cursor: pointer;
+
+  transition: 0.2s ease;
+}
+
+
+.toggle-circle {
+  display: block;
+
+  width: 20px;
+  height: 20px;
+
+  border-radius: 50%;
+
+  background-color: #ffffff;
+
+  transition: 0.2s ease;
+}
+
+
+.toggle-button.active {
+  background-color: #294d77;
+}
+
+
+.toggle-button.active .toggle-circle {
+  transform: translateX(22px);
+}
+
+
+/* =========================
+   필터 초기화
+========================= */
+
+.reset-button {
+  width: 100%;
+  height: 50px;
+
+  border: 1px solid #cfd8e3;
+  border-radius: 14px;
+
+  background-color: #ffffff;
+
+  color: #294d77;
+
+  font-size: 14px;
+  font-weight: 700;
+
+  cursor: pointer;
+
+  transition: 0.2s ease;
+}
+
+
+.reset-button:hover {
+  background-color: #f5f8fb;
+
+  border-color: #9eb1c5;
+}
+
+
+/* =================================================
+   양도 안내 카드
+   → 왼쪽 사진처럼 칙칙하지 않고 깔끔한 디자인
+================================================= */
+
+.transfer-guide {
+  width: 100%;
+
+  margin-top: 18px;
+
+  padding: 22px;
+
+  box-sizing: border-box;
+
+  background: #ffffff;
+
+  border: 1px solid #e3e8ef;
+  border-radius: 20px;
+
+  box-shadow: 0 6px 20px rgba(40, 55, 75, 0.035);
+
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+
+.transfer-guide:hover {
+  transform: translateY(-2px);
+
+  box-shadow: 0 10px 28px rgba(40, 55, 75, 0.07);
+}
+
+
+/* 전구 아이콘 */
+
+.transfer-guide-icon {
+  width: 40px;
+  height: 40px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  margin-bottom: 14px;
+
+  font-size: 20px;
+
+  background: #fff8e5;
+
+  border-radius: 13px;
+}
+
+
+/* 제목 */
+
+.transfer-guide h3 {
+  margin: 0 0 10px;
+
+  font-size: 17px;
+  font-weight: 800;
+
+  letter-spacing: -0.4px;
+
+  color: #273548;
+}
+
+
+/* 설명 */
+
+.transfer-guide p {
+  margin: 0;
+
+  font-size: 14px;
+  line-height: 1.7;
+
+  letter-spacing: -0.2px;
+
+  color: #748195;
+
+  word-break: keep-all;
+}
+
+
+/* =========================
+   오른쪽 콘텐츠
+========================= */
+
+.oneday-content {
+  flex: 1;
+
+  min-width: 0;
+}
+
+
+/* =========================
+   헤더
+========================= */
+
+.oneday-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+
+  gap: 30px;
+
+  margin-bottom: 38px;
+}
+
+
+.title-row {
+  display: flex;
+  align-items: center;
+
+  gap: 12px;
+}
+
+
+.title-row h1 {
+  margin: 0;
+
+  font-size: 30px;
+  font-weight: 800;
+
+  color: #273548;
+
+  letter-spacing: -1px;
+}
+
+
+.post-count {
+  font-size: 15px;
+
+  color: #8b97a7;
+}
+
+
+.oneday-header p {
+  margin: 10px 0 0;
+
+  font-size: 15px;
+
+  color: #718093;
+}
+
+
+/* =========================
+   등록 버튼
+========================= */
+
+.register-button {
+  height: 54px;
+
+  padding: 0 24px;
+
+  border: none;
+  border-radius: 14px;
+
+  background-color: #294d77;
+
+  color: #ffffff;
+
+  font-size: 15px;
+  font-weight: 700;
+
+  cursor: pointer;
+
+  box-shadow: 0 8px 18px rgba(41, 77, 119, 0.16);
+
+  transition: 0.2s ease;
+}
+
+
+.register-button:hover {
+  transform: translateY(-2px);
+
+  background-color: #203f64;
+}
+
+
+/* =========================
+   정렬
+========================= */
+
+.sort-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  margin-bottom: 20px;
+}
+
+
+.sort-label {
+  font-size: 15px;
+  font-weight: 700;
+
+  color: #718093;
+}
+
+
+.sort-buttons {
+  display: flex;
+
+  flex-wrap: wrap;
+
+  gap: 10px;
+}
+
+
+.sort-button {
+  height: 40px;
+
+  padding: 0 18px;
+
+  border: 1px solid #d9dfe8;
+  border-radius: 22px;
+
+  background-color: #ffffff;
+
+  color: #718093;
+
+  font-size: 13px;
+
+  cursor: pointer;
+
+  transition: 0.2s ease;
+}
+
+
+.sort-button:hover {
+  background-color: #f5f7fa;
+}
+
+
+.sort-button.active {
+  background-color: #294d77;
+
+  border-color: #294d77;
+
+  color: #ffffff;
+
+  box-shadow: 0 5px 14px rgba(41, 77, 119, 0.12);
+}
+
+
+/* =========================
+   카드 그리드
+========================= */
+
+.oneday-grid {
+  display: grid;
+
+  grid-template-columns:
+    repeat(3, minmax(0, 1fr));
+
+  gap: 18px;
+}
+
+
+/* =========================
+   원데이 카드
+========================= */
+
+.oneday-card {
+  min-height: 285px;
+
+  display: flex;
+  flex-direction: column;
+
+  padding: 22px;
+
+  background-color: #ffffff;
+
+  border: 1px solid #e0e5eb;
+  border-radius: 18px;
+
+  box-sizing: border-box;
+
+  box-shadow: 0 4px 16px rgba(30, 45, 70, 0.035);
+
+  transition: 0.2s ease;
+}
+
+
+.oneday-card:hover {
+  transform: translateY(-4px);
+
+  box-shadow: 0 12px 28px rgba(30, 45, 70, 0.09);
+}
+
+
+/* =========================
+   카드 상단
+========================= */
+
+.card-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+
+/* =========================
+   종목 아이콘
+========================= */
+
+.sport-icon {
+  width: 54px;
+  height: 54px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 16px;
+
+  background-color: #eef2f6;
+
+  font-size: 24px;
+}
+
+
+/* =========================
+   상태 뱃지
+========================= */
+
+.status-badge {
+  padding: 8px 11px;
+
+  border-radius: 10px;
+
+  font-size: 12px;
+  font-weight: 700;
+}
+
+
+.status-badge.open {
+  background-color: #edf6f0;
+
+  color: #4d8a68;
+}
+
+
+.status-badge.closed {
+  background-color: #f2f3f5;
+
+  color: #8b95a3;
+}
+
+
+/* =========================
+   프로그램명
+========================= */
+
+.oneday-card h3 {
+  margin: 18px 0 8px;
+
+  font-size: 20px;
+  font-weight: 800;
+
+  color: #273548;
+
+  letter-spacing: -0.6px;
+
+  overflow: hidden;
+
+  text-overflow: ellipsis;
+
+  white-space: nowrap;
+}
+
+
+/* =========================
+   시설명
+========================= */
+
+.facility-name {
+  margin: 0 0 14px;
+
+  font-size: 14px;
+
+  color: #8490a0;
+
+  overflow: hidden;
+
+  text-overflow: ellipsis;
+
+  white-space: nowrap;
+}
+
+
+/* =========================
+   날짜 / 프로그램 시간
+========================= */
+
+.program-info {
+  margin: 0;
+
+  font-size: 14px;
+  font-weight: 500;
+
+  color: #667487;
+}
+
+
+/* =========================
+   역 / 도보시간
+========================= */
+
+.station-info {
+  margin: 8px 0 0;
+
+  font-size: 13px;
+
+  color: #7a8797;
+
+  overflow: hidden;
+
+  text-overflow: ellipsis;
+
+  white-space: nowrap;
+}
+
+
+/* =========================
+   현재 위치 거리
+========================= */
+
+.distance-info {
+  margin: 8px 0 0;
+
+  font-size: 13px;
+  font-weight: 600;
+
+  color: #294d77;
+}
+
+
+/* =========================
+   카드 하단
+========================= */
+
+.card-bottom {
+  margin-top: auto;
+
+  padding-top: 18px;
+
+  border-top: 1px solid #edf0f3;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+
+.card-bottom strong {
+  font-size: 15px;
+
+  color: #294d77;
+}
+
+
+/* =========================
+   조회 버튼
+========================= */
+
+.view-button {
+  padding: 10px 17px;
+
+  border: none;
+  border-radius: 10px;
+
+  background-color: #294d77;
+
+  color: #ffffff;
+
+  font-size: 13px;
+  font-weight: 700;
+
+  cursor: pointer;
+
+  transition: 0.2s ease;
+}
+
+
+.view-button:hover {
+  background-color: #203f64;
+
+  transform: translateY(-1px);
+}
+
+
+/* =========================
+   상태 메시지
+========================= */
+
+.state-message {
+  padding: 80px 20px;
+
+  text-align: center;
+
+  background-color: #ffffff;
+
+  border: 1px solid #e1e5ec;
+  border-radius: 18px;
+
+  color: #718093;
+}
+
+
+.state-message.error {
+  color: #d44d4d;
+}
+
+
+/* =================================================
+   페이지네이션
+   → 게시글이 많을 때만 JSX에서 표시하도록 사용
+================================================= */
+
+.pagination {
+  width: 100%;
+
+  display: flex;
+
+  justify-content: center;
+  align-items: center;
+
+  gap: 10px;
+
+  margin-top: 48px;
+
+  padding-bottom: 30px;
+}
+
+
+/* 페이지 번호 버튼 */
+
+.page-button {
+  width: 48px;
+  height: 48px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 14px;
+
+  border: 1px solid #e1e7ef;
+
+  background: #ffffff;
+
+  color: #718096;
+
+  font-size: 16px;
+  font-weight: 600;
+
+  cursor: pointer;
+
+  transition:
+    background 0.2s ease,
+    color 0.2s ease,
+    border-color 0.2s ease,
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+
+  box-shadow:
+    0 4px 12px rgba(40, 55, 75, 0.035);
+}
+
+
+/* hover */
+
+.page-button:hover:not(.active) {
+  transform: translateY(-2px);
+
+  background: #f5f8fb;
+
+  border-color: #c7d3df;
+
+  color: #294d77;
+
+  box-shadow:
+    0 8px 18px rgba(40, 55, 75, 0.07);
+}
+
+
+/* 현재 선택된 페이지 */
+
+.page-button.active {
+  background: #294d77;
+
+  color: #ffffff;
+
+  border-color: #294d77;
+
+  box-shadow:
+    0 8px 20px rgba(41, 77, 119, 0.18);
+}
+
+
+/* 다음 버튼 */
+
+.page-button.next {
+  font-size: 23px;
+
+  font-weight: 400;
+
+  padding-bottom: 2px;
+}
+
+
+/* =========================
+   태블릿
+========================= */
+
+@media (max-width: 1150px) {
+
+  .oneday-grid {
+    grid-template-columns:
+      repeat(2, minmax(0, 1fr));
+  }
+
+}
+
+
+/* =========================
+   모바일
+========================= */
+
+@media (max-width: 850px) {
+
+  .oneday-page {
+    flex-direction: column;
+
+    padding: 25px;
+  }
+
+
+  .oneday-filter {
+    width: 100%;
+    min-width: 0;
+  }
+
+
+  .oneday-header {
+    flex-direction: column;
+
+    gap: 20px;
+  }
+
+
+  .oneday-grid {
+    grid-template-columns: 1fr;
+  }
+
+
+  .sort-row {
+    align-items: flex-start;
+
+    flex-direction: column;
+
+    gap: 15px;
+  }
+
+
+  .sort-buttons {
+    width: 100%;
+  }
+
+
+  .sort-button {
+    flex: 1;
+  }
+
+}
+
+
+@media (max-width: 500px) {
+
+  .oneday-page {
+    padding: 18px;
+  }
+
+
+  .title-row h1 {
+    font-size: 25px;
+  }
+
+
+  .sort-buttons {
+    flex-direction: column;
+  }
+
+
+  .sort-button {
+    width: 100%;
+  }
+
+
+  .pagination {
+    gap: 7px;
+  }
+
+
+  .page-button {
+    width: 42px;
+    height: 42px;
+  }
+
+}
