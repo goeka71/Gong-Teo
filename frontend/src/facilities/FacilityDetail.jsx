@@ -246,6 +246,8 @@ function FacilityDetail({ facilityId = 1 }) {
         <div className="fd-basic">
           <h1 className="fd-name">{data.facility_name}</h1>
 
+          {data.addr && <p className="fd-addr">{data.addr}</p>}
+
           <ul className="fd-access">
             {data.station && (
               <li>
