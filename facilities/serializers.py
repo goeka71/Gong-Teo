@@ -31,6 +31,30 @@ class FacilityDetailSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
 
+class FacilityDetailWriteSerializer(serializers.ModelSerializer):
+    """시설 세부정보(FacilityDetail) upsert 전용.
+
+    facility 는 URL 로 받아 서버에서 채우므로 클라이언트가 보내지 않는다.
+    사용자가 편집 가능한 필드만 노출한다.
+    """
+
+    class Meta:
+        model = FacilityDetail
+        fields = (
+            "id",
+            "facility",
+            "op_hour",
+            "in_out",
+            "phone",
+            "website",
+            "fee",
+            "shower",
+            "parking",
+            "created_at",
+        )
+        read_only_fields = ("id", "facility", "created_at")
+
+
 class SportSerializer(serializers.ModelSerializer):
     class Meta:
         model = Sport

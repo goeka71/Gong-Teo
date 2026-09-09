@@ -40,10 +40,10 @@ export function getFacilityDetail(id) {
   return apiGet(`/api/facilities/${id}/`);
 }
 
-// 시설 세부정보(FacilityDetail) 추가·수정.
+// 시설 세부정보(FacilityDetail) 추가·수정 (upsert, 시설당 1개).
 // PATCH /api/facilities/${id}/detail/
 // data 예: { op_hour, in_out, phone, website, fee, shower, parking }
-// (백엔드 detail 엔드포인트는 아직 없음 - 추가되면 바로 연결된다)
+// 응답: 갱신된 detail 객체 (없던 경우 새로 생성 후 201)
 export function updateFacilityDetail(id, data) {
   return apiPatch(`/api/facilities/${id}/detail/`, data);
 }

@@ -66,6 +66,14 @@ urlpatterns = [
         name="subfacility-detail-disagree"
     ),
 
+    # 시설 세부정보(FacilityDetail) 추가·수정 (PATCH, upsert, 시설당 1개).
+    # 고정 세그먼트 "detail/" 이 있으므로 아래 "<int:facility_id>/" 보다 먼저 둔다.
+    path(
+        "<int:facility_id>/detail/",
+        views.facility_detail_upsert,
+        name="facility-detail-upsert"
+    ),
+
     # 시설 하나의 상세 정보 (기본정보 + FacilityDetail + 세부시설 + 종목)
     # 숫자 id 만 매칭되므로 위의 고정 경로들과 충돌하지 않는다. 항상 맨 끝에 둔다.
     path(

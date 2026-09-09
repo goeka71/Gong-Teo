@@ -1,7 +1,8 @@
 from django.db.models import F
 from django.shortcuts import get_object_or_404
 from rest_framework import status
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 
 from .models import (
@@ -27,6 +28,7 @@ from .serializers import (
     FavoriteSerializer,
     SubFacilityDetailSerializer,
     FacilityDetailPageSerializer,
+    FacilityDetailWriteSerializer,
 )
 
 
@@ -43,6 +45,33 @@ def facility_detail(request, facility_id):
     facility = get_object_or_404(Facility, pk=facility_id)
     serializer = FacilityDetailPageSerializer(facility)
     return Response(serializer.data)
+
+
+@api_view(["PATCH"])
+@permission_classes([AllowAny])  # 지금은 누구나 수정 가능. 로그인 필수로 바꾸려면 이 줄만 IsAuthenticated 로.
+def facility_detail_upsert(request, facility_id):
+    """시설 세부정보(FacilityDetail) 추가·수정.
+
+    시설당 FacilityDetail 은 1개로 강제한다.
+    - 이미 있으면 update
+    - 없으면 create
+    """
+    facility = get_object_or_404(Facility, pk=facility_id)
+
+    # 시설당 1개 규칙: 가장 먼저 만들어진 것 하나만 대상으로 삼는다.
+    detail = FacilityDetail.objects.filter(facility=facility).order_by("id").first()
+
+    serializer = FacilityDetailWriteSerializer(
+        instance=detail, data=request.data, partial=True
+    )
+    serializer.is_valid(raise_exception=True)
+    serializer.save(facility=facility)
+
+    created = detail is None
+    return Response(
+        serializer.data,
+        status=status.HTTP_201_CREATED if created else status.HTTP_200_OK,
+    )
 
 
 @api_view(["GET"])
