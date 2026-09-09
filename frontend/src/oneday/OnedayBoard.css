@@ -17,6 +17,18 @@
 
 
 /* =========================
+   현재 JSX 컨테이너
+========================= */
+
+.oneday-container {
+  width: 100%;
+  max-width: 1400px;
+
+  margin: 0 auto;
+}
+
+
+/* =========================
    왼쪽 필터
 ========================= */
 
@@ -83,7 +95,8 @@
    검색
 ========================= */
 
-.search-box {
+.search-box,
+.oneday-search {
   height: 48px;
 
   display: flex;
@@ -107,7 +120,8 @@
 }
 
 
-.search-box input {
+.search-box input,
+.oneday-search input {
   width: 100%;
 
   border: none;
@@ -121,7 +135,8 @@
 }
 
 
-.search-box input::placeholder {
+.search-box input::placeholder,
+.oneday-search input::placeholder {
   color: #a5afbd;
 }
 
@@ -151,6 +166,30 @@
 }
 
 
+/* 현재 JSX select */
+
+.oneday-filter-row select {
+  height: 48px;
+
+  padding: 0 13px;
+
+  border: 1px solid #d9dfe8;
+  border-radius: 12px;
+
+  background-color: #fafbfc;
+
+  color: #596779;
+
+  font-size: 14px;
+
+  outline: none;
+
+  cursor: pointer;
+
+  box-sizing: border-box;
+}
+
+
 /* =========================
    날짜
 ========================= */
@@ -173,6 +212,30 @@
   font-size: 14px;
 
   outline: none;
+}
+
+
+/* 현재 JSX 날짜 input */
+
+.oneday-filter-row input[type="date"] {
+  height: 48px;
+
+  padding: 0 13px;
+
+  border: 1px solid #d9dfe8;
+  border-radius: 12px;
+
+  background-color: #fafbfc;
+
+  box-sizing: border-box;
+
+  color: #596779;
+
+  font-size: 14px;
+
+  outline: none;
+
+  cursor: pointer;
 }
 
 
@@ -282,6 +345,36 @@
 
 
 /* =========================
+   현재 JSX 체크박스
+========================= */
+
+.oneday-check {
+  display: flex;
+
+  align-items: center;
+
+  gap: 8px;
+
+  font-size: 14px;
+  font-weight: 700;
+
+  color: #4b5868;
+
+  cursor: pointer;
+}
+
+
+.oneday-check input {
+  width: 16px;
+  height: 16px;
+
+  margin: 0;
+
+  cursor: pointer;
+}
+
+
+/* =========================
    필터 초기화
 ========================= */
 
@@ -314,7 +407,6 @@
 
 /* =================================================
    양도 안내 카드
-   → 왼쪽 사진처럼 칙칙하지 않고 깔끔한 디자인
 ================================================= */
 
 .transfer-guide {
@@ -430,7 +522,8 @@
 }
 
 
-.title-row h1 {
+.title-row h1,
+.oneday-header h1 {
   margin: 0;
 
   font-size: 30px;
@@ -489,6 +582,49 @@
   transform: translateY(-2px);
 
   background-color: #203f64;
+}
+
+
+/* =========================
+   현재 JSX 필터 영역
+========================= */
+
+.oneday-filter-section {
+  margin-bottom: 20px;
+}
+
+
+/* =========================
+   현재 JSX 필터 한 줄
+========================= */
+
+.oneday-filter-row {
+  display: flex;
+
+  align-items: center;
+
+  flex-wrap: wrap;
+
+  gap: 8px;
+
+  margin-top: 12px;
+}
+
+
+.oneday-filter-row select {
+  flex: 1;
+  min-width: 150px;
+}
+
+
+.oneday-filter-row input[type="date"] {
+  flex: 1;
+  min-width: 150px;
+}
+
+
+.oneday-check {
+  white-space: nowrap;
 }
 
 
@@ -559,10 +695,86 @@
 
 
 /* =========================
+   현재 JSX 정렬 영역
+========================= */
+
+.oneday-sort-row {
+  display: flex;
+
+  align-items: center;
+
+  justify-content: flex-end;
+
+  gap: 10px;
+
+  margin-top: 18px;
+
+  margin-bottom: 20px;
+}
+
+
+.oneday-sort-row button {
+  height: 40px;
+
+  padding: 0 18px;
+
+  border: 1px solid #d9dfe8;
+  border-radius: 22px;
+
+  background-color: #ffffff;
+
+  color: #718093;
+
+  font-size: 13px;
+
+  cursor: pointer;
+
+  transition: 0.2s ease;
+}
+
+
+.oneday-sort-row button:hover {
+  background-color: #f5f7fa;
+}
+
+
+.oneday-sort-row button.active {
+  background-color: #294d77;
+
+  border-color: #294d77;
+
+  color: #ffffff;
+
+  box-shadow: 0 5px 14px rgba(41, 77, 119, 0.12);
+}
+
+
+.oneday-result-count {
+  margin-left: 4px;
+
+  font-size: 15px;
+
+  color: #8b97a7;
+}
+
+
+/* =========================
    카드 그리드
 ========================= */
 
 .oneday-grid {
+  display: grid;
+
+  grid-template-columns:
+    repeat(3, minmax(0, 1fr));
+
+  gap: 18px;
+}
+
+
+/* 현재 JSX 카드 그리드 */
+
+.oneday-post-grid {
   display: grid;
 
   grid-template-columns:
@@ -605,6 +817,48 @@
 
 
 /* =========================
+   현재 JSX 원데이 카드
+========================= */
+
+.oneday-post-card {
+  min-height: 285px;
+
+  display: flex;
+  flex-direction: column;
+
+  padding: 22px;
+
+  background-color: #ffffff;
+
+  border: 1px solid #e0e5eb;
+  border-radius: 18px;
+
+  box-sizing: border-box;
+
+  box-shadow: 0 4px 16px rgba(30, 45, 70, 0.035);
+
+  transition: 0.2s ease;
+
+  /* button 기본 디자인 제거 */
+  appearance: none;
+  -webkit-appearance: none;
+
+  font-family: inherit;
+
+  text-align: left;
+
+  cursor: pointer;
+}
+
+
+.oneday-post-card:hover {
+  transform: translateY(-4px);
+
+  box-shadow: 0 12px 28px rgba(30, 45, 70, 0.09);
+}
+
+
+/* =========================
    카드 상단
 ========================= */
 
@@ -612,6 +866,19 @@
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
+}
+
+
+/* 현재 JSX 카드 상단 */
+
+.post-card-top {
+  display: flex;
+
+  align-items: flex-start;
+
+  justify-content: space-between;
+
+  gap: 10px;
 }
 
 
@@ -663,6 +930,32 @@
 }
 
 
+/* 현재 JSX 상태 */
+
+.post-status {
+  padding: 8px 11px;
+
+  border-radius: 10px;
+
+  font-size: 12px;
+  font-weight: 700;
+}
+
+
+.post-status.open {
+  background-color: #edf6f0;
+
+  color: #4d8a68;
+}
+
+
+.post-status.closed {
+  background-color: #f2f3f5;
+
+  color: #8b95a3;
+}
+
+
 /* =========================
    프로그램명
 ========================= */
@@ -671,6 +964,27 @@
   margin: 18px 0 8px;
 
   font-size: 20px;
+  font-weight: 800;
+
+  color: #273548;
+
+  letter-spacing: -0.6px;
+
+  overflow: hidden;
+
+  text-overflow: ellipsis;
+
+  white-space: nowrap;
+}
+
+
+/* 현재 JSX 프로그램명 */
+
+.post-program-name {
+  margin: 18px 0 8px;
+
+  font-size: 20px;
+
   font-weight: 800;
 
   color: #273548;
@@ -704,6 +1018,42 @@
 }
 
 
+/* 현재 JSX 시설명 */
+
+.post-facility-name {
+  margin: 0 0 14px;
+
+  font-size: 14px;
+
+  color: #8490a0;
+
+  overflow: hidden;
+
+  text-overflow: ellipsis;
+
+  white-space: nowrap;
+}
+
+
+/* =========================
+   주소
+========================= */
+
+.post-address {
+  margin: 0;
+
+  font-size: 13px;
+
+  color: #7a8797;
+
+  overflow: hidden;
+
+  text-overflow: ellipsis;
+
+  white-space: nowrap;
+}
+
+
 /* =========================
    날짜 / 프로그램 시간
 ========================= */
@@ -718,6 +1068,28 @@
 }
 
 
+/* 현재 JSX */
+
+.post-info-row {
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 5px;
+
+  margin-top: 10px;
+}
+
+
+.post-info-row span {
+  font-size: 14px;
+
+  font-weight: 500;
+
+  color: #667487;
+}
+
+
 /* =========================
    역 / 도보시간
 ========================= */
@@ -725,6 +1097,32 @@
 .station-info {
   margin: 8px 0 0;
 
+  font-size: 13px;
+
+  color: #7a8797;
+
+  overflow: hidden;
+
+  text-overflow: ellipsis;
+
+  white-space: nowrap;
+}
+
+
+/* 현재 JSX */
+
+.post-location-row {
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 5px;
+
+  margin-top: 8px;
+}
+
+
+.post-location-row span {
   font-size: 13px;
 
   color: #7a8797;
@@ -751,6 +1149,13 @@
 }
 
 
+.distance-text {
+  color: #294d77 !important;
+
+  font-weight: 600;
+}
+
+
 /* =========================
    카드 하단
 ========================= */
@@ -768,10 +1173,40 @@
 }
 
 
+/* 현재 JSX */
+
+.post-card-bottom {
+  margin-top: auto;
+
+  padding-top: 18px;
+
+  border-top: 1px solid #edf0f3;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: space-between;
+}
+
+
 .card-bottom strong {
   font-size: 15px;
 
   color: #294d77;
+}
+
+
+/* =========================
+   코인
+========================= */
+
+.coin-text {
+  font-size: 15px;
+
+  color: #294d77;
+
+  font-weight: 700;
 }
 
 
@@ -805,6 +1240,27 @@
 }
 
 
+/* 현재 JSX 신청하기 */
+
+.apply-text {
+  padding: 10px 17px;
+
+  border: none;
+
+  border-radius: 10px;
+
+  background-color: #294d77;
+
+  color: #ffffff;
+
+  font-size: 13px;
+
+  font-weight: 700;
+
+  white-space: nowrap;
+}
+
+
 /* =========================
    상태 메시지
 ========================= */
@@ -828,9 +1284,77 @@
 }
 
 
+/* 현재 JSX 상태 */
+
+.oneday-empty {
+  padding: 80px 20px;
+
+  text-align: center;
+
+  background-color: #ffffff;
+
+  border: 1px solid #e1e5ec;
+
+  border-radius: 18px;
+
+  color: #718093;
+
+  box-sizing: border-box;
+}
+
+
+.oneday-empty h2 {
+  margin: 0 0 10px;
+
+  color: #273548;
+
+  font-size: 20px;
+
+  font-weight: 800;
+}
+
+
+.oneday-empty p {
+  margin: 0;
+
+  color: #718093;
+
+  font-size: 14px;
+}
+
+
+.oneday-empty-icon {
+  margin-bottom: 12px;
+
+  font-size: 34px;
+}
+
+
+.oneday-empty button {
+  margin-top: 20px;
+
+  height: 46px;
+
+  padding: 0 20px;
+
+  border: none;
+
+  border-radius: 12px;
+
+  background-color: #294d77;
+
+  color: #ffffff;
+
+  font-size: 14px;
+
+  font-weight: 700;
+
+  cursor: pointer;
+}
+
+
 /* =================================================
    페이지네이션
-   → 게시글이 많을 때만 JSX에서 표시하도록 사용
 ================================================= */
 
 .pagination {
@@ -849,15 +1373,36 @@
 }
 
 
-/* 페이지 번호 버튼 */
+/* 현재 JSX */
 
-.page-button {
+.oneday-pagination {
+  width: 100%;
+
+  display: flex;
+
+  justify-content: center;
+
+  align-items: center;
+
+  gap: 10px;
+
+  margin-top: 48px;
+
+  padding-bottom: 30px;
+}
+
+
+.page-button,
+.oneday-pagination button {
   width: 48px;
   height: 48px;
 
   display: flex;
+
   align-items: center;
   justify-content: center;
+
+  padding: 0;
 
   border-radius: 14px;
 
@@ -884,9 +1429,8 @@
 }
 
 
-/* hover */
-
-.page-button:hover:not(.active) {
+.page-button:hover:not(.active),
+.oneday-pagination button:hover:not(.active) {
   transform: translateY(-2px);
 
   background: #f5f8fb;
@@ -900,9 +1444,8 @@
 }
 
 
-/* 현재 선택된 페이지 */
-
-.page-button.active {
+.page-button.active,
+.oneday-pagination button.active {
   background: #294d77;
 
   color: #ffffff;
@@ -914,14 +1457,10 @@
 }
 
 
-/* 다음 버튼 */
+.oneday-pagination button:disabled {
+  opacity: 0.4;
 
-.page-button.next {
-  font-size: 23px;
-
-  font-weight: 400;
-
-  padding-bottom: 2px;
+  cursor: default;
 }
 
 
@@ -931,7 +1470,14 @@
 
 @media (max-width: 1150px) {
 
-  .oneday-grid {
+  .oneday-page {
+    padding-left: 5%;
+    padding-right: 5%;
+  }
+
+
+  .oneday-grid,
+  .oneday-post-grid {
     grid-template-columns:
       repeat(2, minmax(0, 1fr));
   }
@@ -965,12 +1511,31 @@
   }
 
 
-  .oneday-grid {
+  .register-button {
+    width: 100%;
+  }
+
+
+  .oneday-filter-row {
+    flex-direction: column;
+
+    align-items: stretch;
+  }
+
+
+  .oneday-filter-row select,
+  .oneday-filter-row input[type="date"] {
+    width: 100%;
+  }
+
+
+  .oneday-grid,
+  .oneday-post-grid {
     grid-template-columns: 1fr;
   }
 
 
-  .sort-row {
+  .oneday-sort-row {
     align-items: flex-start;
 
     flex-direction: column;
@@ -979,17 +1544,21 @@
   }
 
 
-  .sort-buttons {
+  .oneday-sort-row button {
     width: 100%;
   }
 
 
-  .sort-button {
-    flex: 1;
+  .oneday-result-count {
+    margin-left: 0;
   }
 
 }
 
+
+/* =========================
+   작은 모바일
+========================= */
 
 @media (max-width: 500px) {
 
@@ -998,27 +1567,23 @@
   }
 
 
-  .title-row h1 {
+  .title-row h1,
+  .oneday-header h1 {
     font-size: 25px;
   }
 
 
-  .sort-buttons {
+  .oneday-sort-row {
     flex-direction: column;
   }
 
 
-  .sort-button {
-    width: 100%;
-  }
-
-
-  .pagination {
+  .oneday-pagination {
     gap: 7px;
   }
 
 
-  .page-button {
+  .oneday-pagination button {
     width: 42px;
     height: 42px;
   }
