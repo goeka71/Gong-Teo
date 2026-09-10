@@ -56,9 +56,9 @@ function Signup() {
       alert("회원가입이 완료되었습니다.");
       navigate("/login");
     } catch (error) {
-      console.error("회원가입 에러:", error.response?.data || error.message || error);
+      console.error("회원가입 에러:", error.data || error.message || error);
 
-      const data = error.response?.data;
+      const data = error.data;
 
       if (data && typeof data === "object") {
         // DRF serializer 에러: {username: ["이미 사용중입니다."], password: ["너무 짧습니다."]} 형태
@@ -73,8 +73,13 @@ function Signup() {
         if (data.non_field_errors) {
           setError(Array.isArray(data.non_field_errors) ? data.non_field_errors.join(" ") : data.non_field_errors);
         }
+      } else if (typeof data === "string" && data.trim()) {
+        setError(data);
       } else {
-        setError("회원가입에 실패했습니다. 입력 정보를 확인해주세요.");
+        // 응답 본문이 없는 경우 (서버 미실행, 네트워크 오류 등)
+        setError(
+          "회원가입 요청을 처리하지 못했습니다. 잠시 후 다시 시도해주세요."
+        );
       }
     }
   };
