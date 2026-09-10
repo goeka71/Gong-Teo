@@ -5671,118 +5671,75 @@ function SettingsView({
   user,
   setUser,
 }) {
-  const [
-    form,
-    setForm,
-  ] = useState({
-    name:
-      user.name || "",
+  const [form, setForm] =
+    useState({
+      name: user.name || "",
+      birth: user.birth || "",
+      phone: user.phone || "",
+    });
 
-    birth:
-      user.birth || "",
+  const [saving, setSaving] =
+    useState(false);
 
-    phone:
-      user.phone || "",
-  });
-
-
-  const [
-    saving,
-    setSaving,
-  ] = useState(false);
-
-
-  const [
-    message,
-    setMessage,
-  ] = useState("");
-
+  const [message, setMessage] =
+    useState("");
 
   const [
     settingError,
     setSettingError,
   ] = useState("");
 
-
   const handleChange =
     (event) => {
-
       const {
         name,
         value,
       } = event.target;
 
-
       setForm(
         (current) => ({
           ...current,
-          [name]:
-            value,
+          [name]: value,
         })
       );
 
-
       setMessage("");
-
       setSettingError("");
     };
 
-
   const handleSave =
     async () => {
-
       try {
         setSaving(true);
-
         setMessage("");
-
         setSettingError("");
-
 
         const updatedUser =
           await updateMyInfo({
-            name:
-              form.name,
-
+            name: form.name,
             birth:
-              form.birth ||
-              null,
-
-            phone:
-              form.phone,
+              form.birth || null,
+            phone: form.phone,
           });
 
-
-        setUser(
-          updatedUser
-        );
-
+        setUser(updatedUser);
 
         setMessage(
           "회원정보가 수정되었습니다."
         );
-
       } catch (err) {
-
-        console.error(
-          err
-        );
-
+        console.error(err);
 
         setSettingError(
           "회원정보 수정에 실패했습니다."
         );
-
       } finally {
-
         setSaving(false);
       }
     };
 
-
   const handleLogout =
     () => {
-
       localStorage.removeItem(
         "accessToken"
       );
@@ -5791,396 +5748,459 @@ function SettingsView({
         "refreshToken"
       );
 
-
       window.location.href =
         "/login";
     };
 
-
   return (
     <>
-
-      <div className="page-header">
-
-        <h1 className="page-title">
+      {/* 상단 제목 */}
+      <div
+        style={{
+          marginBottom: "34px",
+        }}
+      >
+        <h1
+          style={{
+            margin: 0,
+            fontSize: "28px",
+            fontWeight: "700",
+            color: "#111827",
+            letterSpacing: "-0.6px",
+          }}
+        >
           환경설정
         </h1>
 
-
-        <p className="page-description">
+        <p
+          style={{
+            margin: "9px 0 0",
+            fontSize: "14px",
+            color: "#7b8493",
+          }}
+        >
           계정 정보와 로그인 설정을 관리할 수 있습니다.
         </p>
-
       </div>
 
 
-      <div className="card">
-
-        <div className="card-body">
-
-          <h2>
+      {/* =====================
+          기본 정보
+      ===================== */}
+      <section
+        style={{
+          marginBottom: "44px",
+        }}
+      >
+        <div
+          style={{
+            paddingBottom: "15px",
+            borderBottom:
+              "1px solid #dfe3e8",
+          }}
+        >
+          <h2
+            style={{
+              margin: 0,
+              fontSize: "18px",
+              fontWeight: "700",
+              color: "#222831",
+            }}
+          >
             기본 정보
           </h2>
 
-
-          <SettingFormRow
-            label="아이디"
-          >
-            <input
-              className="input"
-
-              value={
-                user.username
-              }
-
-              disabled
-            />
-          </SettingFormRow>
-
-
-          <SettingFormRow
-            label="이메일"
-          >
-            <input
-              className="input"
-
-              value={
-                user.email ||
-                ""
-              }
-
-              disabled
-            />
-          </SettingFormRow>
-
-
-          <SettingFormRow
-            label="이름"
-          >
-            <input
-              className="input"
-
-              name="name"
-
-              value={
-                form.name
-              }
-
-              onChange={
-                handleChange
-              }
-            />
-          </SettingFormRow>
-
-
-          <SettingFormRow
-            label="생년월일"
-          >
-            <input
-              className="input"
-
-              type="date"
-
-              name="birth"
-
-              value={
-                form.birth
-              }
-
-              onChange={
-                handleChange
-              }
-            />
-          </SettingFormRow>
-
-
-          <SettingFormRow
-            label="전화번호"
-          >
-            <input
-              className="input"
-
-              name="phone"
-
-              value={
-                form.phone
-              }
-
-              onChange={
-                handleChange
-              }
-            />
-          </SettingFormRow>
-
-
-          {message && (
-
-            <p
-              style={{
-                color:
-                  "#218653",
-              }}
-            >
-              {message}
-            </p>
-          )}
-
-
-          {settingError && (
-
-            <p
-              style={{
-                color:
-                  "#c62828",
-              }}
-            >
-              {
-                settingError
-              }
-            </p>
-          )}
-
-
-          <div
+          <p
             style={{
-              marginTop:
-                "20px",
-
-              textAlign:
-                "right",
+              margin: "6px 0 0",
+              fontSize: "13px",
+              color: "#9299a4",
             }}
           >
-
-            <button
-              type="button"
-
-              className="btn btn-primary"
-
-              disabled={
-                saving
-              }
-
-              onClick={
-                handleSave
-              }
-            >
-              {saving
-                ? "저장 중..."
-                : "변경사항 저장"}
-            </button>
-
-          </div>
-
+            서비스에서 사용하는 회원 정보를 관리합니다.
+          </p>
         </div>
 
-      </div>
 
-
-      <div
-        className="card"
-
-        style={{
-          marginTop:
-            "20px",
-        }}
-      >
-
-        <div className="card-body">
-
-          <h2>
-            비밀번호 및 보안
-          </h2>
-
-
-          <button
-            type="button"
-
-            className="btn btn-outline"
-
-            onClick={() =>
-              alert(
-                "비밀번호 변경 기능은 추후 연결됩니다."
-              )
-            }
-          >
-            비밀번호 변경
-          </button>
-
-        </div>
-
-      </div>
-
-
-      <div
-        className="card"
-
-        style={{
-          marginTop:
-            "20px",
-        }}
-      >
-
-        <div className="card-body">
-
-          <h2>
-            로그인 관리
-          </h2>
-
-
-          <button
-            type="button"
-
-            className="btn btn-outline"
-
-            onClick={
-              handleLogout
-            }
-          >
-            로그아웃
-          </button>
-
-        </div>
-
-      </div>
-
-
-      <div
-        className="card"
-
-        style={{
-          marginTop:
-            "20px",
-        }}
-      >
-
-        <div className="card-body">
-
-          <h2
+        <SettingFormRow
+          label="아이디"
+          description="로그인에 사용하는 아이디입니다."
+        >
+          <input
+            className="input"
+            value={user.username}
+            disabled
             style={{
-              color:
-                "#b42318",
+              width: "100%",
+              maxWidth: "420px",
+              background: "#f7f8fa",
+              color: "#9299a4",
+            }}
+          />
+        </SettingFormRow>
+
+
+        <SettingFormRow
+          label="이메일"
+          description="가입 시 등록한 이메일 주소입니다."
+        >
+          <input
+            className="input"
+            value={
+              user.email || ""
+            }
+            disabled
+            style={{
+              width: "100%",
+              maxWidth: "420px",
+              background: "#f7f8fa",
+              color: "#9299a4",
+            }}
+          />
+        </SettingFormRow>
+
+
+        <SettingFormRow
+          label="이름"
+          description="서비스에 표시되는 이름입니다."
+        >
+          <input
+            className="input"
+            name="name"
+            value={form.name}
+            onChange={handleChange}
+            style={{
+              width: "100%",
+              maxWidth: "420px",
+            }}
+          />
+        </SettingFormRow>
+
+
+        <SettingFormRow
+          label="생년월일"
+          description="회원님의 생년월일입니다."
+        >
+          <input
+            className="input"
+            type="date"
+            name="birth"
+            value={form.birth}
+            onChange={handleChange}
+            style={{
+              width: "100%",
+              maxWidth: "420px",
+            }}
+          />
+        </SettingFormRow>
+
+
+        <SettingFormRow
+          label="전화번호"
+          description="연락 가능한 전화번호입니다."
+        >
+          <input
+            className="input"
+            name="phone"
+            value={form.phone}
+            onChange={handleChange}
+            style={{
+              width: "100%",
+              maxWidth: "420px",
+            }}
+          />
+        </SettingFormRow>
+
+
+        {message && (
+          <p
+            style={{
+              margin:
+                "16px 0 0 216px",
+              color: "#218653",
+              fontSize: "13px",
+              fontWeight: "600",
             }}
           >
-            회원 탈퇴
-          </h2>
+            {message}
+          </p>
+        )}
 
 
+        {settingError && (
+          <p
+            style={{
+              margin:
+                "16px 0 0 216px",
+              color: "#c62828",
+              fontSize: "13px",
+              fontWeight: "600",
+            }}
+          >
+            {settingError}
+          </p>
+        )}
+
+
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "flex-end",
+            marginTop: "24px",
+          }}
+        >
           <button
             type="button"
-
-            className="btn btn-outline"
-
+            className="btn btn-primary"
+            disabled={saving}
+            onClick={handleSave}
             style={{
-              color:
-                "#b42318",
+              minWidth: "112px",
             }}
-
-            onClick={() =>
-              alert(
-                "회원 탈퇴 기능은 추후 연결됩니다."
-              )
-            }
           >
-            회원 탈퇴
+            {saving
+              ? "저장 중..."
+              : "변경사항 저장"}
           </button>
-
         </div>
+      </section>
 
-      </div>
 
+      {/* =====================
+          비밀번호 / 보안
+      ===================== */}
+      <SettingsSection title="보안">
+  <SettingsActionRow
+    title="비밀번호"
+    description="주기적으로 비밀번호를 변경하면 계정을 더욱 안전하게 보호할 수 있습니다."
+  >
+    <button
+      type="button"
+      className="btn btn-outline"
+      onClick={() =>
+        alert(
+          "비밀번호 변경 기능은 추후 연결됩니다."
+        )
+      }
+    >
+      변경
+    </button>
+  </SettingsActionRow>
+</SettingsSection>
+
+
+<SettingsSection title="계정">
+  <SettingsActionRow
+    title="로그아웃"
+    description="현재 기기에서 로그인된 계정을 로그아웃합니다."
+  >
+    <button
+      type="button"
+      className="btn btn-outline"
+      onClick={handleLogout}
+    >
+      로그아웃
+    </button>
+  </SettingsActionRow>
+
+  <SettingsActionRow
+    title="회원 탈퇴"
+    description="탈퇴 후 회원 정보는 복구할 수 없습니다."
+    danger
+  >
+    <button
+      type="button"
+      onClick={() =>
+        alert(
+          "회원 탈퇴 기능은 추후 연결됩니다."
+        )
+      }
+      style={{
+        padding: "8px 14px",
+        border: "1px solid #e2b8b5",
+        borderRadius: "7px",
+        background: "#fff",
+        color: "#b42318",
+        fontSize: "13px",
+        fontWeight: "600",
+        cursor: "pointer",
+      }}
+    >
+      회원 탈퇴
+    </button>
+  </SettingsActionRow>
+</SettingsSection>
     </>
   );
 }
 
 
+/* =========================
+   기본 정보 한 줄
+========================= */
+
 function SettingFormRow({
   label,
+  description,
   children,
 }) {
   return (
     <div
       style={{
-        display:
-          "grid",
-
+        display: "grid",
         gridTemplateColumns:
-          "160px 1fr",
+          "180px minmax(0, 1fr)",
+        gap: "36px",
+        alignItems: "center",
 
-        gap:
-          "20px",
+        minHeight: "88px",
 
-        alignItems:
-          "center",
-
-        padding:
-          "15px 0",
+        padding: "18px 4px",
 
         borderBottom:
-          "1px solid #eee",
+          "1px solid #edf0f3",
       }}
     >
-
-      <strong>
-        {label}
-      </strong>
-
-
       <div>
-        {children}
+        <strong
+          style={{
+            display: "block",
+            fontSize: "14px",
+            fontWeight: "600",
+            color: "#303846",
+          }}
+        >
+          {label}
+        </strong>
+
+        {description && (
+          <span
+            style={{
+              display: "block",
+              marginTop: "5px",
+              fontSize: "12px",
+              lineHeight: "1.5",
+              color: "#9aa1ab",
+            }}
+          >
+            {description}
+          </span>
+        )}
       </div>
 
+      <div
+        style={{
+          minWidth: 0,
+        }}
+      >
+        {children}
+      </div>
     </div>
   );
 }
 
 
-function SummaryRow({
-  label,
-  value,
+/* =========================
+   환경설정 섹션
+========================= */
+function SettingsSection({
+  title,
+  children,
+}) {
+  return (
+    <section
+      style={{
+        marginBottom: "42px",
+      }}
+    >
+      {/* 카테고리명 */}
+      <div
+        style={{
+          marginBottom: "8px",
+          padding: "0 4px",
+        }}
+      >
+        <span
+          style={{
+            fontSize: "13px",
+            fontWeight: "700",
+            color: "#8b95a1",
+            letterSpacing: "-0.1px",
+          }}
+        >
+          {title}
+        </span>
+      </div>
+
+      {children}
+    </section>
+  );
+}
+
+/* =========================
+   환경설정 액션 한 줄
+========================= */
+function SettingsActionRow({
+  title,
+  description,
+  children,
+  danger = false,
 }) {
   return (
     <div
       style={{
-        display:
-          "grid",
+        display: "flex",
+        justifyContent: "space-between",
+        alignItems: "center",
+        gap: "32px",
 
-        gridTemplateColumns:
-          "80px 1fr",
+        minHeight: "96px",
+        padding: "22px 4px",
 
-        gap:
-          "10px",
-
-        padding:
-          "11px 0",
-
-        borderBottom:
-          "1px solid #eee",
-
-        fontSize:
-          "13px",
+        borderBottom: "1px solid #edf0f3",
       }}
     >
+      <div>
+        <strong
+          style={{
+            display: "block",
+            fontSize: "17px",
+            fontWeight: "700",
+            color: danger
+              ? "#b42318"
+              : "#202632",
+            letterSpacing: "-0.3px",
+          }}
+        >
+          {title}
+        </strong>
 
-      <strong>
-        {label}
-      </strong>
+        <span
+          style={{
+            display: "block",
+            marginTop: "7px",
 
+            fontSize: "13px",
+            lineHeight: "1.55",
 
-      <span
+            color: danger
+              ? "#b77a75"
+              : "#8b95a1",
+          }}
+        >
+          {description}
+        </span>
+      </div>
+
+      <div
         style={{
-          color:
-            "#555",
-
-          overflowWrap:
-            "anywhere",
+          flexShrink: 0,
         }}
       >
-        {value}
-      </span>
-
+        {children}
+      </div>
     </div>
   );
 }
-
 
 export default MyPage;
