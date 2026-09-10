@@ -16,6 +16,7 @@ function Signup() {
   });
 
   const [error, setError] = useState("");
+  const [fieldErrors, setFieldErrors] = useState({});
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -24,14 +25,21 @@ function Signup() {
       ...prev,
       [name]: value,
     }));
+
+    // 입력 다시 하면 해당 필드 에러는 지워주기
+    setFieldErrors((prev) => ({
+      ...prev,
+      [name]: undefined,
+    }));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
+    setFieldErrors({});
 
     if (form.password !== form.passwordConfirm) {
-      setError("비밀번호가 일치하지 않습니다.");
+      setFieldErrors({ passwordConfirm: "비밀번호가 일치하지 않습니다." });
       return;
     }
 
@@ -48,8 +56,26 @@ function Signup() {
       alert("회원가입이 완료되었습니다.");
       navigate("/login");
     } catch (error) {
-      console.error(error);
-      setError("회원가입에 실패했습니다. 입력 정보를 확인해주세요.");
+      console.error("회원가입 에러:", error.response?.data || error.message || error);
+
+      const data = error.response?.data;
+
+      if (data && typeof data === "object") {
+        // DRF serializer 에러: {username: ["이미 사용중입니다."], password: ["너무 짧습니다."]} 형태
+        const newFieldErrors = {};
+        Object.entries(data).forEach(([field, msgs]) => {
+          newFieldErrors[field] = Array.isArray(msgs) ? msgs.join(" ") : String(msgs);
+        });
+        setFieldErrors(newFieldErrors);
+
+        // serializer가 아닌 non_field_errors나 detail 같은 공통 에러는 상단에 표시
+        if (data.detail) setError(data.detail);
+        if (data.non_field_errors) {
+          setError(Array.isArray(data.non_field_errors) ? data.non_field_errors.join(" ") : data.non_field_errors);
+        }
+      } else {
+        setError("회원가입에 실패했습니다. 입력 정보를 확인해주세요.");
+      }
     }
   };
 
@@ -80,6 +106,11 @@ function Signup() {
                   placeholder="아이디를 입력해주세요"
                   required
                 />
+                {fieldErrors.username && (
+                  <p style={{ color: "red", fontSize: "13px", marginTop: "4px" }}>
+                    {fieldErrors.username}
+                  </p>
+                )}
               </div>
 
               <div className="form-group">
@@ -93,6 +124,11 @@ function Signup() {
                   placeholder="비밀번호를 입력해주세요"
                   required
                 />
+                {fieldErrors.password && (
+                  <p style={{ color: "red", fontSize: "13px", marginTop: "4px" }}>
+                    {fieldErrors.password}
+                  </p>
+                )}
               </div>
 
               <div className="form-group">
@@ -106,6 +142,11 @@ function Signup() {
                   placeholder="비밀번호를 다시 입력해주세요"
                   required
                 />
+                {fieldErrors.passwordConfirm && (
+                  <p style={{ color: "red", fontSize: "13px", marginTop: "4px" }}>
+                    {fieldErrors.passwordConfirm}
+                  </p>
+                )}
               </div>
 
               <div className="form-group">
@@ -119,6 +160,11 @@ function Signup() {
                   placeholder="example@email.com"
                   required
                 />
+                {fieldErrors.email && (
+                  <p style={{ color: "red", fontSize: "13px", marginTop: "4px" }}>
+                    {fieldErrors.email}
+                  </p>
+                )}
               </div>
 
               <div className="form-group">
@@ -132,6 +178,11 @@ function Signup() {
                   placeholder="이름을 입력해주세요"
                   required
                 />
+                {fieldErrors.name && (
+                  <p style={{ color: "red", fontSize: "13px", marginTop: "4px" }}>
+                    {fieldErrors.name}
+                  </p>
+                )}
               </div>
 
               <div className="form-group">
@@ -143,6 +194,11 @@ function Signup() {
                   value={form.birth}
                   onChange={handleChange}
                 />
+                {fieldErrors.birth && (
+                  <p style={{ color: "red", fontSize: "13px", marginTop: "4px" }}>
+                    {fieldErrors.birth}
+                  </p>
+                )}
               </div>
 
               <div className="form-group">
@@ -155,9 +211,14 @@ function Signup() {
                   onChange={handleChange}
                   placeholder="010-1234-5678"
                 />
+                {fieldErrors.phone && (
+                  <p style={{ color: "red", fontSize: "13px", marginTop: "4px" }}>
+                    {fieldErrors.phone}
+                  </p>
+                )}
               </div>
 
-              {error && <p>{error}</p>}
+              {error && <p style={{ color: "red" }}>{error}</p>}
 
               <button
                 type="submit"

@@ -7,8 +7,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('facilities', '0003_remove_facilitydetail_subfacility_and_more'),
-    ]
+        ('facilities', '0004_subfacilitydetail_agree_count_and_more'),]
 
     operations = [
         migrations.AddField(
