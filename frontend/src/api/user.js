@@ -1,23 +1,103 @@
-// api/user.js
-// 회원(user) 관련 백엔드 API 호출 함수 모음.
-//
-// 담당: 윤서
-// 백엔드 라우트는 config/urls.py 기준 "/api/users/" 아래에 있다.
-//   예) /api/users/  , /api/users/coin-history/
-// 로그인/마이페이지 관련 엔드포인트는 백엔드에 아직 없으니 추가되면 연결할 것.
-// client.js 의 apiGet / apiPost 를 가져다 쓰면 된다. (facilities.js 참고)
+import {
+  apiGet,
+  apiPost,
+  apiPatch,
+} from "./client";
 
-// import { apiGet, apiPost } from "./client";
 
-// 로그인. (자리만 만들어 둠 - 윤서가 채울 예정)
-// credentials 예: { username, password }
-// 예: return apiPost("/api/users/login/", credentials);
-export function login(credentials) {
-  void credentials; // 파라미터 형태만 표시용 (윤서가 실제 구현 시 사용)
-  throw new Error("login: 아직 구현되지 않았습니다 (윤서 담당)");
+// =========================================================
+// 회원가입
+// =========================================================
+export function signup(data) {
+  return apiPost("/api/users/signup/", data);
 }
 
-// 마이페이지 정보 조회. (자리만 만들어 둠 - 윤서가 채울 예정)
-export function getMyPage() {
-  throw new Error("getMyPage: 아직 구현되지 않았습니다 (윤서 담당)");
+
+// =========================================================
+// 로그인
+// =========================================================
+export function login(data) {
+  return apiPost("/api/users/login/", data);
+}
+
+
+// =========================================================
+// 내 정보
+// =========================================================
+export function getMyInfo() {
+  return apiGet("/api/users/me/");
+}
+
+
+// =========================================================
+// 내 정보 수정
+// =========================================================
+export function updateMyInfo(data) {
+  return apiPatch("/api/users/me/", data);
+}
+
+
+// =========================================================
+// JWT Access Token 재발급
+// =========================================================
+export function refreshAccessToken(refresh) {
+  return apiPost("/api/users/token/refresh/", {
+    refresh,
+  });
+}
+
+
+// =========================================================
+// 나의 수강 프로그램 조회
+// =========================================================
+export function getMyPrograms() {
+  return apiGet("/api/users/my-programs/");
+}
+
+
+// =========================================================
+// 나의 수강 프로그램 등록
+// 이미지 없는 JSON 등록용
+// =========================================================
+export function createMyProgram(data) {
+  return apiPost("/api/users/my-programs/", data);
+}
+
+
+// =========================================================
+// 수강 프로그램 등록 화면용 시설 조회
+// =========================================================
+
+// 지역에 해당하는 시설
+export function getFacilitiesByRegion(region) {
+  return apiGet(
+    `/api/facilities/?region=${encodeURIComponent(region)}`
+  );
+}
+
+
+// 선택한 시설의 세부시설
+export function getSubFacilities(facilityId) {
+  return apiGet(
+    `/api/facilities/subfacilities/?facility=${facilityId}`
+  );
+}
+
+
+// 선택한 시설의 프로그램
+export function getProgramsByFacility(facilityId) {
+  return apiGet(
+    `/api/facilities/programs/?facility=${facilityId}`
+  );
+}
+
+
+// 선택한 시설 + 세부시설의 프로그램
+export function getProgramsBySubFacility(
+  facilityId,
+  subfacilityId
+) {
+  return apiGet(
+    `/api/facilities/programs/?facility=${facilityId}&subfacility=${subfacilityId}`
+  );
 }

@@ -68,12 +68,43 @@ class FacilitySport(models.Model):
 
 class Program(models.Model):
     facility = models.ForeignKey(
-        Facility, on_delete=models.CASCADE, related_name="programs"
+        Facility,
+        on_delete=models.CASCADE,
+        related_name="programs"
     )
-    program_name = models.CharField("프로그램명", max_length=200)
-    program_day = models.CharField("수업 요일", max_length=50, blank=True)
-    program_cap = models.IntegerField("수용인원", null=True, blank=True)
-    program_time = models.CharField("수업 시간", max_length=50, blank=True)
+
+    # 이 프로그램이 진행되는 세부시설
+    # 세부시설이 없는 경우에는 비워둘 수 있음
+    subfacility = models.ForeignKey(
+        SubFacility,
+        on_delete=models.SET_NULL,
+        related_name="programs",
+        null=True,
+        blank=True
+    )
+
+    program_name = models.CharField(
+        "프로그램명",
+        max_length=200
+    )
+
+    program_day = models.CharField(
+        "수업 요일",
+        max_length=50,
+        blank=True
+    )
+
+    program_cap = models.IntegerField(
+        "수용인원",
+        null=True,
+        blank=True
+    )
+
+    program_time = models.CharField(
+        "수업 시간",
+        max_length=50,
+        blank=True
+    )
 
     def __str__(self):
         return self.program_name
