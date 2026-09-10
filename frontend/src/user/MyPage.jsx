@@ -9,6 +9,10 @@ import {
   getProgramsBySubFacility,
   createMyProgram,
   updateMyInfo,
+  getMyReviews,
+  createReview,
+  updateReview,
+  deleteReview as deleteReviewApi,
 } from "../api/user";
 
 
@@ -2458,7 +2462,6 @@ function ProgramInfoRow({
   );
 }
 
-
 /* =========================
    내가 쓴 리뷰
 ========================= */
@@ -2472,30 +2475,30 @@ function MyReviewsView({
     setReviews,
   ] = useState([]);
 
+  const [
+    reviewsLoading,
+    setReviewsLoading,
+  ] = useState(true);
 
   const [
     sortType,
     setSortType,
   ] = useState("latest");
 
-
   const [
     modalOpen,
     setModalOpen,
   ] = useState(false);
-
 
   const [
     reviewMode,
     setReviewMode,
   ] = useState("write");
 
-
   const [
     editingReview,
     setEditingReview,
   ] = useState(null);
-
 
   const [
     deleteTarget,
@@ -2503,10 +2506,191 @@ function MyReviewsView({
   ] = useState(null);
 
 
+  /*
+  Review 모델에는 program FK가 없기 때문에
+  facility / subfacility 기준으로
+  내가 등록한 수강 프로그램과 다시 연결해서
+  프로그램명을 화면에 표시한다.
+  */
+  const normalizeReview = (
+    review,
+    fallback = {}
+  ) => {
+    const preferredProgram =
+      fallback.myProgramId
+        ? myPrograms.find(
+            (program) =>
+              String(program.id) ===
+              String(
+                fallback.myProgramId
+              )
+          )
+        : null;
+
+    const matchedProgram =
+      preferredProgram ||
+      myPrograms.find(
+        (program) => {
+          const sameFacility =
+            String(
+              program.facility_id
+            ) ===
+            String(
+              review.facility
+            );
+
+          const reviewSubfacility =
+            review.subfacility ?? "";
+
+          const programSubfacility =
+            program.subfacility ?? "";
+
+          const sameSubfacility =
+            String(
+              programSubfacility
+            ) ===
+            String(
+              reviewSubfacility
+            );
+
+          return (
+            sameFacility &&
+            sameSubfacility
+          );
+        }
+      );
+
+    const createdAt =
+      review.created_at
+        ? new Date(
+            review.created_at
+          )
+        : new Date();
+
+    const date =
+      `${createdAt.getFullYear()}.${String(
+        createdAt.getMonth() + 1
+      ).padStart(2, "0")}.${String(
+        createdAt.getDate()
+      ).padStart(2, "0")}`;
+
+    return {
+      id:
+        review.id,
+
+      myProgramId:
+        matchedProgram?.id ||
+        fallback.myProgramId ||
+        "",
+
+      programId:
+        matchedProgram?.program ||
+        fallback.programId ||
+        "",
+
+      programName:
+        matchedProgram?.program_name ||
+        fallback.programName ||
+        "",
+
+      facilityId:
+        review.facility,
+
+      facilityName:
+        review.facility_name ||
+        fallback.facilityName ||
+        "",
+
+      subfacilityId:
+        review.subfacility,
+
+      subfacilityName:
+        review.subfacility_name ||
+        fallback.subfacilityName ||
+        "",
+
+      rating:
+        review.rating,
+
+      content:
+        review.content,
+
+      createdAt:
+        review.created_at
+          ? new Date(
+              review.created_at
+            ).getTime()
+          : Date.now(),
+
+      date,
+
+      /*
+      현재 Review 모델에는
+      이미지 필드가 없기 때문에
+      사진은 DB 저장 불가.
+      */
+      image:
+        fallback.image ||
+        "",
+    };
+  };
+
+
+  /* =========================
+     DB에서 내가 쓴 리뷰 조회
+  ========================= */
+
+  useEffect(() => {
+    if (programsLoading) {
+      return;
+    }
+
+    const loadReviews =
+      async () => {
+        try {
+          setReviewsLoading(
+            true
+          );
+
+          const data =
+            await getMyReviews();
+
+          const normalized =
+            data.map(
+              (review) =>
+                normalizeReview(
+                  review
+                )
+            );
+
+          setReviews(
+            normalized
+          );
+
+        } catch (err) {
+          console.error(
+            "리뷰 조회 실패:",
+            err
+          );
+
+        } finally {
+          setReviewsLoading(
+            false
+          );
+        }
+      };
+
+    loadReviews();
+
+  }, [
+    programsLoading,
+    myPrograms,
+  ]);
+
+
   const sortedReviews =
     [...reviews].sort(
       (a, b) => {
-
         if (
           sortType ===
           "rating"
@@ -2516,7 +2700,6 @@ function MyReviewsView({
             a.rating
           );
         }
-
 
         return (
           b.createdAt -
@@ -2554,132 +2737,174 @@ function MyReviewsView({
     };
 
 
+  /* =========================
+     리뷰 작성 / 수정
+  ========================= */
+
   const saveReview =
-    (data) => {
+    async (data) => {
+      try {
+        const requestData = {
+          facility:
+            Number(
+              data.facilityId
+            ),
 
-      if (
-        reviewMode ===
-        "write"
-      ) {
+          subfacility:
+            data.subfacilityId
+              ? Number(
+                  data.subfacilityId
+                )
+              : null,
 
-        const now =
-          new Date();
+          rating:
+            Number(
+              data.rating
+            ),
 
-
-        const newReview = {
-          ...data,
-
-          id:
-            Date.now(),
-
-          createdAt:
-            Date.now(),
-
-          date:
-            `${now.getFullYear()}.${String(
-              now.getMonth() + 1
-            ).padStart(2, "0")}.${String(
-              now.getDate()
-            ).padStart(2, "0")}`,
+          content:
+            data.content,
         };
 
 
-        setReviews(
-          (current) => [
-            newReview,
-            ...current,
-          ]
+        if (
+          reviewMode ===
+          "write"
+        ) {
+          const created =
+            await createReview(
+              requestData
+            );
+
+          const normalized =
+            normalizeReview(
+              created,
+              data
+            );
+
+          setReviews(
+            (current) => [
+              normalized,
+              ...current,
+            ]
+          );
+
+        } else {
+          const updated =
+            await updateReview(
+              editingReview.id,
+              requestData
+            );
+
+          const normalized =
+            normalizeReview(
+              updated,
+              data
+            );
+
+          setReviews(
+            (current) =>
+              current.map(
+                (item) =>
+                  item.id ===
+                  editingReview.id
+                    ? normalized
+                    : item
+              )
+          );
+        }
+
+
+        setModalOpen(false);
+
+        setEditingReview(null);
+
+      } catch (err) {
+        console.error(
+          "리뷰 저장 실패:",
+          err
         );
 
-      } else {
-
-        setReviews(
-          (current) =>
-            current.map(
-              (item) =>
-                item.id ===
-                editingReview.id
-                  ? {
-                      ...item,
-                      ...data,
-                    }
-                  : item
-            )
+        alert(
+          "리뷰 저장에 실패했습니다. 입력 내용을 확인해주세요."
         );
       }
-
-
-      setModalOpen(false);
-
-      setEditingReview(null);
     };
 
 
-  const deleteReview =
-    () => {
+  /* =========================
+     리뷰 삭제
+  ========================= */
 
+  const handleDeleteReview =
+    async () => {
       if (!deleteTarget) {
         return;
       }
 
+      try {
+        await deleteReviewApi(
+          deleteTarget.id
+        );
 
-      setReviews(
-        (current) =>
-          current.filter(
-            (item) =>
-              item.id !==
-              deleteTarget.id
-          )
-      );
+        setReviews(
+          (current) =>
+            current.filter(
+              (item) =>
+                item.id !==
+                deleteTarget.id
+            )
+        );
 
+        setDeleteTarget(
+          null
+        );
 
-      setDeleteTarget(null);
+      } catch (err) {
+        console.error(
+          "리뷰 삭제 실패:",
+          err
+        );
+
+        alert(
+          "리뷰 삭제에 실패했습니다."
+        );
+      }
     };
 
 
   return (
     <>
-
       <div
         style={{
           display:
             "flex",
-
           justifyContent:
             "space-between",
-
           alignItems:
             "center",
-
           gap:
             "20px",
-
           marginBottom:
             "22px",
         }}
       >
-
         <div
           style={{
             display:
               "flex",
-
             alignItems:
               "baseline",
-
             gap:
               "8px",
           }}
         >
-
           <h1
             style={{
               margin:
                 0,
-
               fontSize:
                 "27px",
-
               color:
                 "#111827",
             }}
@@ -2687,22 +2912,18 @@ function MyReviewsView({
             내가 쓴 리뷰
           </h1>
 
-
           <span
             style={{
               color:
                 "#8a95a6",
-
               fontSize:
                 "15px",
-
               fontWeight:
                 "600",
             }}
           >
             {reviews.length}개
           </span>
-
         </div>
 
 
@@ -2710,18 +2931,15 @@ function MyReviewsView({
           style={{
             display:
               "flex",
-
             gap:
               "8px",
           }}
         >
-
           <SortButton
             active={
               sortType ===
               "latest"
             }
-
             onClick={() =>
               setSortType(
                 "latest"
@@ -2731,13 +2949,11 @@ function MyReviewsView({
             최신순
           </SortButton>
 
-
           <SortButton
             active={
               sortType ===
               "rating"
             }
-
             onClick={() =>
               setSortType(
                 "rating"
@@ -2746,58 +2962,46 @@ function MyReviewsView({
           >
             별점순
           </SortButton>
-
         </div>
-
       </div>
 
 
-      {programsLoading ? (
-
+      {programsLoading ||
+      reviewsLoading ? (
         <div
           className="card"
-
           style={{
             padding:
               "60px",
-
             textAlign:
               "center",
-
             color:
               "#777",
           }}
         >
-          수강 프로그램을 불러오는 중입니다.
+          리뷰를 불러오는 중입니다.
         </div>
-
       ) : reviews.length ===
         0 ? (
-
         <div
           className="card"
-
           style={{
             padding:
               "70px 20px",
-
             textAlign:
               "center",
           }}
         >
-
           <div
             style={{
               fontSize:
                 "36px",
-
               marginBottom:
                 "13px",
             }}
           >
             ⭐
           </div>
-
 
           <strong
             style={{
@@ -2808,15 +3012,12 @@ function MyReviewsView({
             아직 작성한 리뷰가 없습니다.
           </strong>
 
-
           <p
             style={{
               color:
                 "#8a95a6",
-
               fontSize:
                 "14px",
-
               margin:
                 "8px 0 20px",
             }}
@@ -2824,16 +3025,12 @@ function MyReviewsView({
             내가 등록한 수강 프로그램에 리뷰를 남겨보세요.
           </p>
 
-
           <button
             type="button"
-
             className="btn btn-primary"
-
             disabled={
               myPrograms.length === 0
             }
-
             onClick={
               openWrite
             }
@@ -2841,18 +3038,14 @@ function MyReviewsView({
             리뷰 쓰기
           </button>
 
-
           {myPrograms.length ===
             0 && (
-
             <p
               style={{
                 color:
                   "#999",
-
                 fontSize:
                   "12px",
-
                 marginTop:
                   "12px",
               }}
@@ -2860,39 +3053,30 @@ function MyReviewsView({
               리뷰 작성 전 수강 프로그램을 먼저 등록해주세요.
             </p>
           )}
-
         </div>
-
       ) : (
-
         <div
           style={{
             display:
               "grid",
-
             gap:
               "18px",
           }}
         >
-
           {sortedReviews.map(
             (review) => (
-
               <ReviewCard
                 key={
                   review.id
                 }
-
                 review={
                   review
                 }
-
                 onEdit={() =>
                   openEdit(
                     review
                   )
                 }
-
                 onDelete={() =>
                   setDeleteTarget(
                     review
@@ -2901,47 +3085,36 @@ function MyReviewsView({
               />
             )
           )}
-
         </div>
       )}
 
 
       {reviews.length >
         0 && (
-
         <div
           style={{
             marginTop:
               "22px",
-
             display:
               "flex",
-
             justifyContent:
               "space-between",
-
             alignItems:
               "center",
-
             padding:
               "22px 24px",
-
             border:
               "1px solid #e3e8ef",
-
             borderRadius:
               "14px",
-
             background:
               "#f8fafc",
           }}
         >
-
           <span
             style={{
               color:
                 "#687386",
-
               fontSize:
                 "14px",
             }}
@@ -2949,43 +3122,34 @@ function MyReviewsView({
             내가 등록한 수강 프로그램에 리뷰를 남겨보세요.
           </span>
 
-
           <button
             type="button"
-
             className="btn btn-primary"
-
             disabled={
               myPrograms.length ===
               0
             }
-
             onClick={
               openWrite
             }
           >
             리뷰 쓰기
           </button>
-
         </div>
       )}
 
 
       {modalOpen && (
-
         <ReviewFormModal
           mode={
             reviewMode
           }
-
           review={
             editingReview
           }
-
           myPrograms={
             myPrograms
           }
-
           onClose={() => {
             setModalOpen(
               false
@@ -2995,7 +3159,6 @@ function MyReviewsView({
               null
             );
           }}
-
           onSave={
             saveReview
           }
@@ -3004,28 +3167,23 @@ function MyReviewsView({
 
 
       {deleteTarget && (
-
         <ReviewDeleteModal
           review={
             deleteTarget
           }
-
           onCancel={() =>
             setDeleteTarget(
               null
             )
           }
-
           onDelete={
-            deleteReview
+            handleDeleteReview
           }
         />
       )}
-
     </>
   );
 }
-
 
 /* =========================
    리뷰 카드
