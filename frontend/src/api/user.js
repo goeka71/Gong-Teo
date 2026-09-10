@@ -2,15 +2,19 @@ import {
   BASE_URL,
   apiGet,
   apiPost,
-  apiPatch,
 } from "./client";
 
 
-/* =========================
-   토큰 저장 / 삭제
-========================= */
+/*
+=========================================
+토큰 저장
+=========================================
+*/
 
-function saveTokens(access, refresh = null) {
+function saveTokens(
+  access,
+  refresh = null
+) {
   if (access) {
     localStorage.setItem(
       "accessToken",
@@ -27,6 +31,12 @@ function saveTokens(access, refresh = null) {
 }
 
 
+/*
+=========================================
+토큰 삭제
+=========================================
+*/
+
 export function clearTokens() {
   localStorage.removeItem(
     "accessToken"
@@ -38,48 +48,94 @@ export function clearTokens() {
 }
 
 
-/* =========================
-   회원가입
-========================= */
+/*
+=========================================
+회원가입
+=========================================
+*/
 
-export function signup(data) {
-  return apiPost(
-    "/api/users/signup/",
-    data
-  );
+export async function signup(
+  data
+) {
+  const response =
+    await fetch(
+      `${BASE_URL}/api/users/signup/`,
+      {
+        method: "POST",
+
+        headers: {
+          "Content-Type":
+            "application/json",
+        },
+
+        body:
+          JSON.stringify(
+            data
+          ),
+      }
+    );
+
+
+  const result =
+    await response.json();
+
+
+  if (!response.ok) {
+    const error =
+      new Error(
+        "회원가입에 실패했습니다."
+      );
+
+    error.data =
+      result;
+
+    throw error;
+  }
+
+
+  return result;
 }
 
 
-/* =========================
-   로그인
-========================= */
+/*
+=========================================
+로그인
+=========================================
+*/
 
-export async function login(data) {
+export async function login(
+  data
+) {
   const result =
     await apiPost(
       "/api/users/login/",
       data
     );
 
+
   saveTokens(
     result.access,
     result.refresh
   );
 
+
   return result;
 }
 
 
-/* =========================
-   refresh token으로
-   access token 재발급
-========================= */
+/*
+=========================================
+refresh token으로
+access token 재발급
+=========================================
+*/
 
 export async function refreshAccessToken() {
   const refreshToken =
     localStorage.getItem(
       "refreshToken"
     );
+
 
   if (!refreshToken) {
     clearTokens();
@@ -88,6 +144,7 @@ export async function refreshAccessToken() {
       "refresh token이 없습니다."
     );
   }
+
 
   const response =
     await fetch(
@@ -100,10 +157,11 @@ export async function refreshAccessToken() {
             "application/json",
         },
 
-        body: JSON.stringify({
-          refresh:
-            refreshToken,
-        }),
+        body:
+          JSON.stringify({
+            refresh:
+              refreshToken,
+          }),
       }
     );
 
@@ -112,7 +170,7 @@ export async function refreshAccessToken() {
     clearTokens();
 
     throw new Error(
-      "refresh token이 만료되었습니다."
+      "로그인 정보가 만료되었습니다."
     );
   }
 
@@ -140,13 +198,11 @@ export async function refreshAccessToken() {
 }
 
 
-/* =========================
-   인증이 필요한 요청 공통 처리
-
-   1. 현재 access token으로 요청
-   2. 401이면 refresh
-   3. 새 access token으로 재요청
-========================= */
+/*
+=========================================
+인증 요청 공통 함수
+=========================================
+*/
 
 async function authenticatedRequest(
   path,
@@ -158,27 +214,28 @@ async function authenticatedRequest(
     );
 
 
-  const makeRequest =
-    (token) => {
-      const headers = {
-        ...(options.headers || {}),
-      };
-
-
-      if (token) {
-        headers.Authorization =
-          `Bearer ${token}`;
-      }
-
-
-      return fetch(
-        `${BASE_URL}${path}`,
-        {
-          ...options,
-          headers,
-        }
-      );
+  const makeRequest = (
+    token
+  ) => {
+    const headers = {
+      ...(options.headers || {}),
     };
+
+
+    if (token) {
+      headers.Authorization =
+        `Bearer ${token}`;
+    }
+
+
+    return fetch(
+      `${BASE_URL}${path}`,
+      {
+        ...options,
+        headers,
+      }
+    );
+  };
 
 
   let response =
@@ -187,8 +244,12 @@ async function authenticatedRequest(
     );
 
 
-  /* access token 만료 */
-  if (response.status === 401) {
+  /*
+  access token 만료
+  */
+  if (
+    response.status === 401
+  ) {
     try {
       accessToken =
         await refreshAccessToken();
@@ -205,7 +266,9 @@ async function authenticatedRequest(
         error
       );
 
+
       clearTokens();
+
 
       throw new Error(
         "로그인이 만료되었습니다."
@@ -217,11 +280,12 @@ async function authenticatedRequest(
   if (!response.ok) {
     let errorData = {};
 
+
     try {
       errorData =
         await response.json();
     } catch {
-      // JSON 응답이 아니어도 무시
+      // JSON 응답이 아니면 무시
     }
 
 
@@ -254,9 +318,11 @@ async function authenticatedRequest(
 }
 
 
-/* =========================
-   내 정보
-========================= */
+/*
+=========================================
+내 정보
+=========================================
+*/
 
 export function getMyInfo() {
   return authenticatedRequest(
@@ -290,9 +356,11 @@ export function updateMyInfo(
 }
 
 
-/* =========================
-   내 수강 프로그램
-========================= */
+/*
+=========================================
+내 수강 프로그램 조회
+=========================================
+*/
 
 export function getMyPrograms() {
   return authenticatedRequest(
@@ -304,32 +372,41 @@ export function getMyPrograms() {
 }
 
 
+/*
+=========================================
+내 수강 프로그램 등록
+
+FormData를 받도록 수정
+=========================================
+*/
+
 export function createMyProgram(
-  data
+  formData
 ) {
   return authenticatedRequest(
     "/api/users/my-programs/",
     {
       method: "POST",
 
-      headers: {
-        "Content-Type":
-          "application/json",
-      },
+      /*
+      중요:
+      Content-Type 직접 넣지 않음
 
+      브라우저가 자동으로
+      multipart/form-data 처리함
+      */
       body:
-        JSON.stringify(
-          data
-        ),
+        formData,
     }
   );
 }
 
 
-/* =========================
-   시설 관련 조회
-   인증 필요 없음
-========================= */
+/*
+=========================================
+시설 조회
+=========================================
+*/
 
 export function getFacilitiesByRegion(
   region
@@ -342,6 +419,12 @@ export function getFacilitiesByRegion(
 }
 
 
+/*
+=========================================
+세부시설 조회
+=========================================
+*/
+
 export function getSubFacilities(
   facilityId
 ) {
@@ -351,6 +434,12 @@ export function getSubFacilities(
 }
 
 
+/*
+=========================================
+시설 프로그램 조회
+=========================================
+*/
+
 export function getProgramsByFacility(
   facilityId
 ) {
@@ -359,6 +448,12 @@ export function getProgramsByFacility(
   );
 }
 
+
+/*
+=========================================
+시설 + 세부시설 프로그램 조회
+=========================================
+*/
 
 export function getProgramsBySubFacility(
   facilityId,
@@ -370,9 +465,11 @@ export function getProgramsBySubFacility(
 }
 
 
-/* =========================
-   로그아웃
-========================= */
+/*
+=========================================
+로그아웃
+=========================================
+*/
 
 export function logout() {
   clearTokens();

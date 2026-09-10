@@ -766,42 +766,67 @@ function MyPage() {
       }
 
 
-      const data = {
-        start_date:
-          startDate,
+      if (!proofFile) {
+        setSubmitError(
+          "수강 프로그램 등록을 위해 수강증 인증이 필요합니다."
+        );
+        return;
+      }
 
-        end_date:
-          endDate,
 
-        program_day:
-          selectedDays.join(","),
+      const formData =
+        new FormData();
 
-        program_time:
-          `${startTime} - ${endTime}`,
-      };
+
+      formData.append(
+        "start_date",
+        startDate
+      );
+
+      formData.append(
+        "end_date",
+        endDate
+      );
+
+      formData.append(
+        "program_day",
+        selectedDays.join(",")
+      );
+
+      formData.append(
+        "program_time",
+        `${startTime} - ${endTime}`
+      );
+
+      formData.append(
+        "proof_image",
+        proofFile
+      );
 
 
       if (subfacilityId) {
-        data.subfacility =
-          Number(
-            subfacilityId
-          );
+        formData.append(
+          "subfacility",
+          subfacilityId
+        );
       }
 
 
       if (isDirectInput) {
-        data.facility =
-          Number(
-            facilityId
-          );
+        formData.append(
+          "facility",
+          facilityId
+        );
 
-        data.new_program_name =
-          newProgramName.trim();
+        formData.append(
+          "new_program_name",
+          newProgramName.trim()
+        );
       } else {
-        data.program =
-          Number(
-            programId
-          );
+        formData.append(
+          "program",
+          programId
+        );
       }
 
 
@@ -810,7 +835,7 @@ function MyPage() {
 
         const createdProgram =
           await createMyProgram(
-            data
+            formData
           );
 
         setMyPrograms(
@@ -5113,8 +5138,18 @@ function ProgramRegisterView({
             <div className="form-group">
 
               <label className="form-label">
-                수강증 인증
+                수강증 인증 <span style={{ color: "#c62828" }}>*</span>
               </label>
+
+              <p
+                style={{
+                  margin: "0 0 9px",
+                  color: "#7b8797",
+                  fontSize: "12px",
+                }}
+              >
+                수강 프로그램 등록을 위해 반드시 수강증을 첨부해주세요.
+              </p>
 
 
               <label
