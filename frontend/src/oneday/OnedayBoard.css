@@ -1,1591 +1,695 @@
-/* =========================
-   전체 페이지
-========================= */
-
 .oneday-page {
-  min-height: calc(100vh - 80px);
-
-  display: flex;
-  gap: 40px;
-
-  padding: 42px 8% 70px;
-
-  background-color: #f6f7fb;
-
+  background: var(--color-bg);
+  min-height: 100vh;
+  padding: 32px 40px;
+  font-family: "Noto Sans KR", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  color: var(--color-text);
   box-sizing: border-box;
 }
 
-
-/* =========================
-   현재 JSX 컨테이너
-========================= */
-
-.oneday-container {
-  width: 100%;
-  max-width: 1400px;
-
+.oneday-layout {
+  display: flex;
+  gap: 24px;
+  align-items: flex-start;
+  max-width: 1280px;
   margin: 0 auto;
 }
 
-
 /* =========================
-   왼쪽 필터
+   사이드바
 ========================= */
-
-.oneday-filter {
-  width: 270px;
-  min-width: 270px;
-
-  height: fit-content;
-
-  background: #ffffff;
-
-  border: 1px solid #e3e7ed;
-  border-radius: 20px;
-
-  padding: 26px;
-
-  box-sizing: border-box;
-
-  box-shadow: 0 4px 18px rgba(30, 45, 70, 0.04);
+.oneday-sidebar {
+  width: 280px;
+  flex-shrink: 0;
+  background: var(--color-white);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  padding: 24px;
+  box-shadow: var(--shadow-card);
 }
 
-
-.oneday-filter h2 {
-  margin: 0 0 28px;
-
+.sidebar-title {
   font-size: 20px;
   font-weight: 800;
-
-  color: #273548;
+  color: var(--color-heading);
+  margin: 0 0 20px;
 }
 
-
-/* =========================
-   필터 공통
-========================= */
-
-.filter-section {
-  display: flex;
-  flex-direction: column;
-
-  gap: 12px;
+.filter-group {
+  margin-bottom: 20px;
 }
-
 
 .filter-label {
-  font-size: 15px;
+  display: block;
+  font-size: 13.5px;
   font-weight: 700;
-
-  color: #435166;
+  color: var(--color-text-secondary);
+  margin-bottom: 8px;
 }
 
-
-.filter-line {
-  width: 100%;
-  height: 1px;
-
-  background-color: #edf0f4;
-
-  margin: 22px 0;
-}
-
-
-/* =========================
-   검색
-========================= */
-
-.search-box,
-.oneday-search {
-  height: 48px;
-
+.search-box {
   display: flex;
   align-items: center;
-
-  gap: 8px;
-
-  padding: 0 13px;
-
-  border: 1px solid #d9dfe8;
-  border-radius: 12px;
-
-  background-color: #fafbfc;
-
-  box-sizing: border-box;
+  border: 1px solid var(--color-border-input);
+  border-radius: var(--radius-sm);
+  padding: 10px 12px;
+  background: var(--color-bg-soft);
 }
 
-
-.search-icon {
-  font-size: 15px;
+.search-box .search-icon {
+  margin-right: 8px;
+  font-size: 14px;
+  color: var(--color-text-light);
 }
 
-
-.search-box input,
-.oneday-search input {
-  width: 100%;
-
+.search-box input {
   border: none;
   outline: none;
-
   background: transparent;
-
-  font-size: 13px;
-
-  color: #273548;
-}
-
-
-.search-box input::placeholder,
-.oneday-search input::placeholder {
-  color: #a5afbd;
-}
-
-
-/* =========================
-   지역 선택
-========================= */
-
-.region-select {
   width: 100%;
-  height: 48px;
-
-  padding: 0 13px;
-
-  border: 1px solid #d9dfe8;
-  border-radius: 12px;
-
-  background-color: #fafbfc;
-
-  color: #596779;
-
   font-size: 14px;
-
-  outline: none;
-
-  cursor: pointer;
+  color: var(--color-text);
 }
 
-
-/* 현재 JSX select */
-
-.oneday-filter-row select {
-  height: 48px;
-
-  padding: 0 13px;
-
-  border: 1px solid #d9dfe8;
-  border-radius: 12px;
-
-  background-color: #fafbfc;
-
-  color: #596779;
-
-  font-size: 14px;
-
-  outline: none;
-
-  cursor: pointer;
-
-  box-sizing: border-box;
-}
-
-
-/* =========================
-   날짜
-========================= */
-
-.date-input {
+.filter-group select,
+.filter-group input[type="date"] {
   width: 100%;
-  height: 48px;
-
-  padding: 0 13px;
-
-  border: 1px solid #d9dfe8;
-  border-radius: 12px;
-
-  background-color: #fafbfc;
-
-  box-sizing: border-box;
-
-  color: #596779;
-
+  min-height: 44px;
+  padding: 0 12px;
+  border: 1px solid var(--color-border-input);
+  border-radius: var(--radius-sm);
   font-size: 14px;
-
+  background: var(--color-bg-soft);
+  color: var(--color-text);
   outline: none;
 }
 
-
-/* 현재 JSX 날짜 input */
-
-.oneday-filter-row input[type="date"] {
-  height: 48px;
-
-  padding: 0 13px;
-
-  border: 1px solid #d9dfe8;
-  border-radius: 12px;
-
-  background-color: #fafbfc;
-
-  box-sizing: border-box;
-
-  color: #596779;
-
-  font-size: 14px;
-
-  outline: none;
-
-  cursor: pointer;
-}
-
-
-/* =========================
-   시간대 버튼
-========================= */
-
-.time-buttons {
+.time-bucket-row {
   display: flex;
-
   gap: 8px;
 }
 
-
-.time-button {
+.time-bucket {
   flex: 1;
-
-  height: 40px;
-
-  border: none;
-  border-radius: 20px;
-
-  background-color: #f0f2f6;
-
-  color: #697586;
-
+  padding: 10px 0;
+  border: 1px solid var(--color-border-input);
+  border-radius: var(--radius-sm);
+  background: var(--color-bg-soft);
   font-size: 14px;
-
   cursor: pointer;
-
-  transition: 0.2s ease;
+  color: var(--color-text-secondary);
+  font-weight: 600;
 }
 
-
-.time-button:hover {
-  background-color: #e5e9ef;
+.time-bucket.active {
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+  color: var(--color-white);
 }
 
-
-.time-button.active {
-  background-color: #294d77;
-
-  color: #ffffff;
-}
-
-
-/* =========================
-   신청 가능 토글
-========================= */
-
-.open-filter {
+.toggle-group {
   display: flex;
   align-items: center;
   justify-content: space-between;
-
-  margin: 24px 0;
 }
 
-
-.open-filter span {
-  font-size: 14px;
-  font-weight: 700;
-
-  color: #4b5868;
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 42px;
+  height: 24px;
+  flex-shrink: 0;
 }
 
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
 
-.toggle-button {
-  width: 48px;
-  height: 26px;
-
-  padding: 3px;
-
-  border: none;
-  border-radius: 20px;
-
-  background-color: #d7dde6;
-
+.switch .slider {
+  position: absolute;
   cursor: pointer;
-
-  transition: 0.2s ease;
+  inset: 0;
+  background-color: var(--color-border-strong);
+  border-radius: var(--radius-pill);
+  transition: 0.2s;
 }
 
-
-.toggle-circle {
-  display: block;
-
-  width: 20px;
-  height: 20px;
-
+.switch .slider::before {
+  content: "";
+  position: absolute;
+  height: 18px;
+  width: 18px;
+  left: 3px;
+  bottom: 3px;
+  background-color: var(--color-white);
   border-radius: 50%;
-
-  background-color: #ffffff;
-
-  transition: 0.2s ease;
+  transition: 0.2s;
 }
 
-
-.toggle-button.active {
-  background-color: #294d77;
+.switch input:checked + .slider {
+  background-color: var(--color-primary);
 }
 
-
-.toggle-button.active .toggle-circle {
-  transform: translateX(22px);
+.switch input:checked + .slider::before {
+  transform: translateX(18px);
 }
-
-
-/* =========================
-   현재 JSX 체크박스
-========================= */
-
-.oneday-check {
-  display: flex;
-
-  align-items: center;
-
-  gap: 8px;
-
-  font-size: 14px;
-  font-weight: 700;
-
-  color: #4b5868;
-
-  cursor: pointer;
-}
-
-
-.oneday-check input {
-  width: 16px;
-  height: 16px;
-
-  margin: 0;
-
-  cursor: pointer;
-}
-
-
-/* =========================
-   필터 초기화
-========================= */
 
 .reset-button {
   width: 100%;
-  height: 50px;
-
-  border: 1px solid #cfd8e3;
-  border-radius: 14px;
-
-  background-color: #ffffff;
-
-  color: #294d77;
-
+  min-height: 42px;
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-md);
+  background: var(--color-white);
   font-size: 14px;
   font-weight: 700;
-
+  color: var(--color-text-secondary);
   cursor: pointer;
-
-  transition: 0.2s ease;
+  margin-top: 4px;
 }
-
 
 .reset-button:hover {
-  background-color: #f5f8fb;
-
-  border-color: #9eb1c5;
+  background: var(--color-primary-soft);
 }
 
-
-/* =================================================
-   양도 안내 카드
-================================================= */
-
-.transfer-guide {
-  width: 100%;
-
-  margin-top: 18px;
-
-  padding: 22px;
-
-  box-sizing: border-box;
-
-  background: #ffffff;
-
-  border: 1px solid #e3e8ef;
-  border-radius: 20px;
-
-  box-shadow: 0 6px 20px rgba(40, 55, 75, 0.035);
-
-  transition:
-    transform 0.2s ease,
-    box-shadow 0.2s ease;
+.oneday-info-box {
+  margin-top: 20px;
+  padding: 16px;
+  background: var(--color-bg-soft);
+  border-radius: var(--radius-md);
 }
 
-
-.transfer-guide:hover {
-  transform: translateY(-2px);
-
-  box-shadow: 0 10px 28px rgba(40, 55, 75, 0.07);
-}
-
-
-/* 전구 아이콘 */
-
-.transfer-guide-icon {
-  width: 40px;
-  height: 40px;
-
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  margin-bottom: 14px;
-
-  font-size: 20px;
-
-  background: #fff8e5;
-
-  border-radius: 13px;
-}
-
-
-/* 제목 */
-
-.transfer-guide h3 {
-  margin: 0 0 10px;
-
-  font-size: 17px;
-  font-weight: 800;
-
-  letter-spacing: -0.4px;
-
-  color: #273548;
-}
-
-
-/* 설명 */
-
-.transfer-guide p {
-  margin: 0;
-
+.oneday-info-box h3 {
   font-size: 14px;
-  line-height: 1.7;
-
-  letter-spacing: -0.2px;
-
-  color: #748195;
-
-  word-break: keep-all;
+  font-weight: 800;
+  color: var(--color-heading);
+  margin: 0 0 8px;
 }
 
+.oneday-info-box p {
+  font-size: 13px;
+  color: var(--color-text-muted);
+  line-height: 1.5;
+  margin: 0;
+}
 
 /* =========================
-   오른쪽 콘텐츠
+   메인
 ========================= */
-
-.oneday-content {
+.oneday-main {
   flex: 1;
-
   min-width: 0;
 }
 
-
-/* =========================
-   헤더
-========================= */
-
 .oneday-header {
   display: flex;
-  align-items: flex-start;
+  flex-wrap: wrap;
   justify-content: space-between;
-
-  gap: 30px;
-
-  margin-bottom: 38px;
-}
-
-
-.title-row {
-  display: flex;
-  align-items: center;
-
+  align-items: flex-start;
   gap: 12px;
-}
-
-
-.title-row h1,
-.oneday-header h1 {
-  margin: 0;
-
-  font-size: 30px;
-  font-weight: 800;
-
-  color: #273548;
-
-  letter-spacing: -1px;
-}
-
-
-.post-count {
-  font-size: 15px;
-
-  color: #8b97a7;
-}
-
-
-.oneday-header p {
-  margin: 10px 0 0;
-
-  font-size: 15px;
-
-  color: #718093;
-}
-
-
-/* =========================
-   등록 버튼
-========================= */
-
-.register-button {
-  height: 54px;
-
-  padding: 0 24px;
-
-  border: none;
-  border-radius: 14px;
-
-  background-color: #294d77;
-
-  color: #ffffff;
-
-  font-size: 15px;
-  font-weight: 700;
-
-  cursor: pointer;
-
-  box-shadow: 0 8px 18px rgba(41, 77, 119, 0.16);
-
-  transition: 0.2s ease;
-}
-
-
-.register-button:hover {
-  transform: translateY(-2px);
-
-  background-color: #203f64;
-}
-
-
-/* =========================
-   현재 JSX 필터 영역
-========================= */
-
-.oneday-filter-section {
   margin-bottom: 20px;
 }
 
+.oneday-header h1 {
+  font-size: 24px;
+  font-weight: 800;
+  color: var(--color-heading);
+  margin: 0 0 6px;
+}
 
-/* =========================
-   현재 JSX 필터 한 줄
-========================= */
+.oneday-count {
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--color-text-muted);
+  margin-left: 8px;
+}
 
-.oneday-filter-row {
+.oneday-header p {
+  font-size: 14px;
+  color: var(--color-text-muted);
+  margin: 0;
+}
+
+.header-actions {
   display: flex;
-
   align-items: center;
-
-  flex-wrap: wrap;
-
   gap: 8px;
-
-  margin-top: 12px;
+  flex-wrap: wrap;
 }
 
-
-.oneday-filter-row select {
-  flex: 1;
-  min-width: 150px;
+.register-button {
+  background: var(--color-primary);
+  color: var(--color-white);
+  border: none;
+  border-radius: var(--radius-md);
+  padding: 10px 18px;
+  min-height: 42px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+  box-shadow: var(--shadow-primary);
 }
 
-
-.oneday-filter-row input[type="date"] {
-  flex: 1;
-  min-width: 150px;
+.register-button:hover {
+  background: var(--color-primary-hover);
 }
 
-
-.oneday-check {
+.refresh-button {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--color-white);
+  color: var(--color-text-secondary);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-md);
+  padding: 10px 16px;
+  min-height: 42px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
   white-space: nowrap;
 }
 
+.refresh-button:hover:not(:disabled) {
+  background: var(--color-primary-soft);
+}
+
+.refresh-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.refresh-icon {
+  display: inline-block;
+  font-size: 15px;
+  line-height: 1;
+}
+
+.refresh-icon.spinning {
+  animation: oneday-refresh-spin 0.8s linear infinite;
+}
+
+@keyframes oneday-refresh-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
 
 /* =========================
-   정렬
+   이번달 인기 종목
 ========================= */
-
-.sort-row {
+.oneday-stat-bar {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-
-  margin-bottom: 20px;
+  gap: 12px;
+  padding: 14px 18px;
+  margin-bottom: 16px;
+  background: var(--color-white);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
 }
 
-
-.sort-label {
-  font-size: 15px;
-  font-weight: 700;
-
-  color: #718093;
-}
-
-
-.sort-buttons {
-  display: flex;
-
-  flex-wrap: wrap;
-
-  gap: 10px;
-}
-
-
-.sort-button {
+.stat-bar-icon {
+  width: 40px;
   height: 40px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: var(--color-bg-chip);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+}
 
-  padding: 0 18px;
+.stat-bar-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
 
-  border: 1px solid #d9dfe8;
-  border-radius: 22px;
+.stat-bar-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-text-muted);
+}
 
-  background-color: #ffffff;
+.stat-bar-value {
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--color-heading);
+}
 
-  color: #718093;
-
+.stat-count {
+  margin-left: 6px;
+  color: var(--color-primary);
+  font-weight: 700;
   font-size: 13px;
-
-  cursor: pointer;
-
-  transition: 0.2s ease;
 }
-
-
-.sort-button:hover {
-  background-color: #f5f7fa;
-}
-
-
-.sort-button.active {
-  background-color: #294d77;
-
-  border-color: #294d77;
-
-  color: #ffffff;
-
-  box-shadow: 0 5px 14px rgba(41, 77, 119, 0.12);
-}
-
-
-/* =========================
-   현재 JSX 정렬 영역
-========================= */
 
 .oneday-sort-row {
   display: flex;
-
+  flex-wrap: wrap;
+  justify-content: space-between;
   align-items: center;
-
-  justify-content: flex-end;
-
   gap: 10px;
-
-  margin-top: 18px;
-
-  margin-bottom: 20px;
+  margin-bottom: 16px;
 }
 
+.sort-label {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--color-text-secondary);
+  flex-shrink: 0;
+}
 
-.oneday-sort-row button {
-  height: 40px;
+.sort-buttons {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
 
-  padding: 0 18px;
-
-  border: 1px solid #d9dfe8;
-  border-radius: 22px;
-
-  background-color: #ffffff;
-
-  color: #718093;
-
+.sort-buttons button {
+  padding: 7px 14px;
+  border-radius: var(--radius-pill);
+  border: 1px solid #eceef2;
+  background: var(--color-bg-chip);
   font-size: 13px;
-
+  font-weight: 600;
   cursor: pointer;
-
-  transition: 0.2s ease;
+  color: #4a5568;
 }
 
-
-.oneday-sort-row button:hover {
-  background-color: #f5f7fa;
+.sort-buttons button.active {
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+  color: var(--color-white);
+  font-weight: 700;
 }
 
-
-.oneday-sort-row button.active {
-  background-color: #294d77;
-
-  border-color: #294d77;
-
-  color: #ffffff;
-
-  box-shadow: 0 5px 14px rgba(41, 77, 119, 0.12);
+/* =========================
+   상태 안내 (로딩/에러/빈 상태)
+========================= */
+.oneday-empty {
+  background: var(--color-white);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  padding: 60px 20px;
+  text-align: center;
+  color: var(--color-text-muted);
 }
 
-
-.oneday-result-count {
-  margin-left: 4px;
-
-  font-size: 15px;
-
-  color: #8b97a7;
+.oneday-empty-icon {
+  font-size: 36px;
+  margin-bottom: 12px;
 }
 
+.oneday-empty h2 {
+  font-size: 18px;
+  margin: 0 0 8px;
+  color: var(--color-heading);
+}
+
+.oneday-empty button {
+  margin-top: 16px;
+  min-height: 42px;
+  padding: 0 18px;
+  border-radius: var(--radius-md);
+  border: 1px solid transparent;
+  background: var(--color-primary);
+  color: var(--color-white);
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.oneday-empty button:hover {
+  background: var(--color-primary-hover);
+}
 
 /* =========================
    카드 그리드
 ========================= */
-
-.oneday-grid {
-  display: grid;
-
-  grid-template-columns:
-    repeat(3, minmax(0, 1fr));
-
-  gap: 18px;
-}
-
-
-/* 현재 JSX 카드 그리드 */
-
 .oneday-post-grid {
   display: grid;
-
-  grid-template-columns:
-    repeat(3, minmax(0, 1fr));
-
-  gap: 18px;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 20px;
 }
-
-
-/* =========================
-   원데이 카드
-========================= */
-
-.oneday-card {
-  min-height: 285px;
-
-  display: flex;
-  flex-direction: column;
-
-  padding: 22px;
-
-  background-color: #ffffff;
-
-  border: 1px solid #e0e5eb;
-  border-radius: 18px;
-
-  box-sizing: border-box;
-
-  box-shadow: 0 4px 16px rgba(30, 45, 70, 0.035);
-
-  transition: 0.2s ease;
-}
-
-
-.oneday-card:hover {
-  transform: translateY(-4px);
-
-  box-shadow: 0 12px 28px rgba(30, 45, 70, 0.09);
-}
-
-
-/* =========================
-   현재 JSX 원데이 카드
-========================= */
 
 .oneday-post-card {
-  min-height: 285px;
-
+  background: var(--color-white);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  padding: 20px;
+  box-shadow: var(--shadow-card);
+  cursor: pointer;
+  text-align: left;
   display: flex;
   flex-direction: column;
-
-  padding: 22px;
-
-  background-color: #ffffff;
-
-  border: 1px solid #e0e5eb;
-  border-radius: 18px;
-
-  box-sizing: border-box;
-
-  box-shadow: 0 4px 16px rgba(30, 45, 70, 0.035);
-
-  transition: 0.2s ease;
-
-  /* button 기본 디자인 제거 */
-  appearance: none;
-  -webkit-appearance: none;
-
-  font-family: inherit;
-
-  text-align: left;
-
-  cursor: pointer;
+  transition: box-shadow 0.15s ease, transform 0.15s ease, border-color 0.15s ease;
 }
-
 
 .oneday-post-card:hover {
-  transform: translateY(-4px);
-
-  box-shadow: 0 12px 28px rgba(30, 45, 70, 0.09);
+  box-shadow: var(--shadow-floating);
+  border-color: var(--color-border-strong);
+  transform: translateY(-2px);
 }
-
-
-/* =========================
-   카드 상단
-========================= */
-
-.card-top {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-}
-
-
-/* 현재 JSX 카드 상단 */
 
 .post-card-top {
   display: flex;
-
-  align-items: flex-start;
-
   justify-content: space-between;
-
-  gap: 10px;
+  align-items: center;
+  margin-bottom: 14px;
 }
 
-
-/* =========================
-   종목 아이콘
-========================= */
-
-.sport-icon {
-  width: 54px;
-  height: 54px;
-
+.post-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: var(--color-bg-chip);
   display: flex;
   align-items: center;
   justify-content: center;
-
-  border-radius: 16px;
-
-  background-color: #eef2f6;
-
-  font-size: 24px;
+  font-size: 20px;
 }
-
-
-/* =========================
-   상태 뱃지
-========================= */
-
-.status-badge {
-  padding: 8px 11px;
-
-  border-radius: 10px;
-
-  font-size: 12px;
-  font-weight: 700;
-}
-
-
-.status-badge.open {
-  background-color: #edf6f0;
-
-  color: #4d8a68;
-}
-
-
-.status-badge.closed {
-  background-color: #f2f3f5;
-
-  color: #8b95a3;
-}
-
-
-/* 현재 JSX 상태 */
 
 .post-status {
-  padding: 8px 11px;
-
-  border-radius: 10px;
-
-  font-size: 12px;
+  font-size: 11.5px;
   font-weight: 700;
+  padding: 4px 9px;
+  border-radius: var(--radius-xs);
 }
-
 
 .post-status.open {
-  background-color: #edf6f0;
-
-  color: #4d8a68;
+  background: var(--color-success-bg);
+  color: var(--color-success);
 }
-
 
 .post-status.closed {
-  background-color: #f2f3f5;
-
-  color: #8b95a3;
+  background: #ffedd5;
+  color: #c2410c;
 }
 
-
-/* =========================
-   프로그램명
-========================= */
-
-.oneday-card h3 {
-  margin: 18px 0 8px;
-
-  font-size: 20px;
-  font-weight: 800;
-
-  color: #273548;
-
-  letter-spacing: -0.6px;
-
-  overflow: hidden;
-
-  text-overflow: ellipsis;
-
-  white-space: nowrap;
+.post-card-body {
+  flex: 1;
 }
-
-
-/* 현재 JSX 프로그램명 */
 
 .post-program-name {
-  margin: 18px 0 8px;
-
-  font-size: 20px;
-
-  font-weight: 800;
-
-  color: #273548;
-
-  letter-spacing: -0.6px;
-
-  overflow: hidden;
-
-  text-overflow: ellipsis;
-
-  white-space: nowrap;
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--color-heading);
+  margin-bottom: 4px;
 }
-
-
-/* =========================
-   시설명
-========================= */
-
-.facility-name {
-  margin: 0 0 14px;
-
-  font-size: 14px;
-
-  color: #8490a0;
-
-  overflow: hidden;
-
-  text-overflow: ellipsis;
-
-  white-space: nowrap;
-}
-
-
-/* 현재 JSX 시설명 */
 
 .post-facility-name {
-  margin: 0 0 14px;
-
   font-size: 14px;
-
-  color: #8490a0;
-
-  overflow: hidden;
-
-  text-overflow: ellipsis;
-
-  white-space: nowrap;
+  color: var(--color-text-muted);
+  margin-bottom: 10px;
 }
 
-
-/* =========================
-   주소
-========================= */
-
-.post-address {
-  margin: 0;
-
-  font-size: 13px;
-
-  color: #7a8797;
-
-  overflow: hidden;
-
-  text-overflow: ellipsis;
-
-  white-space: nowrap;
-}
-
-
-/* =========================
-   날짜 / 프로그램 시간
-========================= */
-
-.program-info {
-  margin: 0;
-
+.post-datetime {
   font-size: 14px;
-  font-weight: 500;
-
-  color: #667487;
+  color: var(--color-text);
+  margin-bottom: 8px;
 }
-
-
-/* 현재 JSX */
-
-.post-info-row {
-  display: flex;
-
-  flex-direction: column;
-
-  gap: 5px;
-
-  margin-top: 10px;
-}
-
-
-.post-info-row span {
-  font-size: 14px;
-
-  font-weight: 500;
-
-  color: #667487;
-}
-
-
-/* =========================
-   역 / 도보시간
-========================= */
-
-.station-info {
-  margin: 8px 0 0;
-
-  font-size: 13px;
-
-  color: #7a8797;
-
-  overflow: hidden;
-
-  text-overflow: ellipsis;
-
-  white-space: nowrap;
-}
-
-
-/* 현재 JSX */
 
 .post-location-row {
   display: flex;
-
   flex-direction: column;
-
-  gap: 5px;
-
-  margin-top: 8px;
-}
-
-
-.post-location-row span {
+  gap: 4px;
   font-size: 13px;
-
-  color: #7a8797;
-
-  overflow: hidden;
-
-  text-overflow: ellipsis;
-
-  white-space: nowrap;
+  color: var(--color-text-muted);
+  margin-bottom: 12px;
 }
-
-
-/* =========================
-   현재 위치 거리
-========================= */
-
-.distance-info {
-  margin: 8px 0 0;
-
-  font-size: 13px;
-  font-weight: 600;
-
-  color: #294d77;
-}
-
 
 .distance-text {
-  color: #294d77 !important;
-
-  font-weight: 600;
+  color: var(--color-accent);
+  font-weight: 500;
 }
-
-
-/* =========================
-   카드 하단
-========================= */
-
-.card-bottom {
-  margin-top: auto;
-
-  padding-top: 18px;
-
-  border-top: 1px solid #edf0f3;
-
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-
-/* 현재 JSX */
 
 .post-card-bottom {
-  margin-top: auto;
-
-  padding-top: 18px;
-
-  border-top: 1px solid #edf0f3;
-
   display: flex;
-
-  align-items: center;
-
   justify-content: space-between;
+  align-items: center;
+  padding-top: 12px;
+  border-top: 1px solid var(--color-border-light);
 }
-
-
-.card-bottom strong {
-  font-size: 15px;
-
-  color: #294d77;
-}
-
-
-/* =========================
-   코인
-========================= */
 
 .coin-text {
-  font-size: 15px;
-
-  color: #294d77;
-
+  padding: 6px 12px;
+  color: var(--color-warning);
+  background: var(--color-warning-bg);
+  border-radius: var(--radius-pill);
+  font-size: 13px;
   font-weight: 700;
 }
-
-
-/* =========================
-   조회 버튼
-========================= */
 
 .view-button {
-  padding: 10px 17px;
-
-  border: none;
-  border-radius: 10px;
-
-  background-color: #294d77;
-
-  color: #ffffff;
-
+  background: var(--color-primary);
+  color: var(--color-white);
   font-size: 13px;
   font-weight: 700;
-
-  cursor: pointer;
-
-  transition: 0.2s ease;
+  padding: 7px 16px;
+  border-radius: var(--radius-sm);
 }
-
-
-.view-button:hover {
-  background-color: #203f64;
-
-  transform: translateY(-1px);
-}
-
-
-/* 현재 JSX 신청하기 */
-
-.apply-text {
-  padding: 10px 17px;
-
-  border: none;
-
-  border-radius: 10px;
-
-  background-color: #294d77;
-
-  color: #ffffff;
-
-  font-size: 13px;
-
-  font-weight: 700;
-
-  white-space: nowrap;
-}
-
 
 /* =========================
-   상태 메시지
-========================= */
-
-.state-message {
-  padding: 80px 20px;
-
-  text-align: center;
-
-  background-color: #ffffff;
-
-  border: 1px solid #e1e5ec;
-  border-radius: 18px;
-
-  color: #718093;
-}
-
-
-.state-message.error {
-  color: #d44d4d;
-}
-
-
-/* 현재 JSX 상태 */
-
-.oneday-empty {
-  padding: 80px 20px;
-
-  text-align: center;
-
-  background-color: #ffffff;
-
-  border: 1px solid #e1e5ec;
-
-  border-radius: 18px;
-
-  color: #718093;
-
-  box-sizing: border-box;
-}
-
-
-.oneday-empty h2 {
-  margin: 0 0 10px;
-
-  color: #273548;
-
-  font-size: 20px;
-
-  font-weight: 800;
-}
-
-
-.oneday-empty p {
-  margin: 0;
-
-  color: #718093;
-
-  font-size: 14px;
-}
-
-
-.oneday-empty-icon {
-  margin-bottom: 12px;
-
-  font-size: 34px;
-}
-
-
-.oneday-empty button {
-  margin-top: 20px;
-
-  height: 46px;
-
-  padding: 0 20px;
-
-  border: none;
-
-  border-radius: 12px;
-
-  background-color: #294d77;
-
-  color: #ffffff;
-
-  font-size: 14px;
-
-  font-weight: 700;
-
-  cursor: pointer;
-}
-
-
-/* =================================================
    페이지네이션
-================================================= */
-
-.pagination {
-  width: 100%;
-
-  display: flex;
-
-  justify-content: center;
-  align-items: center;
-
-  gap: 10px;
-
-  margin-top: 48px;
-
-  padding-bottom: 30px;
-}
-
-
-/* 현재 JSX */
-
+========================= */
 .oneday-pagination {
-  width: 100%;
-
   display: flex;
-
   justify-content: center;
-
-  align-items: center;
-
-  gap: 10px;
-
-  margin-top: 48px;
-
-  padding-bottom: 30px;
+  gap: 8px;
+  margin-top: 28px;
 }
 
-
-.page-button,
 .oneday-pagination button {
-  width: 48px;
-  height: 48px;
-
-  display: flex;
-
-  align-items: center;
-  justify-content: center;
-
-  padding: 0;
-
-  border-radius: 14px;
-
-  border: 1px solid #e1e7ef;
-
-  background: #ffffff;
-
-  color: #718096;
-
-  font-size: 16px;
-  font-weight: 600;
-
+  width: 34px;
+  height: 34px;
+  border-radius: 9px;
+  border: 1px solid #e3e7ee;
+  background: var(--color-white);
   cursor: pointer;
-
-  transition:
-    background 0.2s ease,
-    color 0.2s ease,
-    border-color 0.2s ease,
-    transform 0.2s ease,
-    box-shadow 0.2s ease;
-
-  box-shadow:
-    0 4px 12px rgba(40, 55, 75, 0.035);
+  font-size: 13.5px;
+  color: var(--color-text-muted);
 }
 
-
-.page-button:hover:not(.active),
-.oneday-pagination button:hover:not(.active) {
-  transform: translateY(-2px);
-
-  background: #f5f8fb;
-
-  border-color: #c7d3df;
-
-  color: #294d77;
-
-  box-shadow:
-    0 8px 18px rgba(40, 55, 75, 0.07);
-}
-
-
-.page-button.active,
 .oneday-pagination button.active {
-  background: #294d77;
-
-  color: #ffffff;
-
-  border-color: #294d77;
-
-  box-shadow:
-    0 8px 20px rgba(41, 77, 119, 0.18);
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+  color: var(--color-white);
+  font-weight: 700;
 }
-
 
 .oneday-pagination button:disabled {
-  opacity: 0.4;
-
-  cursor: default;
+  opacity: 0.55;
+  cursor: not-allowed;
 }
 
-
 /* =========================
-   태블릿
+   반응형
 ========================= */
-
-@media (max-width: 1150px) {
-
+@media (max-width: 900px) {
   .oneday-page {
-    padding-left: 5%;
-    padding-right: 5%;
+    padding: 24px 20px;
   }
 
+  .oneday-sidebar {
+    width: 220px;
+    padding: 18px;
+  }
 
-  .oneday-grid,
+  .sidebar-title {
+    font-size: 17px;
+    margin-bottom: 16px;
+  }
+
+  .time-bucket-row {
+    gap: 5px;
+  }
+
+  .time-bucket {
+    padding: 9px 0;
+    font-size: 12px;
+  }
+
   .oneday-post-grid {
-    grid-template-columns:
-      repeat(2, minmax(0, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+    gap: 14px;
   }
 
+  .oneday-post-card {
+    padding: 14px;
+  }
 }
 
+@media (max-width: 680px) {
+  .oneday-layout {
+    flex-direction: column;
+  }
 
-/* =========================
-   모바일
-========================= */
+  .oneday-sidebar {
+    width: 100%;
+  }
 
-@media (max-width: 850px) {
+  .oneday-post-grid {
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  }
+}
 
+@media (max-width: 560px) {
   .oneday-page {
-    flex-direction: column;
-
-    padding: 25px;
+    padding: 16px 14px;
   }
 
-
-  .oneday-filter {
-    width: 100%;
-    min-width: 0;
+  .oneday-sidebar {
+    padding: 18px;
   }
 
-
-  .oneday-header {
-    flex-direction: column;
-
-    gap: 20px;
+  .oneday-header h1 {
+    font-size: 20px;
   }
 
-
-  .register-button {
+  .header-actions {
     width: 100%;
   }
 
-
-  .oneday-filter-row {
-    flex-direction: column;
-
-    align-items: stretch;
+  .register-button,
+  .refresh-button {
+    flex: 1;
+    width: 100%;
+    justify-content: center;
   }
 
+  .oneday-stat-bar {
+    padding: 12px 14px;
+  }
 
-  .oneday-filter-row select,
-  .oneday-filter-row input[type="date"] {
+  .oneday-sort-row {
+    align-items: flex-start;
+  }
+
+  .sort-buttons {
     width: 100%;
   }
 
+  .sort-buttons button {
+    flex: 1;
+    text-align: center;
+    padding: 7px 8px;
+  }
 
-  .oneday-grid,
   .oneday-post-grid {
     grid-template-columns: 1fr;
   }
 
-
-  .oneday-sort-row {
-    align-items: flex-start;
-
-    flex-direction: column;
-
-    gap: 15px;
-  }
-
-
-  .oneday-sort-row button {
-    width: 100%;
-  }
-
-
-  .oneday-result-count {
-    margin-left: 0;
-  }
-
-}
-
-
-/* =========================
-   작은 모바일
-========================= */
-
-@media (max-width: 500px) {
-
-  .oneday-page {
-    padding: 18px;
-  }
-
-
-  .title-row h1,
-  .oneday-header h1 {
-    font-size: 25px;
-  }
-
-
-  .oneday-sort-row {
-    flex-direction: column;
-  }
-
-
   .oneday-pagination {
-    gap: 7px;
+    flex-wrap: wrap;
   }
-
-
-  .oneday-pagination button {
-    width: 42px;
-    height: 42px;
-  }
-
 }

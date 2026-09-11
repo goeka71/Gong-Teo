@@ -135,9 +135,9 @@
 
 
 .detail-status.closed {
-  background: #f2f3f5;
+  background: #ffedd5;
 
-  color: #8b95a3;
+  color: #c2410c;
 }
 
 
@@ -1023,6 +1023,49 @@
 
 
 @media (max-width: 500px) {
+
+  .oneday-detail-page {
+    padding: 18px 16px 60px;
+  }
+
+
+  .detail-hero {
+    padding: 22px;
+  }
+
+
+  .detail-hero-left {
+    gap: 14px;
+  }
+
+
+  .detail-icon {
+    width: 56px;
+    height: 56px;
+
+    font-size: 26px;
+  }
+
+
+  .detail-title-area h1 {
+    font-size: 22px;
+  }
+
+
+  .detail-card {
+    padding: 20px;
+  }
+
+
+  .apply-card {
+    padding: 20px;
+  }
+
+
+  .kakao-map {
+    height: 240px;
+  }
+
 
   .apply-modal-overlay {
     padding: 14px;

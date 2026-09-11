@@ -1,9 +1,9 @@
 import { useEffect, useMemo, useState } from "react";
 import { apiGet } from "../api/client";
+import { createOnedayPost } from "../api/oneday";
 import "./OnedayRegister.css";
 
 const MY_PROGRAM_API = "/api/oneday/my-programs/";
-const POSTS_API = "/api/oneday/posts/";
 
 // --------------------------------------------------
 // 날짜 유틸
@@ -348,21 +348,16 @@ function OnedayRegister({ onBack }) {
     }
 
     // ----------------------------------------------
-    // 3. 이미 선택되어 있으면 제거
+    // 3. 이미 선택된 날짜를 다시 누르면 선택 해제,
+    //    아니면 그 날짜로 교체 (한 번에 하나만 선택 가능)
     // ----------------------------------------------
 
     setSelectedDates((prev) => {
       if (prev.includes(dateString)) {
-        return prev.filter(
-          (item) => item !== dateString
-        );
+        return [];
       }
 
-      // --------------------------------------------
-      // 4. 새로운 날짜 추가
-      // --------------------------------------------
-
-      return [...prev, dateString].sort();
+      return [dateString];
     });
   };
 
@@ -388,6 +383,14 @@ function OnedayRegister({ onBack }) {
     }
 
     const dateString = formatDate(date);
+
+    // 이미 선택한 날짜가 있으면 그 외 날짜는 선택 불가 (한 번에 하나만 선택)
+    if (
+      selectedDates.length > 0 &&
+      !selectedDates.includes(dateString)
+    ) {
+      return true;
+    }
 
     // 수강기간
     if (
@@ -452,54 +455,23 @@ function OnedayRegister({ onBack }) {
     }
 
     if (selectedDates.length === 0) {
-      alert("양도할 결석일을 하나 이상 선택해주세요.");
+      alert("양도할 결석일을 선택해주세요.");
       return;
     }
 
     try {
       setRegistering(true);
 
-      /*
-       * OnedayPost DB 구조상 transfer_date가 하나이므로
-       * 여러 날짜를 선택하면 날짜별로 게시글을 하나씩 생성한다.
-       */
+      // 한 번에 하나의 날짜만 선택할 수 있으므로 게시글도 하나만 생성한다.
+      // 여러 날짜를 양도하고 싶다면 이 페이지에서 등록을 반복해야 한다.
 
-      for (const date of selectedDates) {
-        const response = await fetch(POSTS_API, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            enroll: selectedProgram.enrollId,
-            transfer_date: date,
-            status: "open",
-          }),
-        });
+      await createOnedayPost({
+        enroll: selectedProgram.enrollId,
+        transfer_date: selectedDates[0],
+        status: "open",
+      });
 
-        if (!response.ok) {
-          let message =
-            "원데이 글 등록에 실패했습니다.";
-
-          try {
-            const data = await response.json();
-
-            if (data?.detail) {
-              message = data.detail;
-            } else if (data) {
-              message = JSON.stringify(data);
-            }
-          } catch {
-            // JSON 응답이 아니면 기본 메시지 사용
-          }
-
-          throw new Error(message);
-        }
-      }
-
-      alert(
-        `${selectedDates.length}개의 양도 글이 등록되었습니다!`
-      );
+      alert("양도 글이 등록되었습니다!");
 
       // 등록 화면 초기화
       setSelectedDates([]);
@@ -544,10 +516,6 @@ function OnedayRegister({ onBack }) {
         </button>
 
         <div className="register-title-area">
-
-          <div className="register-breadcrumb">
-            원데이 클래스 · 양도 글쓰기
-          </div>
 
           <h1>결석일 양도 글쓰기</h1>
 
@@ -756,7 +724,9 @@ function OnedayRegister({ onBack }) {
                 <h2>결석일 선택</h2>
 
                 <p>
-                  양도할 날짜를 선택해주세요.
+                  양도할 날짜를 선택해주세요. (한 번에 하나의 날짜만
+                  선택할 수 있어요. 다른 날짜도 양도하려면 이 페이지에서
+                  등록을 반복해주세요.)
                 </p>
               </div>
 

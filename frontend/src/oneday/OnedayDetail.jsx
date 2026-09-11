@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { applyOnedayPost } from "../api/oneday";
 import "./OnedayDetail.css";
 
 
@@ -189,7 +190,7 @@ function loadKakaoMapScript() {
 // ==========================================
 // 원데이 상세 페이지
 // ==========================================
-function OnedayDetail({ post, onBack }) {
+function OnedayDetail({ post, onBack, onApplySuccess }) {
 
   const mapRef = useRef(null);
 
@@ -206,6 +207,11 @@ function OnedayDetail({ post, onBack }) {
 
   // 확인 체크박스
   const [isConfirmed, setIsConfirmed] =
+    useState(false);
+
+
+  // 신청 처리 중
+  const [isApplying, setIsApplying] =
     useState(false);
 
 
@@ -411,19 +417,47 @@ function OnedayDetail({ post, onBack }) {
   // ==========================================
   // 신청 확정
   // ==========================================
-  function handleApplyConfirm() {
+  async function handleApplyConfirm() {
 
     if (!isConfirmed) {
       return;
     }
 
 
-    alert(
-      "원데이 신청이 완료되었습니다!"
-    );
+    try {
 
+      setIsApplying(true);
 
-    closeApplyModal();
+      const updatedPost =
+        await applyOnedayPost(post.id);
+
+      alert(
+        "원데이 신청이 완료되었습니다!"
+      );
+
+      closeApplyModal();
+
+      if (onApplySuccess) {
+        onApplySuccess(updatedPost);
+      }
+
+    } catch (error) {
+
+      console.error(
+        "원데이 신청 실패:",
+        error
+      );
+
+      alert(
+        error.message ||
+        "원데이 신청 중 오류가 발생했습니다."
+      );
+
+    } finally {
+
+      setIsApplying(false);
+
+    }
 
   }
 
@@ -478,7 +512,7 @@ function OnedayDetail({ post, onBack }) {
               >
                 {isOpen
                   ? "신청 가능"
-                  : "마감"}
+                  : "신청 마감"}
               </span>
 
             </div>
@@ -856,7 +890,7 @@ function OnedayDetail({ post, onBack }) {
 
               {isOpen
                 ? "원데이 신청하기"
-                : "현재 마감되었습니다"}
+                : "신청 마감된 원데이입니다"}
 
             </button>
 
@@ -1037,6 +1071,7 @@ function OnedayDetail({ post, onBack }) {
               <button
                 className="apply-cancel-button"
                 onClick={closeApplyModal}
+                disabled={isApplying}
               >
                 취소
               </button>
@@ -1048,10 +1083,10 @@ function OnedayDetail({ post, onBack }) {
                     ? "apply-confirm-button active"
                     : "apply-confirm-button"
                 }
-                disabled={!isConfirmed}
+                disabled={!isConfirmed || isApplying}
                 onClick={handleApplyConfirm}
               >
-                신청 확정
+                {isApplying ? "신청 처리 중..." : "신청 확정"}
               </button>
 
             </div>

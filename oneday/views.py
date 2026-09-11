@@ -184,25 +184,120 @@ def onedaypost_list(request):
                 status=status.HTTP_201_CREATED
             )
 
+        return Response(
+            serializer.errors,
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
 
 # ==========================================
-# 원데이 신청 목록
+# 원데이 신청 목록 / 신청하기
 # ==========================================
-@api_view(["GET"])
+@api_view(["GET", "POST"])
 def onedayapplication_list(request):
 
-    data = OnedayApplication.objects.select_related(
-        "post",
-        "user",
-    ).all()
+    # ======================================
+    # GET
+    # 원데이 신청 목록
+    # ======================================
+
+    if request.method == "GET":
+
+        data = OnedayApplication.objects.select_related(
+            "post",
+            "user",
+        ).all()
 
 
-    serializer = OnedayApplicationSerializer(
-        data,
-        many=True
-    )
+        serializer = OnedayApplicationSerializer(
+            data,
+            many=True
+        )
 
 
-    return Response(
-        serializer.data
-    )
+        return Response(
+            serializer.data
+        )
+
+
+    # ======================================
+    # POST
+    # 원데이 신청하기
+    # 신청과 동시에 게시글을 마감 처리한다.
+    # ======================================
+
+    if request.method == "POST":
+
+        post_id = request.data.get("post")
+
+
+        if not post_id:
+
+            return Response(
+                {
+                    "detail":
+                        "post는 필수입니다."
+                },
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+
+        try:
+
+            post = OnedayPost.objects.select_related(
+                "enroll",
+                "enroll__program",
+                "enroll__program__facility",
+            ).get(id=post_id)
+
+        except OnedayPost.DoesNotExist:
+
+            return Response(
+                {
+                    "detail":
+                        "존재하지 않는 게시글입니다."
+                },
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+
+        if post.status != "open":
+
+            return Response(
+                {
+                    "detail":
+                        "이미 마감된 원데이입니다."
+                },
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+
+        # ==================================
+        # 현재는 로그인 인증 전이므로
+        # 테스트용 user_id = 1 사용
+        # ==================================
+
+        if request.user.is_authenticated:
+            user_id = request.user.id
+        else:
+            user_id = 1
+
+
+        OnedayApplication.objects.create(
+            post=post,
+            user_id=user_id,
+            apply_result="assigned",
+        )
+
+
+        post.status = "closed"
+        post.save(update_fields=["status"])
+
+
+        result_serializer = OnedayPostSerializer(post)
+
+
+        return Response(
+            result_serializer.data,
+            status=status.HTTP_201_CREATED
+        )

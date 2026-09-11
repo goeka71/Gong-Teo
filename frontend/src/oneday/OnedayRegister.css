@@ -36,12 +36,6 @@
   gap: 7px;
 }
 
-.register-breadcrumb {
-  color: #8b93a1;
-  font-size: 13px;
-  font-weight: 600;
-}
-
 .register-title-area h1 {
   margin: 0;
   color: #0d1b2a;
@@ -451,14 +445,26 @@
   cursor: pointer;
 }
 
-.calendar-day:hover:not(.disabled) {
+.calendar-day:hover:not(.disabled):not(.selected) {
   background: #f2f5f9;
 }
 
 .calendar-day.selected {
+  font-weight: 800;
+}
+
+.calendar-day.selected span {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 36px;
+  height: 36px;
+
+  border-radius: 50%;
+
   background: #1d4e89;
   color: #fff;
-  font-weight: 800;
 }
 
 .calendar-day.disabled {
@@ -836,5 +842,57 @@
 
   .calendar-navigation strong {
     min-width: 90px;
+  }
+}
+
+@media (max-width: 480px) {
+  .oneday-register-page {
+    padding: 16px 12px 32px;
+  }
+
+  .register-card,
+  .condition-card {
+    padding: 16px;
+    border-radius: 14px;
+  }
+
+  .register-title-area h1 {
+    font-size: 20px;
+  }
+
+  .register-title-area p {
+    font-size: 13px;
+  }
+
+  .program-item {
+    min-height: 0;
+    padding: 14px;
+  }
+
+  .calendar-day {
+    min-height: 40px;
+    font-size: 12px;
+  }
+
+  .calendar-day.selected span {
+    width: 30px;
+    height: 30px;
+  }
+
+  .calendar-weekdays div {
+    padding: 9px 0;
+    font-size: 11px;
+  }
+
+  .calendar-heading {
+    flex-wrap: wrap;
+  }
+
+  .selected-date-list button {
+    font-size: 11px;
+  }
+
+  .submit-register-button {
+    height: 46px;
   }
 }
