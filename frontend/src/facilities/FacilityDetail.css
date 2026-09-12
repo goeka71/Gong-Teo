@@ -48,10 +48,44 @@
   letter-spacing: 0.02em;
 }
 
-.fd-name {
+.fd-name-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
   margin: 0 0 6px;
+}
+
+.fd-name {
+  margin: 0;
   font-size: 22px;
   font-weight: 700;
+}
+
+/* 시설 찜하기 버튼. 시설명 옆에 두고, 하트 아이콘만으로 애매할 수 있어
+   텍스트도 같이 표시한다. 찜 기능은 아직 없어서(백엔드 연동 전)
+   지금은 화면(프론트)에서만 토글된다. */
+.fd-wish-btn {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+
+  padding: 7px 12px;
+  border: 1px solid var(--fd-line);
+  border-radius: 999px;
+  background: var(--fd-bg);
+  color: #566473;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.fd-wish-btn--active {
+  border-color: var(--fd-wish);
+  color: var(--fd-wish);
 }
 
 .fd-addr {

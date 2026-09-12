@@ -15,9 +15,20 @@
   filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.25));
 }
 
-/* 나중에 찜 아이콘 등을 얹을 배지 자리. */
+/* 찜한 시설 표시 배지. 마커 우측 상단에 작게 얹는다. */
 .facility-marker__badge {
   position: absolute;
   top: -4px;
   right: -4px;
+
+  width: 16px;
+  height: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 50%;
+  background: #fff;
+  color: #e2685f;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.35);
 }

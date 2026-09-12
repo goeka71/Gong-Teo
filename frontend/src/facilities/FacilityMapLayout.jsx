@@ -25,6 +25,7 @@ import {
   getSportList,
 } from "../api/facilities";
 import FacilityMarker from "./FacilityMarker";
+import HeartIcon from "./HeartIcon";
 import { DEFAULT_QUERY } from "./facilityQuery";
 import {
   NEARBY_FALLBACK_RADII_M,
@@ -73,6 +74,24 @@ function FacilityMapLayout() {
 
   // "추천 시설" 카드에 띄울 무작위 시설 id. 새로고침 버튼을 누르면 바뀐다.
   const [recommendedId, setRecommendedId] = useState(null);
+
+  // 찜한 시설 id 목록. 찜 API 가 아직 없어서 화면(프론트)에서만 들고 있는
+  // 임시 상태 — 상세페이지의 "시설 찜하기" 버튼과 지도의 강조 토글이
+  // 이 상태 하나를 공유해야 해서(상세 패널과 지도가 이 레이아웃의 공통
+  // 자식이므로) 여기서 관리한다. 새로고침하면 초기화된다.
+  const [wishedIds, setWishedIds] = useState(() => new Set());
+
+  const toggleWish = useCallback((facilityId) => {
+    setWishedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(facilityId)) next.delete(facilityId);
+      else next.add(facilityId);
+      return next;
+    });
+  }, []);
+
+  // 지도의 "찜한 시설만 강조" 토글. 켜면 찜한 시설만 마커로 남긴다.
+  const [showWishOnly, setShowWishOnly] = useState(false);
 
   // =====================================================
   // 검색어 + 필터를 하나의 쿼리 상태로 관리한다.
@@ -318,7 +337,37 @@ function FacilityMapLayout() {
   // 지도 마커: 초기(검색·필터 없음 + 위치 확보) 화면에서는 주변 시설만,
   // 그 밖에는 기존처럼 검색·필터 결과 전체를 표시한다.
   const showNearbyOnly = !hasActiveQuery && userLocation != null;
-  const mapFacilities = showNearbyOnly ? nearby.list : filteredFacilities;
+
+  // "추천 시설"은 위치와 무관하게 전체 시설 중에서 뽑히기 때문에, 초기
+  // 화면(주변 시설만 표시)에서 반경 밖의 추천 시설을 선택하면 그 마커
+  // 자체가 목록에 없어서 선택 표시가 전혀 보이지 않는 문제가 있었다.
+  // 선택된 시설은 어떤 화면이든 항상 마커 목록에 포함되도록 보정한다.
+  const mapFacilities = useMemo(() => {
+    const base = showNearbyOnly ? nearby.list : filteredFacilities;
+
+    let list = base;
+    if (selectedFacilityId != null && !base.some((f) => f.id === selectedFacilityId)) {
+      const selected = joinedFacilities.find(
+        (facility) => facility.id === selectedFacilityId
+      );
+      if (selected) list = [...base, selected];
+    }
+
+    // "찜한 시설만 보기" 가 켜져 있으면 찜한 시설로만 좁힌다.
+    if (showWishOnly) {
+      list = list.filter((facility) => wishedIds.has(facility.id));
+    }
+
+    return list;
+  }, [
+    showNearbyOnly,
+    nearby.list,
+    filteredFacilities,
+    selectedFacilityId,
+    joinedFacilities,
+    showWishOnly,
+    wishedIds,
+  ]);
 
   // 마커 클릭: 선택 상태를 갱신하고 상세페이지로 SPA 이동(useNavigate).
   // 지도 자체는 그대로 유지된 채 좌측 패널(Outlet)만 상세로 바뀐다.
@@ -350,6 +399,9 @@ function FacilityMapLayout() {
             nearbyRadius: nearby.radius,
             recommendedFacility,
             refreshRecommendation,
+            // 찜(자리만 마련, 백엔드 연동 전) — 상세페이지 버튼이 여기 씀.
+            wishedIds,
+            toggleWish,
           }}
         />
       </div>
@@ -365,54 +417,80 @@ function FacilityMapLayout() {
           <p className="fml-map-status">지도를 불러오는 중입니다...</p>
         )}
         {!error && !loading && (
-          <KakaoMap
-            center={mapCenter}
-            isPanto
-            level={4}
-            className="kakao-map"
-          >
-            <MapTypeControl position="TOPRIGHT" />
-            <ZoomControl position="RIGHT" />
+          <>
+            {/* 찜한 시설만 강조해서 보기. 찜 자체는 아직 상세페이지 버튼으로만
+                화면(프론트)에 임시 저장되지만, 이 토글은 실제로 mapFacilities 를
+                찜한 시설로 좁혀서 마커 표시를 다르게 보여준다. */}
+            <button
+              type="button"
+              className={
+                "fml-wish-toggle" + (showWishOnly ? " fml-wish-toggle--active" : "")
+              }
+              onClick={() => setShowWishOnly((v) => !v)}
+              aria-pressed={showWishOnly}
+              title={
+                showWishOnly
+                  ? "전체 시설 다시 보기"
+                  : "찜한 시설만 강조해서 보기"
+              }
+            >
+              <HeartIcon filled={showWishOnly} size={16} />
+            </button>
 
-            {/* 내 위치: 파란 점 + (초기 화면일 때) 주변 반경 원. */}
-            {userLocation && (
-              <>
-                <CustomOverlayMap
-                  position={userLocation}
-                  xAnchor={0.5}
-                  yAnchor={0.5}
-                >
-                  <div className="fml-user-dot" title="내 위치" />
-                </CustomOverlayMap>
-                {showNearbyOnly && (
-                  <KakaoCircle
-                    center={userLocation}
-                    radius={nearby.radius}
-                    strokeWeight={1}
-                    strokeColor="#1d4e89"
-                    strokeOpacity={0.4}
-                    strokeStyle="shortdash"
-                    fillColor="#1d4e89"
-                    fillOpacity={0.05}
+            <KakaoMap
+              center={mapCenter}
+              isPanto
+              level={4}
+              className="kakao-map"
+            >
+              <MapTypeControl position="TOPRIGHT" />
+              <ZoomControl position="RIGHT" />
+
+              {/* 내 위치: 파란 점 + (초기 화면일 때) 주변 반경 원. */}
+              {userLocation && (
+                <>
+                  <CustomOverlayMap
+                    position={userLocation}
+                    xAnchor={0.5}
+                    yAnchor={0.5}
+                  >
+                    <div className="fml-user-dot" title="내 위치" />
+                  </CustomOverlayMap>
+                  {showNearbyOnly && (
+                    <KakaoCircle
+                      center={userLocation}
+                      radius={nearby.radius}
+                      strokeWeight={1}
+                      strokeColor="#1d4e89"
+                      strokeOpacity={0.4}
+                      strokeStyle="shortdash"
+                      fillColor="#1d4e89"
+                      fillOpacity={0.05}
+                    />
+                  )}
+                </>
+              )}
+
+              {/* 클러스터 옵션은 지정하지 않고 라이브러리 기본값(그리드 60px,
+                  클릭 시 확대 등)을 그대로 사용한다.
+                  초기 화면에서는 주변 시설만, 검색·필터 시에는 그 결과를 표시한다. */}
+              <MarkerClusterer>
+                {mapFacilities.map((facility) => (
+                  <FacilityMarker
+                    key={facility.id}
+                    facility={facility}
+                    selected={facility.id === selectedFacilityId}
+                    onClick={() => handleMarkerClick(facility)}
+                    badge={
+                      wishedIds.has(facility.id) ? (
+                        <HeartIcon filled size={11} />
+                      ) : null
+                    }
                   />
-                )}
-              </>
-            )}
-
-            {/* 클러스터 옵션은 지정하지 않고 라이브러리 기본값(그리드 60px,
-                클릭 시 확대 등)을 그대로 사용한다.
-                초기 화면에서는 주변 시설만, 검색·필터 시에는 그 결과를 표시한다. */}
-            <MarkerClusterer>
-              {mapFacilities.map((facility) => (
-                <FacilityMarker
-                  key={facility.id}
-                  facility={facility}
-                  selected={facility.id === selectedFacilityId}
-                  onClick={() => handleMarkerClick(facility)}
-                />
-              ))}
-            </MarkerClusterer>
-          </KakaoMap>
+                ))}
+              </MarkerClusterer>
+            </KakaoMap>
+          </>
         )}
       </div>
     </div>

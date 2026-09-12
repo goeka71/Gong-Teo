@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useOutletContext } from "react-router-dom";
 import { getFacilityDetail, updateFacilityDetail } from "../api/facilities";
+import HeartIcon from "./HeartIcon";
 import "./FacilityDetail.css";
 
 // 시설 상세 화면.
@@ -193,6 +194,11 @@ function FacilityDetail({ facilityId = 1 }) {
   const [editing, setEditing] = useState(false); // 수정 폼 열림 여부
   const [saveOk, setSaveOk] = useState(false); // "저장됐습니다" 표시 여부
 
+  // 찜 여부/토글은 부모(FacilityMapLayout)가 들고 있는 공용 상태를 그대로 쓴다.
+  // 지도 쪽 "찜한 시설만 보기" 토글과 같은 값을 봐야 하기 때문(찜 API 는 아직 없음).
+  const { wishedIds, toggleWish } = useOutletContext();
+  const wished = wishedIds.has(facilityId);
+
   // facilityId 가 바뀔 때마다 API를 다시 호출한다.
   // ignore 플래그: 응답이 늦게 왔을 때 이미 사라졌거나 바뀐 화면에
   //   setState 하지 않도록 막는 정리(cleanup) 패턴.
@@ -244,7 +250,20 @@ function FacilityDetail({ facilityId = 1 }) {
         )}
 
         <div className="fd-basic">
-          <h1 className="fd-name">{data.facility_name}</h1>
+          <div className="fd-name-row">
+            <h1 className="fd-name">{data.facility_name}</h1>
+
+            {/* 찜 기능은 아직 없어서(백엔드 연동 전) 화면에서만 토글되는 버튼. */}
+            <button
+              type="button"
+              className={"fd-wish-btn" + (wished ? " fd-wish-btn--active" : "")}
+              onClick={() => toggleWish(facilityId)}
+              aria-pressed={wished}
+            >
+              <HeartIcon filled={wished} size={16} />
+              <span>{wished ? "찜한 시설" : "시설 찜하기"}</span>
+            </button>
+          </div>
 
           {data.addr && <p className="fd-addr">{data.addr}</p>}
 
