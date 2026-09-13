@@ -5612,7 +5612,39 @@ function ProgramRegisterView({
   );
 }
 
+function SummaryRow({ label, value }) {
+  return (
+    <div
+      style={{
+        display: "grid",
+        gridTemplateColumns: "90px 1fr",
+        gap: "12px",
+        padding: "10px 0",
+        borderBottom: "1px solid #eef0f3",
+        fontSize: "13px",
+      }}
+    >
+      <span
+        style={{
+          color: "#8a95a6",
+          fontWeight: "600",
+        }}
+      >
+        {label}
+      </span>
 
+      <strong
+        style={{
+          color: "#1f2937",
+          fontWeight: "600",
+          wordBreak: "break-word",
+        }}
+      >
+        {value}
+      </strong>
+    </div>
+  );
+}
 /* =========================
    준비중 메뉴
 ========================= */

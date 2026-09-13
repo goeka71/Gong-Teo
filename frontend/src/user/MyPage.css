@@ -1,0 +1,860 @@
+/* =========================================================
+   체육ON - MyPage 전용 CSS
+   현재 MyPage.jsx의 정적 inline style을 분리한 파일입니다.
+
+   - global.css의 공통 .card / .btn / .input / .select 등은 그대로 재사용
+   - 상태값에 따라 달라지는 스타일(active, status, 별점 등)은 JSX에 남김
+   ========================================================= */
+
+/* ---------- MyPage ---------- */
+.mypage-style-02 {
+  display: flex;
+  gap: 36px;
+  align-items: flex-start;
+}
+
+.mypage-style-01 {
+  flex: 1;
+  min-width: 0;
+}
+
+
+/* ---------- MyPageSidebar ---------- */
+.mypage-sidebar-style-07 {
+  width: 235px;
+  flex-shrink: 0;
+}
+
+.mypage-sidebar-style-06 {
+  margin-bottom: 16px;
+}
+
+.mypage-sidebar-style-05 {
+  text-align: center;
+  padding: 24px 18px;
+}
+
+.mypage-sidebar-style-04 {
+  width: 64px;
+  height: 64px;
+  margin: 0 auto 13px;
+  border-radius: 50%;
+  background: #edf2f7;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 25px;
+}
+
+.mypage-sidebar-style-03 {
+  display: block;
+  font-size: 16px;
+  margin-bottom: 12px;
+}
+
+.mypage-sidebar-style-02 {
+  display: inline-block;
+  padding: 7px 13px;
+  border-radius: 20px;
+  background: #fff3d6;
+  color: #8a6200;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.mypage-sidebar-style-01 {
+  padding: 10px;
+}
+
+
+/* ---------- ProgramStatusView ---------- */
+.program-status-style-24 {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
+}
+
+.program-status-style-23 {
+  display: grid;
+  grid-template-columns: minmax(0, 1.8fr) minmax(260px, 0.7fr);
+  gap: 20px;
+  margin-bottom: 22px;
+}
+
+.program-status-style-22 {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 22px;
+}
+
+.program-status-style-21 {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.program-status-style-20 {
+  margin: 0;
+  font-size: 21px;
+}
+
+.program-status-style-19 {
+  padding: 5px 10px;
+  font-size: 12px;
+}
+
+.program-status-style-18 {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  border-top: 1px solid #e8ebef;
+  border-left: 1px solid #e8ebef;
+}
+
+.program-status-style-17 {
+  margin-bottom: 4px;
+  padding: 4px 5px;
+  border-radius: 5px;
+  background: #eaf2fb;
+  color: #1d4e89;
+  font-size: 10px;
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.program-status-style-16 {
+  color: #777;
+  font-size: 12px;
+}
+
+.program-status-style-15 {
+  margin: 5px 0 16px;
+  font-size: 21px;
+}
+
+.program-status-style-14 {
+  padding: 45px 10px;
+  text-align: center;
+  color: #999;
+}
+
+.program-status-style-13 {
+  font-size: 28px;
+}
+
+.program-status-style-12 {
+  display: grid;
+  gap: 12px;
+}
+
+.program-status-style-11 {
+  padding: 14px;
+  border-radius: 10px;
+  background: #f7f9fc;
+  border: 1px solid #e7ebf0;
+}
+
+.program-status-style-10 {
+  margin-top: 7px;
+  color: #687386;
+  font-size: 12px;
+  line-height: 1.7;
+}
+
+.program-status-style-09 {
+  margin-top: 4px;
+  color: #1d4e89;
+  font-weight: 700;
+}
+
+.program-status-style-08 {
+  margin: 0 0 6px;
+  font-size: 20px;
+}
+
+.program-status-style-07 {
+  margin: 0 0 20px;
+  color: #777;
+  font-size: 13px;
+}
+
+.program-status-style-06 {
+  padding: 50px 20px;
+  text-align: center;
+  color: #777;
+}
+
+.program-status-style-05 {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 14px;
+}
+
+.program-status-style-04 {
+  border: 1px solid #e1e6ed;
+  border-radius: 12px;
+  padding: 18px;
+}
+
+.program-status-style-03 {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.program-status-style-02 {
+  margin: 7px 0 0;
+  color: #687386;
+  font-size: 13px;
+}
+
+.program-status-style-01 {
+  margin-top: 16px;
+  display: grid;
+  gap: 8px;
+}
+
+
+/* ---------- ProgramInfoRow ---------- */
+.program-info-style-02 {
+  display: grid;
+  grid-template-columns: 55px 1fr;
+  gap: 10px;
+  font-size: 13px;
+}
+
+.program-info-style-01 {
+  color: #777;
+}
+
+
+/* ---------- MyReviewsView ---------- */
+.my-reviews-style-14 {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
+  margin-bottom: 22px;
+}
+
+.my-reviews-style-13 {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.my-reviews-style-12 {
+  margin: 0;
+  font-size: 27px;
+  color: #111827;
+}
+
+.my-reviews-style-11 {
+  color: #8a95a6;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.my-reviews-style-10 {
+  display: flex;
+  gap: 8px;
+}
+
+.my-reviews-style-09 {
+  padding: 60px;
+  text-align: center;
+  color: #777;
+}
+
+.my-reviews-style-08 {
+  padding: 70px 20px;
+  text-align: center;
+}
+
+.my-reviews-style-07 {
+  font-size: 36px;
+  margin-bottom: 13px;
+}
+
+.my-reviews-style-06 {
+  font-size: 17px;
+}
+
+.my-reviews-style-05 {
+  color: #8a95a6;
+  font-size: 14px;
+  margin: 8px 0 20px;
+}
+
+.my-reviews-style-04 {
+  color: #999;
+  font-size: 12px;
+  margin-top: 12px;
+}
+
+.my-reviews-style-03 {
+  display: grid;
+  gap: 18px;
+}
+
+.my-reviews-style-02 {
+  margin-top: 22px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 22px 24px;
+  border: 1px solid #e3e8ef;
+  border-radius: 14px;
+  background: #f8fafc;
+}
+
+.my-reviews-style-01 {
+  color: #687386;
+  font-size: 14px;
+}
+
+
+/* ---------- ReviewCard ---------- */
+.review-card-style-13 {
+  border: 1px solid #e3e8ef;
+  border-radius: 15px;
+  background: #fff;
+  padding: 20px;
+  display: grid;
+  grid-template-columns: 88px minmax(0, 1fr) 70px;
+  gap: 20px;
+}
+
+.review-card-style-12 {
+  width: 88px;
+  height: 88px;
+  border-radius: 10px;
+  overflow: hidden;
+  background: #eef1f5;
+}
+
+.review-card-style-11 {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.review-card-style-10 {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 25px;
+}
+
+.review-card-style-09 {
+  display: flex;
+  gap: 9px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.review-card-style-08 {
+  color: #8c96a5;
+  font-size: 12px;
+}
+
+.review-card-style-07 {
+  margin-top: 5px;
+  color: #1d4e89;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.review-card-style-06 {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 7px;
+}
+
+.review-card-style-05 {
+  color: #9aa3b1;
+  font-size: 12px;
+}
+
+.review-card-style-04 {
+  margin: 10px 0 0;
+  color: #637083;
+  font-size: 14px;
+  line-height: 1.7;
+}
+
+.review-card-style-03 {
+  display: grid;
+  gap: 9px;
+  align-content: start;
+}
+
+.review-card-style-02 {
+  padding: 8px;
+  border: 1px solid #cbd6e5;
+  border-radius: 8px;
+  background: #fff;
+  color: #234f83;
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.review-card-style-01 {
+  padding: 8px;
+  border: 1px solid #f0caca;
+  border-radius: 8px;
+  background: #fff;
+  color: #df4747;
+  cursor: pointer;
+  font-weight: 700;
+}
+
+
+/* ---------- ReviewFormModal ---------- */
+.review-form-modal-style-18 {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: rgba(15,23,42,0.45);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 30px;
+}
+
+.review-form-modal-style-17 {
+  width: 100%;
+  max-width: 620px;
+  max-height: 90vh;
+  overflow-y: auto;
+  background: #fff;
+  border-radius: 18px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.18);
+}
+
+.review-form-modal-style-16 {
+  padding: 22px 25px;
+  border-bottom: 1px solid #e8ecf1;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.review-form-modal-style-15 {
+  margin: 0;
+}
+
+.review-form-modal-style-14 {
+  margin: 6px 0 0;
+  color: #8490a1;
+  font-size: 13px;
+}
+
+.review-form-modal-style-13 {
+  border: none;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 19px;
+}
+
+.review-form-modal-style-12 {
+  padding: 25px;
+}
+
+.review-form-modal-style-11 {
+  margin-bottom: 22px;
+  padding: 15px;
+  background: #f7f9fc;
+  border: 1px solid #e3e8ef;
+  border-radius: 10px;
+}
+
+.review-form-modal-style-10 {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.review-form-modal-style-09 {
+  text-align: right;
+  color: #999;
+  font-size: 11px;
+  margin-top: 5px;
+}
+
+.review-form-modal-style-08 {
+  position: relative;
+  width: 130px;
+  height: 130px;
+}
+
+.review-form-modal-style-07 {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 12px;
+}
+
+.review-form-modal-style-06 {
+  width: 130px;
+  height: 130px;
+  border: 1px dashed #c5cfdb;
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: #8290a2;
+  background: #fafbfc;
+}
+
+.review-form-modal-style-05 {
+  display: none;
+}
+
+.review-form-modal-style-04 {
+  font-size: 27px;
+}
+
+.review-form-modal-style-03 {
+  font-size: 12px;
+}
+
+.review-form-modal-style-02 {
+  padding: 11px;
+  background: #fff2f2;
+  color: #c62828;
+  border-radius: 8px;
+  font-size: 13px;
+}
+
+.review-form-modal-style-01 {
+  padding: 18px 25px;
+  border-top: 1px solid #eee;
+  display: flex;
+  justify-content: flex-end;
+  gap: 9px;
+}
+
+
+/* ---------- ReviewProgramRow ---------- */
+.review-program-row-style-02 {
+  display: grid;
+  grid-template-columns: 75px 1fr;
+  gap: 10px;
+  padding: 5px 0;
+  font-size: 12px;
+}
+
+.review-program-row-style-01 {
+  color: #8a95a6;
+}
+
+
+/* ---------- ReviewDeleteModal ---------- */
+.review-delete-modal-style-06 {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  background: rgba(15,23,42,0.45);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.review-delete-modal-style-05 {
+  width: 410px;
+  padding: 28px;
+  border-radius: 16px;
+  background: #fff;
+}
+
+.review-delete-modal-style-04 {
+  margin: 0 0 10px;
+}
+
+.review-delete-modal-style-03 {
+  color: #687386;
+  line-height: 1.6;
+}
+
+.review-delete-modal-style-02 {
+  display: flex;
+  justify-content: flex-end;
+  gap: 9px;
+  margin-top: 25px;
+}
+
+.review-delete-modal-style-01 {
+  padding: 9px 17px;
+  border: none;
+  border-radius: 8px;
+  background: #dc3f3f;
+  color: #fff;
+  cursor: pointer;
+  font-weight: 700;
+}
+
+
+/* ---------- ReviewStars ---------- */
+.review-stars-style-01 {
+  display: flex;
+  gap: 1px;
+}
+
+
+/* ---------- ProgramRegisterView ---------- */
+.program-register-style-13 {
+  display: grid;
+  grid-template-columns: minmax(0, 1.7fr) minmax(280px, 0.8fr);
+  gap: 24px;
+  align-items: start;
+}
+
+.program-register-style-12 {
+  background: #f7f8fa;
+  color: #777;
+}
+
+.program-register-style-11 {
+  display: grid;
+  grid-template-columns: 1fr 30px 1fr;
+  align-items: center;
+  gap: 8px;
+}
+
+.program-register-style-10 {
+  text-align: center;
+}
+
+.program-register-style-09 {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.program-register-style-08 {
+  color: #c62828;
+}
+
+.program-register-style-07 {
+  margin: 0 0 9px;
+  color: #7b8797;
+  font-size: 12px;
+}
+
+.program-register-style-06 {
+  display: none;
+}
+
+.program-register-style-05 {
+  margin-top: 7px;
+  color: #888;
+  font-size: 12px;
+}
+
+.program-register-style-04 {
+  position: sticky;
+  top: 88px;
+}
+
+.program-register-style-03 {
+  margin: 0 0 18px;
+}
+
+.program-register-style-02 {
+  color: #c62828;
+  background: #fff3f3;
+  padding: 10px;
+  border-radius: 8px;
+  font-size: 13px;
+}
+
+.program-register-style-01 {
+  margin-top: 10px;
+}
+
+
+/* ---------- EmptyMenuView ---------- */
+.empty-menu-style-01 {
+  margin: 0;
+  color: #777;
+}
+
+
+/* ---------- SettingsView ---------- */
+.settings-view-style-13 {
+  margin-bottom: 34px;
+}
+
+.settings-view-style-12 {
+  margin: 0;
+  font-size: 28px;
+  font-weight: 700;
+  color: #111827;
+  letter-spacing: -0.6px;
+}
+
+.settings-view-style-11 {
+  margin: 9px 0 0;
+  font-size: 14px;
+  color: #7b8493;
+}
+
+.settings-view-style-10 {
+  margin-bottom: 44px;
+}
+
+.settings-view-style-09 {
+  padding-bottom: 15px;
+  border-bottom: 1px solid #dfe3e8;
+}
+
+.settings-view-style-08 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 700;
+  color: #222831;
+}
+
+.settings-view-style-07 {
+  margin: 6px 0 0;
+  font-size: 13px;
+  color: #9299a4;
+}
+
+.settings-view-style-06 {
+  width: 100%;
+  max-width: 420px;
+  background: #f7f8fa;
+  color: #9299a4;
+}
+
+.settings-view-style-05 {
+  width: 100%;
+  max-width: 420px;
+}
+
+.settings-view-style-04 {
+  margin: 16px 0 0 216px;
+  color: #218653;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.settings-view-style-03 {
+  margin: 16px 0 0 216px;
+  color: #c62828;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.settings-view-style-02 {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 24px;
+}
+
+.settings-view-style-01 {
+  min-width: 112px;
+}
+
+
+/* ---------- SettingFormRow ---------- */
+.settings-form-row-style-04 {
+  display: grid;
+  grid-template-columns: 180px minmax(0, 1fr);
+  gap: 36px;
+  align-items: center;
+  min-height: 88px;
+  padding: 18px 4px;
+  border-bottom: 1px solid #edf0f3;
+}
+
+.settings-form-row-style-03 {
+  display: block;
+  font-size: 14px;
+  font-weight: 600;
+  color: #303846;
+}
+
+.settings-form-row-style-02 {
+  display: block;
+  margin-top: 5px;
+  font-size: 12px;
+  line-height: 1.5;
+  color: #9aa1ab;
+}
+
+.settings-form-row-style-01 {
+  min-width: 0;
+}
+
+
+/* ---------- SettingsSection ---------- */
+.settings-section-style-03 {
+  margin-bottom: 42px;
+}
+
+.settings-section-style-02 {
+  margin-bottom: 8px;
+  padding: 0 4px;
+}
+
+.settings-section-style-01 {
+  font-size: 13px;
+  font-weight: 700;
+  color: #8b95a1;
+  letter-spacing: -0.1px;
+}
+
+
+/* ---------- SettingsActionRow ---------- */
+.settings-action-row-style-02 {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 32px;
+  min-height: 96px;
+  padding: 22px 4px;
+  border-bottom: 1px solid #edf0f3;
+}
+
+.settings-action-row-style-01 {
+  flex-shrink: 0;
+}
+
+
+/* ---------- SummaryRow ---------- */
+.summary-row {
+  display: grid;
+  grid-template-columns: 80px 1fr;
+  gap: 10px;
+  padding: 11px 0;
+  border-bottom: 1px solid #eee;
+  font-size: 13px;
+}
+
+.summary-row-label {
+  font-weight: 700;
+}
+
+.summary-row-value {
+  color: #555;
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 980px) {
+  .program-register-style-13 {
+    grid-template-columns: 1fr;
+  }
+}
