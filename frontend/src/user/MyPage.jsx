@@ -15,6 +15,8 @@ import {
   deleteReview as deleteReviewApi,
 } from "../api/user";
 
+import "./MyPage.css";
+
 
 /* =========================
    기본 데이터
@@ -900,12 +902,7 @@ function MyPage() {
       <div className="page-container">
 
         <div
-          style={{
-            display: "flex",
-            gap: "36px",
-            alignItems:
-              "flex-start",
-          }}
+          className="mypage-style-02"
         >
 
           <MyPageSidebar
@@ -916,10 +913,7 @@ function MyPage() {
 
 
           <main
-            style={{
-              flex: 1,
-              minWidth: 0,
-            }}
+            className="mypage-style-01"
           >
 
             {view ===
@@ -1183,60 +1177,28 @@ function MyPageSidebar({
 }) {
   return (
     <aside
-      style={{
-        width: "235px",
-        flexShrink: 0,
-      }}
+      className="mypage-sidebar-style-07"
     >
 
       <div
-        className="card"
-        style={{
-          marginBottom: "16px",
-        }}
+        className="card mypage-sidebar-style-06"
+        
       >
 
         <div
-          className="card-body"
-          style={{
-            textAlign: "center",
-            padding: "24px 18px",
-          }}
+          className="card-body mypage-sidebar-style-05"
+          
         >
 
           <div
-            style={{
-              width: "64px",
-              height: "64px",
-
-              margin:
-                "0 auto 13px",
-
-              borderRadius:
-                "50%",
-
-              background:
-                "#edf2f7",
-
-              display: "flex",
-              alignItems:
-                "center",
-              justifyContent:
-                "center",
-
-              fontSize: "25px",
-            }}
+            className="mypage-sidebar-style-04"
           >
             👤
           </div>
 
 
           <strong
-            style={{
-              display: "block",
-              fontSize: "16px",
-              marginBottom: "12px",
-            }}
+            className="mypage-sidebar-style-03"
           >
             {user.name ||
               user.username}{" "}
@@ -1245,28 +1207,7 @@ function MyPageSidebar({
 
 
           <span
-            style={{
-              display:
-                "inline-block",
-
-              padding:
-                "7px 13px",
-
-              borderRadius:
-                "20px",
-
-              background:
-                "#fff3d6",
-
-              color:
-                "#8a6200",
-
-              fontSize:
-                "13px",
-
-              fontWeight:
-                "700",
-            }}
+            className="mypage-sidebar-style-02"
           >
             보유 {user.coin} coin
           </span>
@@ -1279,10 +1220,8 @@ function MyPageSidebar({
       <div className="card">
 
         <div
-          className="card-body"
-          style={{
-            padding: "10px",
-          }}
+          className="card-body mypage-sidebar-style-01"
+          
         >
 
           {MY_PAGE_MENUS.map(
@@ -1553,19 +1492,9 @@ function ProgramStatusView({
     <>
 
       <div
-        className="page-header"
+        className="page-header program-status-style-24"
 
-        style={{
-          display: "flex",
-
-          justifyContent:
-            "space-between",
-
-          alignItems:
-            "center",
-
-          gap: "20px",
-        }}
+        
       >
 
         <div>
@@ -1595,17 +1524,7 @@ function ProgramStatusView({
 
 
       <div
-        style={{
-          display: "grid",
-
-          gridTemplateColumns:
-            "minmax(0, 1.8fr) minmax(260px, 0.7fr)",
-
-          gap: "20px",
-
-          marginBottom:
-            "22px",
-        }}
+        className="program-status-style-23"
       >
 
         <div className="card">
@@ -1613,18 +1532,7 @@ function ProgramStatusView({
           <div className="card-body">
 
             <div
-              style={{
-                display: "flex",
-
-                justifyContent:
-                  "space-between",
-
-                alignItems:
-                  "center",
-
-                marginBottom:
-                  "22px",
-              }}
+              className="program-status-style-22"
             >
 
               <button
@@ -1649,20 +1557,11 @@ function ProgramStatusView({
 
 
               <div
-                style={{
-                  display: "flex",
-                  alignItems:
-                    "center",
-                  gap: "12px",
-                }}
+                className="program-status-style-21"
               >
 
                 <h2
-                  style={{
-                    margin: 0,
-                    fontSize:
-                      "21px",
-                  }}
+                  className="program-status-style-20"
                 >
                   {calendarDate.getFullYear()}년{" "}
                   {calendarDate.getMonth() + 1}월
@@ -1672,15 +1571,9 @@ function ProgramStatusView({
                 <button
                   type="button"
 
-                  className="btn btn-outline"
+                  className="btn btn-outline program-status-style-19"
 
-                  style={{
-                    padding:
-                      "5px 10px",
-
-                    fontSize:
-                      "12px",
-                  }}
+                  
 
                   onClick={
                     goToday
@@ -1716,19 +1609,7 @@ function ProgramStatusView({
 
 
             <div
-              style={{
-                display:
-                  "grid",
-
-                gridTemplateColumns:
-                  "repeat(7, 1fr)",
-
-                borderTop:
-                  "1px solid #e8ebef",
-
-                borderLeft:
-                  "1px solid #e8ebef",
-              }}
+              className="program-status-style-18"
             >
 
               {DAYS.map(
@@ -1915,37 +1796,7 @@ function ProgramStatusView({
                                 program.id
                               }
 
-                              style={{
-                                marginBottom:
-                                  "4px",
-
-                                padding:
-                                  "4px 5px",
-
-                                borderRadius:
-                                  "5px",
-
-                                background:
-                                  "#eaf2fb",
-
-                                color:
-                                  "#1d4e89",
-
-                                fontSize:
-                                  "10px",
-
-                                fontWeight:
-                                  "600",
-
-                                overflow:
-                                  "hidden",
-
-                                textOverflow:
-                                  "ellipsis",
-
-                                whiteSpace:
-                                  "nowrap",
-                              }}
+                              className="program-status-style-17"
                             >
                               {
                                 program.program_name
@@ -1971,24 +1822,14 @@ function ProgramStatusView({
           <div className="card-body">
 
             <span
-              style={{
-                color: "#777",
-                fontSize:
-                  "12px",
-              }}
+              className="program-status-style-16"
             >
               선택한 날짜
             </span>
 
 
             <h2
-              style={{
-                margin:
-                  "5px 0 16px",
-
-                fontSize:
-                  "21px",
-              }}
+              className="program-status-style-15"
             >
               {
                 selectedDateText
@@ -2007,23 +1848,11 @@ function ProgramStatusView({
               0 ? (
 
               <div
-                style={{
-                  padding:
-                    "45px 10px",
-
-                  textAlign:
-                    "center",
-
-                  color:
-                    "#999",
-                }}
+                className="program-status-style-14"
               >
 
                 <div
-                  style={{
-                    fontSize:
-                      "28px",
-                  }}
+                  className="program-status-style-13"
                 >
                   🗓️
                 </div>
@@ -2037,13 +1866,7 @@ function ProgramStatusView({
             ) : (
 
               <div
-                style={{
-                  display:
-                    "grid",
-
-                  gap:
-                    "12px",
-                }}
+                className="program-status-style-12"
               >
 
                 {selectedSchedules.map(
@@ -2054,19 +1877,7 @@ function ProgramStatusView({
                         program.id
                       }
 
-                      style={{
-                        padding:
-                          "14px",
-
-                        borderRadius:
-                          "10px",
-
-                        background:
-                          "#f7f9fc",
-
-                        border:
-                          "1px solid #e7ebf0",
-                      }}
+                      className="program-status-style-11"
                     >
 
                       <strong>
@@ -2077,19 +1888,7 @@ function ProgramStatusView({
 
 
                       <div
-                        style={{
-                          marginTop:
-                            "7px",
-
-                          color:
-                            "#687386",
-
-                          fontSize:
-                            "12px",
-
-                          lineHeight:
-                            "1.7",
-                        }}
+                        className="program-status-style-10"
                       >
 
                         <div>
@@ -2110,16 +1909,7 @@ function ProgramStatusView({
 
 
                         <div
-                          style={{
-                            marginTop:
-                              "4px",
-
-                            color:
-                              "#1d4e89",
-
-                            fontWeight:
-                              "700",
-                          }}
+                          className="program-status-style-09"
                         >
                           {
                             program.program_time ||
@@ -2148,29 +1938,14 @@ function ProgramStatusView({
         <div className="card-body">
 
           <h2
-            style={{
-              margin:
-                "0 0 6px",
-
-              fontSize:
-                "20px",
-            }}
+            className="program-status-style-08"
           >
             등록한 수강 프로그램
           </h2>
 
 
           <p
-            style={{
-              margin:
-                "0 0 20px",
-
-              color:
-                "#777",
-
-              fontSize:
-                "13px",
-            }}
+            className="program-status-style-07"
           >
             총 {myPrograms.length}개의 프로그램
           </p>
@@ -2181,16 +1956,7 @@ function ProgramStatusView({
               0 && (
 
               <div
-                style={{
-                  padding:
-                    "50px 20px",
-
-                  textAlign:
-                    "center",
-
-                  color:
-                    "#777",
-                }}
+                className="program-status-style-06"
               >
                 등록된 수강 프로그램이 없습니다.
               </div>
@@ -2202,16 +1968,7 @@ function ProgramStatusView({
               0 && (
 
               <div
-                style={{
-                  display:
-                    "grid",
-
-                  gridTemplateColumns:
-                    "repeat(auto-fit, minmax(280px, 1fr))",
-
-                  gap:
-                    "14px",
-                }}
+                className="program-status-style-05"
               >
 
                 {myPrograms.map(
@@ -2229,29 +1986,11 @@ function ProgramStatusView({
                           program.id
                         }
 
-                        style={{
-                          border:
-                            "1px solid #e1e6ed",
-
-                          borderRadius:
-                            "12px",
-
-                          padding:
-                            "18px",
-                        }}
+                        className="program-status-style-04"
                       >
 
                         <div
-                          style={{
-                            display:
-                              "flex",
-
-                            justifyContent:
-                              "space-between",
-
-                            gap:
-                              "12px",
-                          }}
+                          className="program-status-style-03"
                         >
 
                           <div>
@@ -2264,16 +2003,7 @@ function ProgramStatusView({
 
 
                             <p
-                              style={{
-                                margin:
-                                  "7px 0 0",
-
-                                color:
-                                  "#687386",
-
-                                fontSize:
-                                  "13px",
-                              }}
+                              className="program-status-style-02"
                             >
                               {
                                 program.facility_name
@@ -2316,16 +2046,7 @@ function ProgramStatusView({
 
 
                         <div
-                          style={{
-                            marginTop:
-                              "16px",
-
-                            display:
-                              "grid",
-
-                            gap:
-                              "8px",
-                          }}
+                          className="program-status-style-01"
                         >
 
                           <ProgramInfoRow
@@ -2429,26 +2150,11 @@ function ProgramInfoRow({
 }) {
   return (
     <div
-      style={{
-        display:
-          "grid",
-
-        gridTemplateColumns:
-          "55px 1fr",
-
-        gap:
-          "10px",
-
-        fontSize:
-          "13px",
-      }}
+      className="program-info-style-02"
     >
 
       <span
-        style={{
-          color:
-            "#777",
-        }}
+        className="program-info-style-01"
       >
         {label}
       </span>
@@ -2876,51 +2582,19 @@ function MyReviewsView({
   return (
     <>
       <div
-        style={{
-          display:
-            "flex",
-          justifyContent:
-            "space-between",
-          alignItems:
-            "center",
-          gap:
-            "20px",
-          marginBottom:
-            "22px",
-        }}
+        className="my-reviews-style-14"
       >
         <div
-          style={{
-            display:
-              "flex",
-            alignItems:
-              "baseline",
-            gap:
-              "8px",
-          }}
+          className="my-reviews-style-13"
         >
           <h1
-            style={{
-              margin:
-                0,
-              fontSize:
-                "27px",
-              color:
-                "#111827",
-            }}
+            className="my-reviews-style-12"
           >
             내가 쓴 리뷰
           </h1>
 
           <span
-            style={{
-              color:
-                "#8a95a6",
-              fontSize:
-                "15px",
-              fontWeight:
-                "600",
-            }}
+            className="my-reviews-style-11"
           >
             {reviews.length}개
           </span>
@@ -2928,12 +2602,7 @@ function MyReviewsView({
 
 
         <div
-          style={{
-            display:
-              "flex",
-            gap:
-              "8px",
-          }}
+          className="my-reviews-style-10"
         >
           <SortButton
             active={
@@ -2969,58 +2638,31 @@ function MyReviewsView({
       {programsLoading ||
       reviewsLoading ? (
         <div
-          className="card"
-          style={{
-            padding:
-              "60px",
-            textAlign:
-              "center",
-            color:
-              "#777",
-          }}
+          className="card my-reviews-style-09"
+          
         >
           리뷰를 불러오는 중입니다.
         </div>
       ) : reviews.length ===
         0 ? (
         <div
-          className="card"
-          style={{
-            padding:
-              "70px 20px",
-            textAlign:
-              "center",
-          }}
+          className="card my-reviews-style-08"
+          
         >
           <div
-            style={{
-              fontSize:
-                "36px",
-              marginBottom:
-                "13px",
-            }}
+            className="my-reviews-style-07"
           >
             ⭐
           </div>
 
           <strong
-            style={{
-              fontSize:
-                "17px",
-            }}
+            className="my-reviews-style-06"
           >
             아직 작성한 리뷰가 없습니다.
           </strong>
 
           <p
-            style={{
-              color:
-                "#8a95a6",
-              fontSize:
-                "14px",
-              margin:
-                "8px 0 20px",
-            }}
+            className="my-reviews-style-05"
           >
             내가 등록한 수강 프로그램에 리뷰를 남겨보세요.
           </p>
@@ -3041,14 +2683,7 @@ function MyReviewsView({
           {myPrograms.length ===
             0 && (
             <p
-              style={{
-                color:
-                  "#999",
-                fontSize:
-                  "12px",
-                marginTop:
-                  "12px",
-              }}
+              className="my-reviews-style-04"
             >
               리뷰 작성 전 수강 프로그램을 먼저 등록해주세요.
             </p>
@@ -3056,12 +2691,7 @@ function MyReviewsView({
         </div>
       ) : (
         <div
-          style={{
-            display:
-              "grid",
-            gap:
-              "18px",
-          }}
+          className="my-reviews-style-03"
         >
           {sortedReviews.map(
             (review) => (
@@ -3092,32 +2722,10 @@ function MyReviewsView({
       {reviews.length >
         0 && (
         <div
-          style={{
-            marginTop:
-              "22px",
-            display:
-              "flex",
-            justifyContent:
-              "space-between",
-            alignItems:
-              "center",
-            padding:
-              "22px 24px",
-            border:
-              "1px solid #e3e8ef",
-            borderRadius:
-              "14px",
-            background:
-              "#f8fafc",
-          }}
+          className="my-reviews-style-02"
         >
           <span
-            style={{
-              color:
-                "#687386",
-              fontSize:
-                "14px",
-            }}
+            className="my-reviews-style-01"
           >
             내가 등록한 수강 프로그램에 리뷰를 남겨보세요.
           </span>
@@ -3196,47 +2804,11 @@ function ReviewCard({
 }) {
   return (
     <div
-      style={{
-        border:
-          "1px solid #e3e8ef",
-
-        borderRadius:
-          "15px",
-
-        background:
-          "#fff",
-
-        padding:
-          "20px",
-
-        display:
-          "grid",
-
-        gridTemplateColumns:
-          "88px minmax(0, 1fr) 70px",
-
-        gap:
-          "20px",
-      }}
+      className="review-card-style-13"
     >
 
       <div
-        style={{
-          width:
-            "88px",
-
-          height:
-            "88px",
-
-          borderRadius:
-            "10px",
-
-          overflow:
-            "hidden",
-
-          background:
-            "#eef1f5",
-        }}
+        className="review-card-style-12"
       >
 
         {review.image ? (
@@ -3250,40 +2822,13 @@ function ReviewCard({
               review.facilityName
             }
 
-            style={{
-              width:
-                "100%",
-
-              height:
-                "100%",
-
-              objectFit:
-                "cover",
-            }}
+            className="review-card-style-11"
           />
 
         ) : (
 
           <div
-            style={{
-              width:
-                "100%",
-
-              height:
-                "100%",
-
-              display:
-                "flex",
-
-              alignItems:
-                "center",
-
-              justifyContent:
-                "center",
-
-              fontSize:
-                "25px",
-            }}
+            className="review-card-style-10"
           >
             🏃
           </div>
@@ -3295,19 +2840,7 @@ function ReviewCard({
       <div>
 
         <div
-          style={{
-            display:
-              "flex",
-
-            gap:
-              "9px",
-
-            alignItems:
-              "center",
-
-            flexWrap:
-              "wrap",
-          }}
+          className="review-card-style-09"
         >
 
           <strong>
@@ -3320,13 +2853,7 @@ function ReviewCard({
           {review.subfacilityName && (
 
             <span
-              style={{
-                color:
-                  "#8c96a5",
-
-                fontSize:
-                  "12px",
-              }}
+              className="review-card-style-08"
             >
               {
                 review.subfacilityName
@@ -3338,19 +2865,7 @@ function ReviewCard({
 
 
         <div
-          style={{
-            marginTop:
-              "5px",
-
-            color:
-              "#1d4e89",
-
-            fontSize:
-              "12px",
-
-            fontWeight:
-              "700",
-          }}
+          className="review-card-style-07"
         >
           {
             review.programName
@@ -3359,19 +2874,7 @@ function ReviewCard({
 
 
         <div
-          style={{
-            display:
-              "flex",
-
-            alignItems:
-              "center",
-
-            gap:
-              "10px",
-
-            marginTop:
-              "7px",
-          }}
+          className="review-card-style-06"
         >
 
           <ReviewStars
@@ -3382,13 +2885,7 @@ function ReviewCard({
 
 
           <span
-            style={{
-              color:
-                "#9aa3b1",
-
-              fontSize:
-                "12px",
-            }}
+            className="review-card-style-05"
           >
             {review.date}
           </span>
@@ -3397,19 +2894,7 @@ function ReviewCard({
 
 
         <p
-          style={{
-            margin:
-              "10px 0 0",
-
-            color:
-              "#637083",
-
-            fontSize:
-              "14px",
-
-            lineHeight:
-              "1.7",
-          }}
+          className="review-card-style-04"
         >
           {
             review.content
@@ -3420,16 +2905,7 @@ function ReviewCard({
 
 
       <div
-        style={{
-          display:
-            "grid",
-
-          gap:
-            "9px",
-
-          alignContent:
-            "start",
-        }}
+        className="review-card-style-03"
       >
 
         <button
@@ -3439,28 +2915,7 @@ function ReviewCard({
             onEdit
           }
 
-          style={{
-            padding:
-              "8px",
-
-            border:
-              "1px solid #cbd6e5",
-
-            borderRadius:
-              "8px",
-
-            background:
-              "#fff",
-
-            color:
-              "#234f83",
-
-            cursor:
-              "pointer",
-
-            fontWeight:
-              "700",
-          }}
+          className="review-card-style-02"
         >
           수정
         </button>
@@ -3473,28 +2928,7 @@ function ReviewCard({
             onDelete
           }
 
-          style={{
-            padding:
-              "8px",
-
-            border:
-              "1px solid #f0caca",
-
-            borderRadius:
-              "8px",
-
-            background:
-              "#fff",
-
-            color:
-              "#df4747",
-
-            cursor:
-              "pointer",
-
-            fontWeight:
-              "700",
-          }}
+          className="review-card-style-01"
         >
           삭제
         </button>
@@ -3708,84 +3142,21 @@ function ReviewFormModal({
 
   return (
     <div
-      style={{
-        position:
-          "fixed",
-
-        inset:
-          0,
-
-        zIndex:
-          9999,
-
-        background:
-          "rgba(15,23,42,0.45)",
-
-        display:
-          "flex",
-
-        justifyContent:
-          "center",
-
-        alignItems:
-          "center",
-
-        padding:
-          "30px",
-      }}
+      className="review-form-modal-style-18"
     >
 
       <div
-        style={{
-          width:
-            "100%",
-
-          maxWidth:
-            "620px",
-
-          maxHeight:
-            "90vh",
-
-          overflowY:
-            "auto",
-
-          background:
-            "#fff",
-
-          borderRadius:
-            "18px",
-
-          boxShadow:
-            "0 20px 60px rgba(0,0,0,0.18)",
-        }}
+        className="review-form-modal-style-17"
       >
 
         <div
-          style={{
-            padding:
-              "22px 25px",
-
-            borderBottom:
-              "1px solid #e8ecf1",
-
-            display:
-              "flex",
-
-            justifyContent:
-              "space-between",
-
-            alignItems:
-              "center",
-          }}
+          className="review-form-modal-style-16"
         >
 
           <div>
 
             <h2
-              style={{
-                margin:
-                  0,
-              }}
+              className="review-form-modal-style-15"
             >
               {mode ===
               "write"
@@ -3795,16 +3166,7 @@ function ReviewFormModal({
 
 
             <p
-              style={{
-                margin:
-                  "6px 0 0",
-
-                color:
-                  "#8490a1",
-
-                fontSize:
-                  "13px",
-              }}
+              className="review-form-modal-style-14"
             >
               내가 등록한 수강 프로그램에 대한 후기를 남겨주세요.
             </p>
@@ -3819,25 +3181,7 @@ function ReviewFormModal({
               onClose
             }
 
-            style={{
-              border:
-                "none",
-
-              width:
-                "34px",
-
-              height:
-                "34px",
-
-              borderRadius:
-                "50%",
-
-              cursor:
-                "pointer",
-
-              fontSize:
-                "19px",
-            }}
+            className="review-form-modal-style-13"
           >
             ×
           </button>
@@ -3846,10 +3190,7 @@ function ReviewFormModal({
 
 
         <div
-          style={{
-            padding:
-              "25px",
-          }}
+          className="review-form-modal-style-12"
         >
 
           <div className="form-group">
@@ -3915,22 +3256,7 @@ function ReviewFormModal({
           {selectedMyProgram && (
 
             <div
-              style={{
-                marginBottom:
-                  "22px",
-
-                padding:
-                  "15px",
-
-                background:
-                  "#f7f9fc",
-
-                border:
-                  "1px solid #e3e8ef",
-
-                borderRadius:
-                  "10px",
-              }}
+              className="review-form-modal-style-11"
             >
 
               <ReviewProgramRow
@@ -3990,16 +3316,7 @@ function ReviewFormModal({
 
 
             <div
-              style={{
-                display:
-                  "flex",
-
-                alignItems:
-                  "center",
-
-                gap:
-                  "6px",
-              }}
+              className="review-form-modal-style-10"
             >
 
               {[1, 2, 3, 4, 5].map(
@@ -4111,19 +3428,7 @@ function ReviewFormModal({
 
 
             <div
-              style={{
-                textAlign:
-                  "right",
-
-                color:
-                  "#999",
-
-                fontSize:
-                  "11px",
-
-                marginTop:
-                  "5px",
-              }}
+              className="review-form-modal-style-09"
             >
               {content.length} / 500
             </div>
@@ -4141,16 +3446,7 @@ function ReviewFormModal({
             {imagePreview ? (
 
               <div
-                style={{
-                  position:
-                    "relative",
-
-                  width:
-                    "130px",
-
-                  height:
-                    "130px",
-                }}
+                className="review-form-modal-style-08"
               >
 
                 <img
@@ -4160,19 +3456,7 @@ function ReviewFormModal({
 
                   alt="리뷰"
 
-                  style={{
-                    width:
-                      "100%",
-
-                    height:
-                      "100%",
-
-                    objectFit:
-                      "cover",
-
-                    borderRadius:
-                      "12px",
-                  }}
+                  className="review-form-modal-style-07"
                 />
 
 
@@ -4227,40 +3511,7 @@ function ReviewFormModal({
             ) : (
 
               <label
-                style={{
-                  width:
-                    "130px",
-
-                  height:
-                    "130px",
-
-                  border:
-                    "1px dashed #c5cfdb",
-
-                  borderRadius:
-                    "12px",
-
-                  display:
-                    "flex",
-
-                  flexDirection:
-                    "column",
-
-                  alignItems:
-                    "center",
-
-                  justifyContent:
-                    "center",
-
-                  cursor:
-                    "pointer",
-
-                  color:
-                    "#8290a2",
-
-                  background:
-                    "#fafbfc",
-                }}
+                className="review-form-modal-style-06"
               >
 
                 <input
@@ -4268,10 +3519,7 @@ function ReviewFormModal({
 
                   accept=".jpg,.jpeg,.png"
 
-                  style={{
-                    display:
-                      "none",
-                  }}
+                  className="review-form-modal-style-05"
 
                   onChange={
                     handleImageChange
@@ -4280,20 +3528,14 @@ function ReviewFormModal({
 
 
                 <span
-                  style={{
-                    fontSize:
-                      "27px",
-                  }}
+                  className="review-form-modal-style-04"
                 >
                   +
                 </span>
 
 
                 <span
-                  style={{
-                    fontSize:
-                      "12px",
-                  }}
+                  className="review-form-modal-style-03"
                 >
                   사진 추가
                 </span>
@@ -4307,22 +3549,7 @@ function ReviewFormModal({
           {formError && (
 
             <div
-              style={{
-                padding:
-                  "11px",
-
-                background:
-                  "#fff2f2",
-
-                color:
-                  "#c62828",
-
-                borderRadius:
-                  "8px",
-
-                fontSize:
-                  "13px",
-              }}
+              className="review-form-modal-style-02"
             >
               {formError}
             </div>
@@ -4332,22 +3559,7 @@ function ReviewFormModal({
 
 
         <div
-          style={{
-            padding:
-              "18px 25px",
-
-            borderTop:
-              "1px solid #eee",
-
-            display:
-              "flex",
-
-            justifyContent:
-              "flex-end",
-
-            gap:
-              "9px",
-          }}
+          className="review-form-modal-style-01"
         >
 
           <button
@@ -4393,29 +3605,11 @@ function ReviewProgramRow({
 }) {
   return (
     <div
-      style={{
-        display:
-          "grid",
-
-        gridTemplateColumns:
-          "75px 1fr",
-
-        gap:
-          "10px",
-
-        padding:
-          "5px 0",
-
-        fontSize:
-          "12px",
-      }}
+      className="review-program-row-style-02"
     >
 
       <span
-        style={{
-          color:
-            "#8a95a6",
-        }}
+        className="review-program-row-style-01"
       >
         {label}
       </span>
@@ -4441,64 +3635,22 @@ function ReviewDeleteModal({
 }) {
   return (
     <div
-      style={{
-        position:
-          "fixed",
-
-        inset:
-          0,
-
-        zIndex:
-          10000,
-
-        background:
-          "rgba(15,23,42,0.45)",
-
-        display:
-          "flex",
-
-        justifyContent:
-          "center",
-
-        alignItems:
-          "center",
-      }}
+      className="review-delete-modal-style-06"
     >
 
       <div
-        style={{
-          width:
-            "410px",
-
-          padding:
-            "28px",
-
-          borderRadius:
-            "16px",
-
-          background:
-            "#fff",
-        }}
+        className="review-delete-modal-style-05"
       >
 
         <h2
-          style={{
-            margin:
-              "0 0 10px",
-          }}
+          className="review-delete-modal-style-04"
         >
           리뷰를 삭제할까요?
         </h2>
 
 
         <p
-          style={{
-            color:
-              "#687386",
-
-            lineHeight:
-              "1.6",
-          }}
+          className="review-delete-modal-style-03"
         >
           <strong>
             {
@@ -4516,19 +3668,7 @@ function ReviewDeleteModal({
 
 
         <div
-          style={{
-            display:
-              "flex",
-
-            justifyContent:
-              "flex-end",
-
-            gap:
-              "9px",
-
-            marginTop:
-              "25px",
-          }}
+          className="review-delete-modal-style-02"
         >
 
           <button
@@ -4551,28 +3691,7 @@ function ReviewDeleteModal({
               onDelete
             }
 
-            style={{
-              padding:
-                "9px 17px",
-
-              border:
-                "none",
-
-              borderRadius:
-                "8px",
-
-              background:
-                "#dc3f3f",
-
-              color:
-                "#fff",
-
-              cursor:
-                "pointer",
-
-              fontWeight:
-                "700",
-            }}
+            className="review-delete-modal-style-01"
           >
             삭제하기
           </button>
@@ -4639,13 +3758,7 @@ function ReviewStars({
 }) {
   return (
     <div
-      style={{
-        display:
-          "flex",
-
-        gap:
-          "1px",
-      }}
+      className="review-stars-style-01"
     >
 
       {[1, 2, 3, 4, 5].map(
@@ -4755,19 +3868,7 @@ function ProgramRegisterView({
 
 
       <div
-        style={{
-          display:
-            "grid",
-
-          gridTemplateColumns:
-            "minmax(0, 1.7fr) minmax(280px, 0.8fr)",
-
-          gap:
-            "24px",
-
-          alignItems:
-            "start",
-        }}
+        className="program-register-style-13"
       >
 
         <div className="card">
@@ -4892,15 +3993,9 @@ function ProgramRegisterView({
                 0 ? (
 
                 <div
-                  className="input"
+                  className="input program-register-style-12"
 
-                  style={{
-                    background:
-                      "#f7f8fa",
-
-                    color:
-                      "#777",
-                  }}
+                  
                 >
                   세부시설이 없는 시설입니다.
                 </div>
@@ -5055,14 +4150,11 @@ function ProgramRegisterView({
               {isDirectInput && (
 
                 <input
-                  className="input"
+                  className="input program-register-style-01"
 
                   type="text"
 
-                  style={{
-                    marginTop:
-                      "10px",
-                  }}
+                  
 
                   placeholder="프로그램명을 직접 입력해주세요"
 
@@ -5091,19 +4183,7 @@ function ProgramRegisterView({
 
 
               <div
-                style={{
-                  display:
-                    "grid",
-
-                  gridTemplateColumns:
-                    "1fr 30px 1fr",
-
-                  alignItems:
-                    "center",
-
-                  gap:
-                    "8px",
-                }}
+                className="program-register-style-11"
               >
 
                 <input
@@ -5126,10 +4206,7 @@ function ProgramRegisterView({
 
 
                 <span
-                  style={{
-                    textAlign:
-                      "center",
-                  }}
+                  className="program-register-style-10"
                 >
                   ~
                 </span>
@@ -5166,19 +4243,7 @@ function ProgramRegisterView({
 
 
               <div
-                style={{
-                  display:
-                    "grid",
-
-                  gridTemplateColumns:
-                    "1fr 30px 1fr",
-
-                  alignItems:
-                    "center",
-
-                  gap:
-                    "8px",
-                }}
+                className="program-register-style-11"
               >
 
                 <input
@@ -5201,10 +4266,7 @@ function ProgramRegisterView({
 
 
                 <span
-                  style={{
-                    textAlign:
-                      "center",
-                  }}
+                  className="program-register-style-10"
                 >
                   ~
                 </span>
@@ -5241,16 +4303,7 @@ function ProgramRegisterView({
 
 
               <div
-                style={{
-                  display:
-                    "flex",
-
-                  gap:
-                    "8px",
-
-                  flexWrap:
-                    "wrap",
-                }}
+                className="program-register-style-09"
               >
 
                 {DAYS.map(
@@ -5296,15 +4349,11 @@ function ProgramRegisterView({
             <div className="form-group">
 
               <label className="form-label">
-                수강증 인증 <span style={{ color: "#c62828" }}>*</span>
+                수강증 인증 <span className="program-register-style-08">*</span>
               </label>
 
               <p
-                style={{
-                  margin: "0 0 9px",
-                  color: "#7b8797",
-                  fontSize: "12px",
-                }}
+                className="program-register-style-07"
               >
                 수강 프로그램 등록을 위해 반드시 수강증을 첨부해주세요.
               </p>
@@ -5361,10 +4410,7 @@ function ProgramRegisterView({
                     handleFileChange
                   }
 
-                  style={{
-                    display:
-                      "none",
-                  }}
+                  className="program-register-style-06"
                 />
 
 
@@ -5376,16 +4422,7 @@ function ProgramRegisterView({
 
 
                 <span
-                  style={{
-                    marginTop:
-                      "7px",
-
-                    color:
-                      "#888",
-
-                    fontSize:
-                      "12px",
-                  }}
+                  className="program-register-style-05"
                 >
                   JPG, PNG · 10MB 이하
                 </span>
@@ -5396,12 +4433,9 @@ function ProgramRegisterView({
                   <button
                     type="button"
 
-                    className="btn btn-outline"
+                    className="btn btn-outline program-register-style-01"
 
-                    style={{
-                      marginTop:
-                        "10px",
-                    }}
+                    
 
                     onClick={(
                       event
@@ -5430,24 +4464,15 @@ function ProgramRegisterView({
 
 
         <div
-          className="card"
+          className="card program-register-style-04"
 
-          style={{
-            position:
-              "sticky",
-
-            top:
-              "88px",
-          }}
+          
         >
 
           <div className="card-body">
 
             <h2
-              style={{
-                margin:
-                  "0 0 18px",
-              }}
+              className="program-register-style-03"
             >
               등록 내용 확인
             </h2>
@@ -5544,22 +4569,7 @@ function ProgramRegisterView({
             {submitError && (
 
               <p
-                style={{
-                  color:
-                    "#c62828",
-
-                  background:
-                    "#fff3f3",
-
-                  padding:
-                    "10px",
-
-                  borderRadius:
-                    "8px",
-
-                  fontSize:
-                    "13px",
-                }}
+                className="program-register-style-02"
               >
                 {submitError}
               </p>
@@ -5588,12 +4598,9 @@ function ProgramRegisterView({
             <button
               type="button"
 
-              className="btn btn-outline btn-block"
+              className="btn btn-outline btn-block program-register-style-01"
 
-              style={{
-                marginTop:
-                  "10px",
-              }}
+              
 
               onClick={
                 handleCancel
@@ -5612,39 +4619,7 @@ function ProgramRegisterView({
   );
 }
 
-function SummaryRow({ label, value }) {
-  return (
-    <div
-      style={{
-        display: "grid",
-        gridTemplateColumns: "90px 1fr",
-        gap: "12px",
-        padding: "10px 0",
-        borderBottom: "1px solid #eef0f3",
-        fontSize: "13px",
-      }}
-    >
-      <span
-        style={{
-          color: "#8a95a6",
-          fontWeight: "600",
-        }}
-      >
-        {label}
-      </span>
 
-      <strong
-        style={{
-          color: "#1f2937",
-          fontWeight: "600",
-          wordBreak: "break-word",
-        }}
-      >
-        {value}
-      </strong>
-    </div>
-  );
-}
 /* =========================
    준비중 메뉴
 ========================= */
@@ -5675,13 +4650,7 @@ function EmptyMenuView({
         <div className="card-body">
 
           <p
-            style={{
-              margin:
-                0,
-
-              color:
-                "#777",
-            }}
+            className="empty-menu-style-01"
           >
             준비 중입니다.
           </p>
@@ -5721,6 +4690,14 @@ function SettingsView({
     setSettingError,
   ] = useState("");
 
+  /*
+    null     : 확인창 닫힘
+    logout   : 로그아웃 확인창
+    withdraw : 회원 탈퇴 확인창
+  */
+  const [confirmAction, setConfirmAction] =
+    useState(null);
+
   const handleChange =
     (event) => {
       const {
@@ -5753,8 +4730,7 @@ function SettingsView({
               form.birth || null,
             phone: form.phone,
           });
-
-        setUser(updatedUser);
+setUser(updatedUser);
 
         setMessage(
           "회원정보가 수정되었습니다."
@@ -5770,46 +4746,62 @@ function SettingsView({
       }
     };
 
-  const handleLogout =
-    () => {
-      localStorage.removeItem(
-        "accessToken"
-      );
+  /* =========================
+     실제 로그아웃 처리
+  ========================= */
+  const handleLogout = () => {
+    localStorage.removeItem(
+      "accessToken"
+    );
 
-      localStorage.removeItem(
-        "refreshToken"
-      );
+    localStorage.removeItem(
+      "refreshToken"
+    );
 
-      window.location.href =
-        "/login";
-    };
+    localStorage.removeItem(
+      "username"
+    );
+
+    /* Navbar에 로그인 상태 변경 알림 */
+    window.dispatchEvent(
+      new Event("auth-change")
+    );
+
+    setConfirmAction(null);
+
+    /* 로그아웃 후 메인으로 이동 */
+    window.location.href = "/";
+  };
+
+  /* =========================
+     회원 탈퇴 최종 처리
+
+     현재 프로젝트에는 회원 탈퇴 API가
+     아직 연결되어 있지 않으므로
+     확인창까지만 구현한다.
+  ========================= */
+  const handleWithdraw = () => {
+    setConfirmAction(null);
+
+    alert(
+      "회원 탈퇴 API는 아직 연결되지 않았습니다. 백엔드 탈퇴 API 연결 후 이 위치에서 실제 탈퇴 요청을 보내면 됩니다."
+    );
+  };
 
   return (
     <>
       {/* 상단 제목 */}
       <div
-        style={{
-          marginBottom: "34px",
-        }}
+        className="settings-view-style-13"
       >
         <h1
-          style={{
-            margin: 0,
-            fontSize: "28px",
-            fontWeight: "700",
-            color: "#111827",
-            letterSpacing: "-0.6px",
-          }}
+          className="settings-view-style-12"
         >
           환경설정
         </h1>
 
         <p
-          style={{
-            margin: "9px 0 0",
-            fontSize: "14px",
-            color: "#7b8493",
-          }}
+          className="settings-view-style-11"
         >
           계정 정보와 로그인 설정을 관리할 수 있습니다.
         </p>
@@ -5820,34 +4812,19 @@ function SettingsView({
           기본 정보
       ===================== */}
       <section
-        style={{
-          marginBottom: "44px",
-        }}
+        className="settings-view-style-10"
       >
         <div
-          style={{
-            paddingBottom: "15px",
-            borderBottom:
-              "1px solid #dfe3e8",
-          }}
+          className="settings-view-style-09"
         >
           <h2
-            style={{
-              margin: 0,
-              fontSize: "18px",
-              fontWeight: "700",
-              color: "#222831",
-            }}
+            className="settings-view-style-08"
           >
             기본 정보
           </h2>
 
           <p
-            style={{
-              margin: "6px 0 0",
-              fontSize: "13px",
-              color: "#9299a4",
-            }}
+            className="settings-view-style-07"
           >
             서비스에서 사용하는 회원 정보를 관리합니다.
           </p>
@@ -5859,15 +4836,9 @@ function SettingsView({
           description="로그인에 사용하는 아이디입니다."
         >
           <input
-            className="input"
+            className="input settings-view-style-06"
             value={user.username}
             disabled
-            style={{
-              width: "100%",
-              maxWidth: "420px",
-              background: "#f7f8fa",
-              color: "#9299a4",
-            }}
           />
         </SettingFormRow>
 
@@ -5877,17 +4848,11 @@ function SettingsView({
           description="가입 시 등록한 이메일 주소입니다."
         >
           <input
-            className="input"
+            className="input settings-view-style-06"
             value={
               user.email || ""
             }
             disabled
-            style={{
-              width: "100%",
-              maxWidth: "420px",
-              background: "#f7f8fa",
-              color: "#9299a4",
-            }}
           />
         </SettingFormRow>
 
@@ -5897,14 +4862,10 @@ function SettingsView({
           description="서비스에 표시되는 이름입니다."
         >
           <input
-            className="input"
+            className="input settings-view-style-05"
             name="name"
             value={form.name}
             onChange={handleChange}
-            style={{
-              width: "100%",
-              maxWidth: "420px",
-            }}
           />
         </SettingFormRow>
 
@@ -5914,15 +4875,11 @@ function SettingsView({
           description="회원님의 생년월일입니다."
         >
           <input
-            className="input"
+            className="input settings-view-style-05"
             type="date"
             name="birth"
             value={form.birth}
             onChange={handleChange}
-            style={{
-              width: "100%",
-              maxWidth: "420px",
-            }}
           />
         </SettingFormRow>
 
@@ -5932,27 +4889,17 @@ function SettingsView({
           description="연락 가능한 전화번호입니다."
         >
           <input
-            className="input"
+            className="input settings-view-style-05"
             name="phone"
             value={form.phone}
             onChange={handleChange}
-            style={{
-              width: "100%",
-              maxWidth: "420px",
-            }}
           />
         </SettingFormRow>
 
 
         {message && (
           <p
-            style={{
-              margin:
-                "16px 0 0 216px",
-              color: "#218653",
-              fontSize: "13px",
-              fontWeight: "600",
-            }}
+            className="settings-view-style-04"
           >
             {message}
           </p>
@@ -5961,13 +4908,7 @@ function SettingsView({
 
         {settingError && (
           <p
-            style={{
-              margin:
-                "16px 0 0 216px",
-              color: "#c62828",
-              fontSize: "13px",
-              fontWeight: "600",
-            }}
+            className="settings-view-style-03"
           >
             {settingError}
           </p>
@@ -5975,20 +4916,13 @@ function SettingsView({
 
 
         <div
-          style={{
-            display: "flex",
-            justifyContent: "flex-end",
-            marginTop: "24px",
-          }}
+          className="settings-view-style-02"
         >
           <button
             type="button"
-            className="btn btn-primary"
+            className="btn btn-primary settings-view-style-01"
             disabled={saving}
             onClick={handleSave}
-            style={{
-              minWidth: "112px",
-            }}
           >
             {saving
               ? "저장 중..."
@@ -6002,67 +4936,171 @@ function SettingsView({
           비밀번호 / 보안
       ===================== */}
       <SettingsSection title="보안">
-  <SettingsActionRow
-    title="비밀번호"
-    description="주기적으로 비밀번호를 변경하면 계정을 더욱 안전하게 보호할 수 있습니다."
-  >
-    <button
-      type="button"
-      className="btn btn-outline"
-      onClick={() =>
-        alert(
-          "비밀번호 변경 기능은 추후 연결됩니다."
-        )
-      }
-    >
-      변경
-    </button>
-  </SettingsActionRow>
-</SettingsSection>
+        <SettingsActionRow
+          title="비밀번호"
+          description="주기적으로 비밀번호를 변경하면 계정을 더욱 안전하게 보호할 수 있습니다."
+        >
+          <button
+            type="button"
+            className="btn btn-outline"
+            onClick={() =>
+              alert(
+                "비밀번호 변경 기능은 추후 연결됩니다."
+              )
+            }
+          >
+            변경
+          </button>
+        </SettingsActionRow>
+      </SettingsSection>
 
 
-<SettingsSection title="계정">
-  <SettingsActionRow
-    title="로그아웃"
-    description="현재 기기에서 로그인된 계정을 로그아웃합니다."
-  >
-    <button
-      type="button"
-      className="btn btn-outline"
-      onClick={handleLogout}
-    >
-      로그아웃
-    </button>
-  </SettingsActionRow>
+      <SettingsSection title="계정">
+        <SettingsActionRow
+          title="로그아웃"
+          description="현재 기기에서 로그인된 계정을 로그아웃합니다."
+        >
+          <button
+            type="button"
+            className="btn btn-outline"
+            onClick={() =>
+              setConfirmAction("logout")
+            }
+          >
+            로그아웃
+          </button>
+        </SettingsActionRow>
 
-  <SettingsActionRow
-    title="회원 탈퇴"
-    description="탈퇴 후 회원 정보는 복구할 수 없습니다."
-    danger
-  >
-    <button
-      type="button"
-      onClick={() =>
-        alert(
-          "회원 탈퇴 기능은 추후 연결됩니다."
-        )
-      }
-      style={{
-        padding: "8px 14px",
-        border: "1px solid #e2b8b5",
-        borderRadius: "7px",
-        background: "#fff",
-        color: "#b42318",
-        fontSize: "13px",
-        fontWeight: "600",
-        cursor: "pointer",
+        <SettingsActionRow
+          title="회원 탈퇴"
+          description="탈퇴 후 회원 정보는 복구할 수 없습니다."
+          danger
+        >
+          <button
+            type="button"
+            className="settings-danger-button"
+            onClick={() =>
+              setConfirmAction("withdraw")
+            }
+          >
+            회원 탈퇴
+          </button>
+        </SettingsActionRow>
+      </SettingsSection>
+
+
+      {/* =====================
+          로그아웃 확인 팝업
+      ===================== */}
+      {confirmAction === "logout" && (
+        <ConfirmModal
+          title="로그아웃하시겠습니까?"
+          message="현재 계정에서 로그아웃됩니다. 다시 이용하려면 로그인이 필요합니다."
+          confirmText="로그아웃"
+          onCancel={() =>
+            setConfirmAction(null)
+          }
+          onConfirm={handleLogout}
+        />
+      )}
+
+
+      {/* =====================
+          회원 탈퇴 확인 팝업
+      ===================== */}
+      {confirmAction === "withdraw" && (
+        <ConfirmModal
+          title="정말 회원 탈퇴하시겠습니까?"
+          message="탈퇴 후에는 회원 정보를 복구할 수 없습니다. 계속 진행하시겠습니까?"
+          confirmText="탈퇴하기"
+          danger
+          onCancel={() =>
+            setConfirmAction(null)
+          }
+          onConfirm={handleWithdraw}
+        />
+      )}
+    </>
+  );
+}
+
+
+/* =========================
+   확인 팝업
+========================= */
+function ConfirmModal({
+  title,
+  message,
+  confirmText,
+  danger = false,
+  onCancel,
+  onConfirm,
+}) {
+  return (
+    <div
+      className="confirm-overlay"
+      onMouseDown={(event) => {
+        if (
+          event.target ===
+          event.currentTarget
+        ) {
+          onCancel();
+        }
       }}
     >
-      회원 탈퇴
-    </button>
-  </SettingsActionRow>
-</SettingsSection>
-    </>
+      <div
+        className="confirm-modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="confirm-modal-title"
+        onMouseDown={(event) =>
+          event.stopPropagation()
+        }
+      >
+        <div
+          className={
+            danger
+              ? "confirm-icon confirm-icon--danger"
+              : "confirm-icon"
+          }
+        >
+          {danger ? "!" : "?"}
+        </div>
+
+        <h3
+          id="confirm-modal-title"
+          className="confirm-title"
+        >
+          {title}
+        </h3>
+
+        <p className="confirm-message">
+          {message}
+        </p>
+
+        <div className="confirm-actions">
+          <button
+            type="button"
+            className="confirm-cancel-button"
+            onClick={onCancel}
+          >
+            취소
+          </button>
+
+          <button
+            type="button"
+            className={
+              danger
+                ? "confirm-danger-button"
+                : "confirm-primary-button"
+            }
+            onClick={onConfirm}
+          >
+            {confirmText}
+          </button>
+        </div>
+      </div>
+    </div>
   );
 }
 
@@ -6078,42 +5116,18 @@ function SettingFormRow({
 }) {
   return (
     <div
-      style={{
-        display: "grid",
-        gridTemplateColumns:
-          "180px minmax(0, 1fr)",
-        gap: "36px",
-        alignItems: "center",
-
-        minHeight: "88px",
-
-        padding: "18px 4px",
-
-        borderBottom:
-          "1px solid #edf0f3",
-      }}
+      className="settings-form-row-style-04"
     >
       <div>
         <strong
-          style={{
-            display: "block",
-            fontSize: "14px",
-            fontWeight: "600",
-            color: "#303846",
-          }}
+          className="settings-form-row-style-03"
         >
           {label}
         </strong>
 
         {description && (
           <span
-            style={{
-              display: "block",
-              marginTop: "5px",
-              fontSize: "12px",
-              lineHeight: "1.5",
-              color: "#9aa1ab",
-            }}
+            className="settings-form-row-style-02"
           >
             {description}
           </span>
@@ -6121,9 +5135,7 @@ function SettingFormRow({
       </div>
 
       <div
-        style={{
-          minWidth: 0,
-        }}
+        className="settings-form-row-style-01"
       >
         {children}
       </div>
@@ -6141,24 +5153,14 @@ function SettingsSection({
 }) {
   return (
     <section
-      style={{
-        marginBottom: "42px",
-      }}
+      className="settings-section-style-03"
     >
       {/* 카테고리명 */}
       <div
-        style={{
-          marginBottom: "8px",
-          padding: "0 4px",
-        }}
+        className="settings-section-style-02"
       >
         <span
-          style={{
-            fontSize: "13px",
-            fontWeight: "700",
-            color: "#8b95a1",
-            letterSpacing: "-0.1px",
-          }}
+          className="settings-section-style-01"
         >
           {title}
         </span>
@@ -6180,17 +5182,7 @@ function SettingsActionRow({
 }) {
   return (
     <div
-      style={{
-        display: "flex",
-        justifyContent: "space-between",
-        alignItems: "center",
-        gap: "32px",
-
-        minHeight: "96px",
-        padding: "22px 4px",
-
-        borderBottom: "1px solid #edf0f3",
-      }}
+      className="settings-action-row-style-02"
     >
       <div>
         <strong
@@ -6225,12 +5217,31 @@ function SettingsActionRow({
       </div>
 
       <div
-        style={{
-          flexShrink: 0,
-        }}
+        className="settings-action-row-style-01"
       >
         {children}
       </div>
+    </div>
+  );
+}
+
+
+/* =========================
+   등록 요약 한 줄
+   ========================= */
+function SummaryRow({
+  label,
+  value,
+}) {
+  return (
+    <div className="summary-row">
+      <strong className="summary-row-label">
+        {label}
+      </strong>
+
+      <span className="summary-row-value">
+        {value}
+      </span>
     </div>
   );
 }
