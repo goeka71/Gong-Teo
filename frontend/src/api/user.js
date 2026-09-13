@@ -37,6 +37,10 @@ export function clearTokens() {
   localStorage.removeItem(
     "username"
   );
+
+   window.dispatchEvent(
+    new Event("auth-change")
+  );
 }
 
 
