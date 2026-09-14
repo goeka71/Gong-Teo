@@ -8,11 +8,22 @@
 
 /* ---------- MyPage ---------- */
 .mypage-style-02 {
+  width: calc(100% - 64px);
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 32px 0 60px;
+
   display: flex;
-  gap: 36px;
+  gap: 28px;
   align-items: flex-start;
+
+  box-sizing: border-box;
 }
 
+.mypage-style-01 {
+  flex: 1;
+  min-width: 0;
+}
 .mypage-style-01 {
   flex: 1;
   min-width: 0;
@@ -865,15 +876,27 @@
 ========================================================= */
 
 .settings-danger-button {
-  padding: 8px 14px;
+  min-width: 72px;
+  height: 38px;
+  padding: 0 16px;
+
   border: 1px solid #e2b8b5;
-  border-radius: 7px;
+  border-radius: 8px;
+
   background: #ffffff;
   color: #b42318;
+
   font-family: inherit;
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 600;
+  line-height: 1;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
   cursor: pointer;
+
   transition:
     background 0.18s ease,
     border-color 0.18s ease;
@@ -883,7 +906,6 @@
   border-color: #d58b86;
   background: #fff7f6;
 }
-
 .confirm-overlay {
   position: fixed;
   inset: 0;
@@ -1052,4 +1074,68 @@
   .confirm-modal {
     padding: 27px 20px 21px;
   }
+}
+
+/* 리뷰 필터/정렬 버튼 크기 조정 */
+.review-sort-button {
+  padding: 6px 11px;
+  min-width: auto;
+  height: 32px;
+
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1;
+
+  border-radius: 7px;
+}
+
+/* =========================
+   리뷰 필터 / 정렬 버튼
+========================= */
+
+.review-sort-button {
+  min-width: 0;
+  height: 30px;
+  padding: 0 10px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  border: 1px solid #dfe3e8;
+  border-radius: 7px;
+
+  background: #ffffff;
+  color: #6b7280;
+
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1;
+
+  white-space: nowrap;
+  cursor: pointer;
+
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease,
+    color 0.15s ease;
+}
+
+.review-sort-button:hover {
+  background: #f7f8fa;
+  border-color: #cfd5dc;
+  color: #333333;
+}
+
+.review-sort-button.active {
+  background: #f1f3f5;
+  border-color: #c9cfd6;
+  color: #222222;
+  font-weight: 700;
+}
+
+.review-type-button {
+  padding: 10px 20px;
+  font-size: 15px;
 }

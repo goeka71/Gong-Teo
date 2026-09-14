@@ -2184,7 +2184,12 @@ function MyReviewsView({
   const [
     reviewsLoading,
     setReviewsLoading,
-  ] = useState(true);
+      ] = useState(true);
+
+  const [
+    reviewType,
+    setReviewType,
+  ] = useState("program");
 
   const [
     sortType,
@@ -2394,8 +2399,31 @@ function MyReviewsView({
   ]);
 
 
+  /* =========================
+     리뷰 종류 필터 + 정렬
+
+     현재 Review 모델에는 program FK가 없어서
+     programName이 매칭된 리뷰를 프로그램 리뷰로,
+     매칭되지 않은 리뷰를 시설 리뷰로 구분한다.
+  ========================= */
+
+  const filteredReviews =
+    reviews.filter((review) => {
+      if (
+        reviewType ===
+        "program"
+      ) {
+        return Boolean(
+          review.programName
+        );
+      }
+
+      return !review.programName;
+    });
+
+
   const sortedReviews =
-    [...reviews].sort(
+    [...filteredReviews].sort(
       (a, b) => {
         if (
           sortType ===
@@ -2606,6 +2634,39 @@ function MyReviewsView({
         >
           <SortButton
             active={
+              reviewType ===
+              "facility"
+            }
+            onClick={() =>
+              setReviewType(
+                "facility"
+              )
+            }
+          >
+            시설 리뷰
+          </SortButton>
+
+          <SortButton
+            active={
+              reviewType ===
+              "program"
+            }
+            onClick={() =>
+              setReviewType(
+                "program"
+              )
+            }
+          >
+            프로그램 리뷰
+          </SortButton>
+
+          <span
+            className="review-filter-divider"
+            aria-hidden="true"
+          />
+
+          <SortButton
+            active={
               sortType ===
               "latest"
             }
@@ -2688,6 +2749,21 @@ function MyReviewsView({
               리뷰 작성 전 수강 프로그램을 먼저 등록해주세요.
             </p>
           )}
+        </div>
+      ) : filteredReviews.length ===
+        0 ? (
+        <div
+          className="card my-reviews-filter-empty"
+        >
+          <strong>
+            {reviewType === "facility"
+              ? "작성한 시설 리뷰가 없습니다."
+              : "작성한 프로그램 리뷰가 없습니다."}
+          </strong>
+
+          <p>
+            다른 리뷰 종류를 선택해서 확인해보세요.
+          </p>
         </div>
       ) : (
         <div
@@ -3704,7 +3780,6 @@ function ReviewDeleteModal({
   );
 }
 
-
 function SortButton({
   active,
   onClick,
@@ -3713,39 +3788,10 @@ function SortButton({
   return (
     <button
       type="button"
-
-      onClick={
-        onClick
-      }
-
-      style={{
-        padding:
-          "9px 17px",
-
-        borderRadius:
-          "22px",
-
-        border:
-          active
-            ? "1px solid #1d4e89"
-            : "1px solid #dce2ea",
-
-        background:
-          active
-            ? "#1d4e89"
-            : "#fff",
-
-        color:
-          active
-            ? "#fff"
-            : "#4b5563",
-
-        cursor:
-          "pointer",
-
-        fontWeight:
-          "700",
-      }}
+      className={`review-sort-button ${
+        active ? "active" : ""
+      }`}
+      onClick={onClick}
     >
       {children}
     </button>
@@ -4730,7 +4776,8 @@ function SettingsView({
               form.birth || null,
             phone: form.phone,
           });
-setUser(updatedUser);
+
+        setUser(updatedUser);
 
         setMessage(
           "회원정보가 수정되었습니다."
@@ -4962,7 +5009,7 @@ setUser(updatedUser);
         >
           <button
             type="button"
-            className="btn btn-outline"
+            className="settings-account-button"
             onClick={() =>
               setConfirmAction("logout")
             }
@@ -4978,7 +5025,7 @@ setUser(updatedUser);
         >
           <button
             type="button"
-            className="settings-danger-button"
+            className="settings-account-button settings-account-button--danger"
             onClick={() =>
               setConfirmAction("withdraw")
             }
