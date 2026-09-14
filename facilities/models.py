@@ -118,11 +118,20 @@ class Review(models.Model):
         SubFacility, on_delete=models.CASCADE,
         related_name="reviews", null=True, blank=True
     )
+    # 특정 프로그램에 대한 리뷰인 경우에만 설정.
+    # 비어 있으면 시설 자체에 대한 리뷰로 취급한다 (subfacility 와 동일한 패턴).
+    program = models.ForeignKey(
+        Program, on_delete=models.SET_NULL,
+        related_name="reviews", null=True, blank=True
+    )
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="reviews"
     )
     rating = models.IntegerField("별점")
     content = models.TextField("리뷰내용", blank=True)
+    image = models.ImageField(
+        "사진", upload_to="reviews/", null=True, blank=True
+    )
     created_at = models.DateTimeField("작성일시", auto_now_add=True)
 
     def __str__(self):

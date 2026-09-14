@@ -247,10 +247,22 @@ def my_review_detail(
         )
 
         if serializer.is_valid():
-            serializer.save()
+            review = serializer.save()
+
+            # "사진 삭제" 버튼용. 새 이미지 파일이 같이 오면 그쪽이 우선이고,
+            # remove_image 만 왔을 때만 기존 이미지를 지운다.
+            remove_image = request.data.get("remove_image")
+            if (
+                remove_image in ("true", "1", True)
+                and "image" not in request.data
+                and review.image
+            ):
+                review.image.delete(save=False)
+                review.image = None
+                review.save(update_fields=["image"])
 
             return Response(
-                serializer.data
+                MyReviewSerializer(review).data
             )
 
         return Response(

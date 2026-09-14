@@ -15,7 +15,19 @@ import {
   deleteReview as deleteReviewApi,
 } from "../api/user";
 
+import { BASE_URL } from "../api/client";
+
 import "./MyPage.css";
+
+
+// Django MEDIA 상대경로("/media/...")를 절대주소로 바꿔준다.
+// (리뷰 시리얼라이저가 request context 없이 만들어져서 image 값이
+//  상대경로로 오기 때문 - FacilityListPanel 의 resolveImageUrl 과 동일한 문제.)
+function resolveReviewImageUrl(image) {
+  if (!image) return "";
+  if (/^https?:\/\//i.test(image)) return image;
+  return `${BASE_URL}${image}`;
+}
 
 
 /* =========================
@@ -2218,58 +2230,23 @@ function MyReviewsView({
 
 
   /*
-  Review 모델에는 program FK가 없기 때문에
-  facility / subfacility 기준으로
-  내가 등록한 수강 프로그램과 다시 연결해서
-  프로그램명을 화면에 표시한다.
+  Review.program(facilities.Program FK)이 생겨서 더 이상
+  facility/subfacility 문자열 대조로 프로그램을 추측할 필요가 없다.
+  program_name 은 서버가 이미 계산해서 내려주고,
+  myProgramId(내 수강 등록 건 id)만 "리뷰 수정" 모달의
+  드롭다운 초기값으로 쓰기 위해 program id 로 역매칭한다.
   */
   const normalizeReview = (
-    review,
-    fallback = {}
+    review
   ) => {
-    const preferredProgram =
-      fallback.myProgramId
+    const matchedMyProgram =
+      review.program
         ? myPrograms.find(
             (program) =>
-              String(program.id) ===
-              String(
-                fallback.myProgramId
-              )
+              String(program.program) ===
+              String(review.program)
           )
         : null;
-
-    const matchedProgram =
-      preferredProgram ||
-      myPrograms.find(
-        (program) => {
-          const sameFacility =
-            String(
-              program.facility_id
-            ) ===
-            String(
-              review.facility
-            );
-
-          const reviewSubfacility =
-            review.subfacility ?? "";
-
-          const programSubfacility =
-            program.subfacility ?? "";
-
-          const sameSubfacility =
-            String(
-              programSubfacility
-            ) ===
-            String(
-              reviewSubfacility
-            );
-
-          return (
-            sameFacility &&
-            sameSubfacility
-          );
-        }
-      );
 
     const createdAt =
       review.created_at
@@ -2290,18 +2267,15 @@ function MyReviewsView({
         review.id,
 
       myProgramId:
-        matchedProgram?.id ||
-        fallback.myProgramId ||
+        matchedMyProgram?.id ||
         "",
 
       programId:
-        matchedProgram?.program ||
-        fallback.programId ||
+        review.program ||
         "",
 
       programName:
-        matchedProgram?.program_name ||
-        fallback.programName ||
+        review.program_name ||
         "",
 
       facilityId:
@@ -2309,7 +2283,6 @@ function MyReviewsView({
 
       facilityName:
         review.facility_name ||
-        fallback.facilityName ||
         "",
 
       subfacilityId:
@@ -2317,7 +2290,6 @@ function MyReviewsView({
 
       subfacilityName:
         review.subfacility_name ||
-        fallback.subfacilityName ||
         "",
 
       rating:
@@ -2335,14 +2307,10 @@ function MyReviewsView({
 
       date,
 
-      /*
-      현재 Review 모델에는
-      이미지 필드가 없기 때문에
-      사진은 DB 저장 불가.
-      */
       image:
-        fallback.image ||
-        "",
+        resolveReviewImageUrl(
+          review.image
+        ),
     };
   };
 
@@ -2402,9 +2370,9 @@ function MyReviewsView({
   /* =========================
      리뷰 종류 필터 + 정렬
 
-     현재 Review 모델에는 program FK가 없어서
-     programName이 매칭된 리뷰를 프로그램 리뷰로,
-     매칭되지 않은 리뷰를 시설 리뷰로 구분한다.
+     Review.program 이 설정되어 있으면 프로그램 리뷰,
+     없으면 시설 리뷰로 구분한다 (subfacility 유무로
+     세부시설 리뷰를 구분하는 것과 동일한 패턴).
   ========================= */
 
   const filteredReviews =
@@ -2414,11 +2382,11 @@ function MyReviewsView({
         "program"
       ) {
         return Boolean(
-          review.programName
+          review.programId
         );
       }
 
-      return !review.programName;
+      return !review.programId;
     });
 
 
@@ -2478,27 +2446,65 @@ function MyReviewsView({
   const saveReview =
     async (data) => {
       try {
-        const requestData = {
-          facility:
+        const formData =
+          new FormData();
+
+        formData.append(
+          "facility",
+          Number(
+            data.facilityId
+          )
+        );
+
+        if (
+          data.subfacilityId
+        ) {
+          formData.append(
+            "subfacility",
             Number(
-              data.facilityId
-            ),
+              data.subfacilityId
+            )
+          );
+        }
 
-          subfacility:
-            data.subfacilityId
-              ? Number(
-                  data.subfacilityId
-                )
-              : null,
-
-          rating:
+        if (
+          data.programId
+        ) {
+          formData.append(
+            "program",
             Number(
-              data.rating
-            ),
+              data.programId
+            )
+          );
+        }
 
-          content:
-            data.content,
-        };
+        formData.append(
+          "rating",
+          Number(
+            data.rating
+          )
+        );
+
+        formData.append(
+          "content",
+          data.content
+        );
+
+        if (
+          data.imageFile
+        ) {
+          formData.append(
+            "image",
+            data.imageFile
+          );
+        } else if (
+          data.imageRemoved
+        ) {
+          formData.append(
+            "remove_image",
+            "true"
+          );
+        }
 
 
         if (
@@ -2507,13 +2513,12 @@ function MyReviewsView({
         ) {
           const created =
             await createReview(
-              requestData
+              formData
             );
 
           const normalized =
             normalizeReview(
-              created,
-              data
+              created
             );
 
           setReviews(
@@ -2527,13 +2532,12 @@ function MyReviewsView({
           const updated =
             await updateReview(
               editingReview.id,
-              requestData
+              formData
             );
 
           const normalized =
             normalizeReview(
-              updated,
-              data
+              updated
             );
 
           setReviews(
@@ -3063,13 +3067,12 @@ function ReviewFormModal({
   );
 
 
+  // 새로 첨부한 File 객체. 서버로 실제 전송되는 것은 이 값이고,
+  // review.image(기존 서버 URL)는 편집 시 미리보기 초기값으로만 쓰인다.
   const [
-    image,
-    setImage,
-  ] = useState(
-    review?.image ||
-    ""
-  );
+    imageFile,
+    setImageFile,
+  ] = useState(null);
 
 
   const [
@@ -3079,6 +3082,14 @@ function ReviewFormModal({
     review?.image ||
     ""
   );
+
+
+  // 기존에 서버에 저장돼 있던 사진을 사용자가 "삭제"한 경우 true.
+  // 새 파일을 첨부하면 그쪽이 우선이라 이 값은 무시된다.
+  const [
+    imageRemoved,
+    setImageRemoved,
+  ] = useState(false);
 
 
   const [
@@ -3141,9 +3152,11 @@ function ReviewFormModal({
         );
 
 
-      setImage(url);
+      setImageFile(file);
 
       setImagePreview(url);
+
+      setImageRemoved(false);
 
       setFormError("");
     };
@@ -3211,7 +3224,9 @@ function ReviewFormModal({
         content:
           content.trim(),
 
-        image,
+        imageFile,
+
+        imageRemoved,
       });
     };
 
@@ -3540,10 +3555,14 @@ function ReviewFormModal({
                   type="button"
 
                   onClick={() => {
-                    setImage("");
+                    setImageFile(null);
 
                     setImagePreview(
                       ""
+                    );
+
+                    setImageRemoved(
+                      true
                     );
                   }}
 

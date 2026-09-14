@@ -330,23 +330,16 @@ export function getMyReviews() {
 }
 
 
+// data 는 FormData. 사진(File)을 포함해 multipart/form-data 로 보낸다
+// (Content-Type 헤더는 지정하지 않아야 브라우저가 boundary 를 자동으로 채운다).
 export function createReview(
-  data
+  formData
 ) {
   return authenticatedRequest(
     "/api/users/my-reviews/",
     {
       method: "POST",
-
-      headers: {
-        "Content-Type":
-          "application/json",
-      },
-
-      body:
-        JSON.stringify(
-          data
-        ),
+      body: formData,
     }
   );
 }
@@ -354,22 +347,13 @@ export function createReview(
 
 export function updateReview(
   reviewId,
-  data
+  formData
 ) {
   return authenticatedRequest(
     `/api/users/my-reviews/${reviewId}/`,
     {
       method: "PATCH",
-
-      headers: {
-        "Content-Type":
-          "application/json",
-      },
-
-      body:
-        JSON.stringify(
-          data
-        ),
+      body: formData,
     }
   );
 }

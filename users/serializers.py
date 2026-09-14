@@ -241,6 +241,12 @@ class MyReviewSerializer(serializers.ModelSerializer):
         allow_null=True
     )
 
+    program_name = serializers.CharField(
+        source="program.program_name",
+        read_only=True,
+        allow_null=True
+    )
+
     class Meta:
         model = Review
         fields = [
@@ -249,8 +255,11 @@ class MyReviewSerializer(serializers.ModelSerializer):
             "facility_name",
             "subfacility",
             "subfacility_name",
+            "program",
+            "program_name",
             "rating",
             "content",
+            "image",
             "created_at",
         ]
         read_only_fields = [
@@ -274,6 +283,10 @@ class MyReviewSerializer(serializers.ModelSerializer):
             "subfacility",
             getattr(self.instance, "subfacility", None)
         )
+        program = data.get(
+            "program",
+            getattr(self.instance, "program", None)
+        )
 
         if (
             facility
@@ -283,6 +296,16 @@ class MyReviewSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError({
                 "subfacility":
                     "선택한 세부시설이 해당 시설에 속하지 않습니다."
+            })
+
+        if (
+            facility
+            and program
+            and program.facility_id != facility.id
+        ):
+            raise serializers.ValidationError({
+                "program":
+                    "선택한 프로그램이 해당 시설에 속하지 않습니다."
             })
 
         return data
