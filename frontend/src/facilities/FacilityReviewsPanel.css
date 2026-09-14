@@ -1,0 +1,413 @@
+/* ============================================================
+   FacilityReviewsPanel 전용 스타일
+   - 모든 선택자에 .frp- 접두사를 붙여 다른 화면 CSS와 격리한다.
+   - 색상 변수(--fd-*)는 FacilityMapLayout.css 의 .fml-panel 에서
+     정의된 걸 그대로 물려받아 쓴다(이 컴포넌트도 그 안에서 렌더링됨).
+   ============================================================ */
+
+.frp-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.frp-title {
+  margin: 0 0 4px;
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--fd-text);
+}
+
+.frp-summary {
+  margin: 0;
+  color: var(--fd-muted);
+  font-size: 14px;
+}
+
+.frp-stars {
+  color: var(--fd-star);
+  letter-spacing: 1px;
+}
+
+.frp-write-btn {
+  flex-shrink: 0;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 16px;
+  background: var(--fd-accent);
+  color: #fff;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.frp-login-hint {
+  margin: 10px 0 0;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: #fff6e5;
+  color: #8a6d1e;
+  font-size: 13px;
+}
+
+.frp-login-hint button {
+  border: none;
+  background: none;
+  padding: 0;
+  color: var(--fd-accent);
+  font: inherit;
+  font-weight: 700;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+/* ---------- 탭 (목록 ↔ 사진 모아보기) ---------- */
+
+.frp-tabs {
+  display: flex;
+  gap: 4px;
+  margin-top: 20px;
+  border-bottom: 1px solid var(--fd-line);
+}
+
+.frp-tab {
+  padding: 10px 4px;
+  margin-right: 20px;
+  border: none;
+  background: none;
+  font: inherit;
+  font-weight: 600;
+  color: var(--fd-muted);
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+}
+
+.frp-tab--active {
+  color: var(--fd-text);
+  border-bottom-color: var(--fd-accent);
+}
+
+/* ---------- 필터 ---------- */
+
+.frp-filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin: 14px 0;
+}
+
+.frp-filter-group {
+  display: flex;
+  gap: 6px;
+}
+
+.frp-filter-chip {
+  border: 1px solid var(--fd-line);
+  border-radius: 999px;
+  padding: 6px 14px;
+  background: #fff;
+  font: inherit;
+  font-size: 13px;
+  color: var(--fd-muted);
+  cursor: pointer;
+}
+
+.frp-filter-chip--active {
+  border-color: var(--fd-accent);
+  color: var(--fd-accent);
+  font-weight: 700;
+}
+
+.frp-photo-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--fd-muted);
+  cursor: pointer;
+}
+
+/* ---------- 상태 텍스트 ---------- */
+
+.frp-status {
+  max-width: 480px;
+  margin: 48px auto;
+  text-align: center;
+  color: var(--fd-muted);
+}
+
+/* ---------- 목록형 ---------- */
+
+.frp-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.frp-review-card {
+  border: 1px solid var(--fd-line);
+  border-radius: 12px;
+  padding: 16px 18px;
+}
+
+.frp-review-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 4px;
+}
+
+.frp-review-name {
+  font-weight: 700;
+}
+
+.frp-review-meta {
+  margin-bottom: 6px;
+  color: var(--fd-muted);
+  font-size: 12px;
+}
+
+.frp-review-body {
+  margin: 0;
+  color: #566473;
+  font-size: 14px;
+  white-space: pre-wrap;
+}
+
+.frp-review-image {
+  display: block;
+  margin-top: 10px;
+  max-width: 220px;
+  max-height: 220px;
+  border-radius: 8px;
+  object-fit: cover;
+}
+
+/* ---------- 사진 그리드형 ---------- */
+
+.frp-photo-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 10px;
+}
+
+.frp-photo-cell {
+  position: relative;
+  border-radius: 10px;
+  overflow: hidden;
+  background: var(--fd-line);
+  aspect-ratio: 1 / 1;
+}
+
+.frp-photo-cell img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.frp-photo-caption {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  padding: 6px 8px;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.6), transparent);
+  color: #fff;
+  font-size: 12px;
+}
+
+.frp-photo-caption .frp-stars {
+  color: #fff;
+}
+
+/* ---------- 작성 모달 ---------- */
+
+.frp-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 50;
+  padding: 16px;
+}
+
+.frp-modal {
+  width: 100%;
+  max-width: 420px;
+  max-height: 90vh;
+  overflow-y: auto;
+  background: var(--fd-bg);
+  border-radius: 16px;
+  padding: 20px;
+}
+
+.frp-modal-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.frp-modal-head h2 {
+  margin: 0;
+  font-size: 18px;
+}
+
+.frp-modal-close {
+  border: none;
+  background: none;
+  font-size: 22px;
+  line-height: 1;
+  cursor: pointer;
+  color: var(--fd-muted);
+}
+
+.frp-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.frp-form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.frp-form-label {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--fd-text);
+}
+
+.frp-form-hint {
+  margin: 0;
+  font-size: 13px;
+  color: var(--fd-muted);
+}
+
+.frp-form-group select,
+.frp-form-group textarea {
+  border: 1px solid var(--fd-line);
+  border-radius: 8px;
+  padding: 8px 10px;
+  font: inherit;
+  color: var(--fd-text);
+}
+
+.frp-form-group textarea {
+  resize: vertical;
+}
+
+.frp-radio-row {
+  display: flex;
+  gap: 16px;
+  font-size: 14px;
+}
+
+.frp-rating-input {
+  display: flex;
+  gap: 2px;
+}
+
+.frp-star-btn {
+  border: none;
+  background: none;
+  font-size: 26px;
+  line-height: 1;
+  color: var(--fd-star);
+  cursor: pointer;
+  padding: 0;
+}
+
+.frp-image-preview {
+  position: relative;
+  width: 96px;
+  height: 96px;
+}
+
+.frp-image-preview img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 8px;
+}
+
+.frp-image-preview button {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  width: 24px;
+  height: 24px;
+  border: none;
+  border-radius: 50%;
+  background: #333;
+  color: #fff;
+  cursor: pointer;
+}
+
+.frp-image-input-label {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 96px;
+  height: 96px;
+  border: 1px dashed var(--fd-line);
+  border-radius: 8px;
+  color: var(--fd-muted);
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.frp-image-input-label input {
+  display: none;
+}
+
+.frp-form-error {
+  margin: 0;
+  color: #d9453d;
+  font-size: 13px;
+}
+
+.frp-form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.frp-form-actions button {
+  border-radius: 8px;
+  padding: 10px 16px;
+  font: inherit;
+  cursor: pointer;
+}
+
+.frp-form-actions button[type="submit"] {
+  border: none;
+  background: var(--fd-accent);
+  color: #fff;
+  font-weight: 700;
+}
+
+.frp-form-actions button[type="button"] {
+  border: 1px solid var(--fd-line);
+  background: #fff;
+  color: var(--fd-text);
+}
+
+@media (max-aspect-ratio: 1/1) {
+  .frp-write-btn {
+    padding: 8px 12px;
+    font-size: 13px;
+  }
+}
