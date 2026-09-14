@@ -1,4 +1,4 @@
-from django.db.models import F
+from django.db.models import Avg, Count, F
 from django.shortcuts import get_object_or_404
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
@@ -24,7 +24,7 @@ from .serializers import (
     SportSerializer,
     FacilitySportSerializer,
     ProgramSerializer,
-    ReviewSerializer,
+    FacilityReviewSerializer,
     FavoriteSerializer,
     SubFacilityDetailSerializer,
     FacilityDetailPageSerializer,
@@ -204,16 +204,78 @@ def program_list(request):
 
 
 # =========================================================
-# 리뷰 목록
+# 시설 리뷰 미리보기
+# 상위 3개 + 평균 별점 + 전체 개수.
+# 예: /api/facilities/12/reviews/preview/
 # =========================================================
 @api_view(["GET"])
-def review_list(request):
-    data = Review.objects.all()
+def facility_review_preview(request, facility_id):
+    facility = get_object_or_404(Facility, pk=facility_id)
 
-    serializer = ReviewSerializer(
-        data,
-        many=True
+    reviews = Review.objects.filter(facility=facility)
+
+    stats = reviews.aggregate(
+        average_rating=Avg("rating"),
+        review_count=Count("id"),
     )
+
+    top_reviews = reviews.select_related(
+        "user", "subfacility", "program"
+    ).order_by("-created_at")[:3]
+
+    serializer = FacilityReviewSerializer(top_reviews, many=True)
+
+    average_rating = stats["average_rating"]
+
+    return Response({
+        "average_rating":
+            round(average_rating, 1) if average_rating is not None else None,
+        "review_count": stats["review_count"],
+        "reviews": serializer.data,
+    })
+
+
+# =========================================================
+# 시설 전체 리뷰 목록
+# 항상 최신순(-created_at). 쿼리 파라미터로 필터링 가능:
+#
+# ?category=program  -> 프로그램 리뷰만 (program 필드가 채워진 것)
+# ?category=facility -> 시설 리뷰만 (program 이 비어있는 것)
+# ?subfacility=<id>  -> 해당 세부시설 리뷰만
+# ?has_photo=true    -> 사진이 첨부된 리뷰만
+#
+# 예: /api/facilities/12/reviews/?category=program&has_photo=true
+# =========================================================
+@api_view(["GET"])
+def facility_review_list(request, facility_id):
+    facility = get_object_or_404(Facility, pk=facility_id)
+
+    reviews = Review.objects.filter(
+        facility=facility
+    ).select_related("user", "subfacility", "program")
+
+    category = request.GET.get("category")
+
+    if category == "program":
+        reviews = reviews.filter(program__isnull=False)
+    elif category == "facility":
+        reviews = reviews.filter(program__isnull=True)
+
+    subfacility_id = request.GET.get("subfacility")
+
+    if subfacility_id:
+        reviews = reviews.filter(subfacility_id=subfacility_id)
+
+    has_photo = request.GET.get("has_photo")
+
+    if has_photo in ("true", "1"):
+        reviews = reviews.filter(
+            image__isnull=False
+        ).exclude(image="")
+
+    reviews = reviews.order_by("-created_at")
+
+    serializer = FacilityReviewSerializer(reviews, many=True)
 
     return Response(serializer.data)
 

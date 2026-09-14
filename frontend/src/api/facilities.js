@@ -72,3 +72,38 @@ export function agreeSubFacilityDetail(id) {
 export function disagreeSubFacilityDetail(id) {
   return apiPost(`/api/facilities/subfacility-details/${id}/disagree/`);
 }
+
+// 시설 리뷰 미리보기 (상위 3개 + 평균 별점 + 전체 개수). 시설 상세페이지용.
+// GET /api/facilities/${facilityId}/reviews/preview/
+// 응답: { average_rating, review_count, reviews: [...] }
+export function getFacilityReviewPreview(facilityId) {
+  return apiGet(`/api/facilities/${facilityId}/reviews/preview/`);
+}
+
+// 시설 전체 리뷰 목록. 항상 최신순.
+// GET /api/facilities/${facilityId}/reviews/
+//
+// options.category: "program" | "facility" (생략 시 전체)
+// options.subfacility: 세부시설 id (해당 세부시설 리뷰만)
+// options.hasPhoto: true 면 사진 첨부된 리뷰만
+export function getFacilityReviews(facilityId, options = {}) {
+  const params = new URLSearchParams();
+
+  if (options.category) {
+    params.set("category", options.category);
+  }
+
+  if (options.subfacility) {
+    params.set("subfacility", options.subfacility);
+  }
+
+  if (options.hasPhoto) {
+    params.set("has_photo", "true");
+  }
+
+  const query = params.toString();
+
+  return apiGet(
+    `/api/facilities/${facilityId}/reviews/${query ? `?${query}` : ""}`
+  );
+}
