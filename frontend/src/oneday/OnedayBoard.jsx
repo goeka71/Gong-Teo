@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { apiGet } from "../api/client";
+import { formatWalkTime } from "../utils/time";
 import OnedayDetail from "./OnedayDetail";
 import OnedayRegister from "./OnedayRegister";
 import "./OnedayBoard.css";
@@ -613,10 +614,25 @@ function OnedayBoard() {
                 className="refresh-button"
                 onClick={fetchPosts}
                 disabled={loading}
+                aria-label="새로고침"
+                title="새로고침"
               >
-                <span className={loading ? "refresh-icon spinning" : "refresh-icon"}>
-                  ⟳
-                </span>
+                <svg
+                  className={loading ? "refresh-icon spinning" : "refresh-icon"}
+                  viewBox="0 0 24 24"
+                  width="20"
+                  height="20"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.4"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M17 2l4 4-4 4" />
+                  <path d="M3 11V9a4 4 0 0 1 4-4h14" />
+                  <path d="M7 22l-4-4 4-4" />
+                  <path d="M21 13v2a4 4 0 0 1-4 4H3" />
+                </svg>
                 새로고침
               </button>
 
@@ -754,7 +770,7 @@ function OnedayBoard() {
                             <span>
                               🚇 {post.station}
                               {post.station_wt != null
-                                ? ` · 도보 ${post.station_wt}분`
+                                ? ` · 도보 ${formatWalkTime(post.station_wt)}`
                                 : ""}
                             </span>
                           )}
@@ -763,7 +779,7 @@ function OnedayBoard() {
                             <span>
                               🚌 {post.bus}
                               {post.bus_wt != null
-                                ? ` · 도보 ${post.bus_wt}분`
+                                ? ` · 도보 ${formatWalkTime(post.bus_wt)}`
                                 : ""}
                             </span>
                           )}

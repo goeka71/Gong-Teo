@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { applyOnedayPost } from "../api/oneday";
+import { formatWalkTime } from "../utils/time";
 import "./OnedayDetail.css";
 
 
@@ -738,7 +739,7 @@ function OnedayDetail({ post, onBack, onApplySuccess }) {
 
                       {post.station_wt !== null &&
                         post.station_wt !== undefined &&
-                        ` · 도보 ${post.station_wt}분`}
+                        ` · 도보 ${formatWalkTime(post.station_wt)}`}
 
                     </p>
 
@@ -767,7 +768,7 @@ function OnedayDetail({ post, onBack, onApplySuccess }) {
 
                       {post.bus_wt !== null &&
                         post.bus_wt !== undefined &&
-                        ` · 도보 ${post.bus_wt}분`}
+                        ` · 도보 ${formatWalkTime(post.bus_wt)}`}
 
                     </p>
 

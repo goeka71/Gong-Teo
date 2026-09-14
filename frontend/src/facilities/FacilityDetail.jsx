@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { getFacilityDetail, updateFacilityDetail } from "../api/facilities";
+import { formatWalkTime } from "../utils/time";
 import "./FacilityDetail.css";
 
 // 시설 상세 화면.
@@ -16,10 +17,8 @@ const MOCK_REVIEWS = [
 ];
 
 // 역/정류장에서의 도보 시간은 DB에 '초' 단위로 저장돼 있다.
-// 60으로 나눈 몫이 1 이상이면 "도보 N분", 몫이 0이면 "도보 N초"로 표시한다.
 function walkText(seconds) {
-  const minutes = Math.floor(seconds / 60);
-  return minutes > 0 ? `도보 ${minutes}분` : `도보 ${seconds}초`;
+  return `도보 ${formatWalkTime(seconds)}`;
 }
 
 // 별점(0~5)을 ★/☆ 문자열로 표시하는 작은 헬퍼

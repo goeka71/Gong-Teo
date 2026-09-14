@@ -282,9 +282,7 @@
 }
 
 .refresh-icon {
-  display: inline-block;
-  font-size: 15px;
-  line-height: 1;
+  display: block;
 }
 
 .refresh-icon.spinning {
