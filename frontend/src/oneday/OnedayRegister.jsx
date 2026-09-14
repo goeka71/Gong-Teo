@@ -1,6 +1,7 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { apiGet } from "../api/client";
 import { createOnedayPost } from "../api/oneday";
+import ProgramRegisterModal from "../user/ProgramRegisterModal";
 import "./OnedayRegister.css";
 
 const MY_PROGRAM_API = "/api/oneday/my-programs/";
@@ -170,6 +171,11 @@ function OnedayRegister({ onBack }) {
   const [registering, setRegistering] = useState(false);
 
   // ----------------------------------------------
+  // 수강 프로그램 등록 팝업
+  // ----------------------------------------------
+  const [isProgramModalOpen, setIsProgramModalOpen] = useState(false);
+
+  // ----------------------------------------------
   // 현재 선택 프로그램
   // ----------------------------------------------
   const selectedProgram = useMemo(() => {
@@ -186,8 +192,8 @@ function OnedayRegister({ onBack }) {
   // 수강 프로그램 가져오기
   // ==================================================
 
-  useEffect(() => {
-    const fetchPrograms = async () => {
+  const fetchPrograms = useCallback(
+    async ({ selectEnrollId } = {}) => {
       try {
         setLoadingPrograms(true);
         setProgramError("");
@@ -209,11 +215,18 @@ function OnedayRegister({ onBack }) {
 
         setPrograms(normalizedPrograms);
 
-        // 첫 번째 프로그램 자동 선택
         if (normalizedPrograms.length > 0) {
-          setSelectedProgramId(
-            normalizedPrograms[0].enrollId
-          );
+          const preferredId =
+            selectEnrollId != null &&
+            normalizedPrograms.some(
+              (program) =>
+                String(program.enrollId) === String(selectEnrollId)
+            )
+              ? selectEnrollId
+              : normalizedPrograms[0].enrollId;
+
+          // 새로 등록한 프로그램이 있으면 그것을, 없으면 첫 번째 프로그램을 자동 선택
+          setSelectedProgramId(preferredId);
         }
       } catch (error) {
         console.error(
@@ -229,10 +242,28 @@ function OnedayRegister({ onBack }) {
       } finally {
         setLoadingPrograms(false);
       }
-    };
+    },
+    []
+  );
 
+  useEffect(() => {
     fetchPrograms();
-  }, []);
+  }, [fetchPrograms]);
+
+  // ==================================================
+  // 프로그램 등록 완료
+  // ==================================================
+
+  const handleProgramRegistered = (createdProgram) => {
+    setIsProgramModalOpen(false);
+
+    const createdEnrollId =
+      createdProgram?.id ??
+      createdProgram?.enroll_id ??
+      createdProgram?.enrollment_id;
+
+    fetchPrograms({ selectEnrollId: createdEnrollId });
+  };
 
   // ==================================================
   // 프로그램 변경
@@ -555,11 +586,7 @@ function OnedayRegister({ onBack }) {
               <button
                 type="button"
                 className="add-program-button"
-                onClick={() => {
-                  alert(
-                    "수강 프로그램 등록 기능은 마이페이지에서 연결할 예정입니다."
-                  );
-                }}
+                onClick={() => setIsProgramModalOpen(true)}
               >
                 + 수강 프로그램 등록하기
               </button>
@@ -619,11 +646,7 @@ function OnedayRegister({ onBack }) {
                   <button
                     type="button"
                     className="empty-register-button"
-                    onClick={() => {
-                      alert(
-                        "수강 프로그램 등록 기능은 마이페이지에서 연결할 예정입니다."
-                      );
-                    }}
+                    onClick={() => setIsProgramModalOpen(true)}
                   >
                     수강 프로그램 등록하기
                   </button>
@@ -1046,6 +1069,13 @@ function OnedayRegister({ onBack }) {
 
         </aside>
       </div>
+
+      {isProgramModalOpen && (
+        <ProgramRegisterModal
+          onClose={() => setIsProgramModalOpen(false)}
+          onSaved={handleProgramRegistered}
+        />
+      )}
     </div>
   );
 }
