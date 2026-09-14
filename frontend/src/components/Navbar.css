@@ -1,27 +1,337 @@
-/* ============================================================
-   Navbar 전용 스타일
-   - 큰 틀(.gnb / .gnb-logo / .gnb-link)은 global.css 에 이미 있다.
-   - 여기서는 "로고 옆에 링크 그룹을 붙이는" 배치만 최소한으로 추가한다.
-   ============================================================ */
+/* =========================================================
+   Navbar.css
+   상단 네비게이션 전체 스타일
+========================================================= */
 
-/* 로고와 링크 그룹 사이 간격 */
+
+/* =========================
+   전체 상단바
+========================= */
+
 .gnb {
-  gap: 24px;
+  width: 100%;
+  height: 64px;
+
+  display: flex;
+  align-items: center;
+
+  box-sizing: border-box;
+
+  padding: 0 28px;
+
+  background: #ffffff;
+
+  border-bottom: 1px solid #e9edf2;
+
+  position: relative;
+  z-index: 100;
 }
 
-/* 링크들을 한 줄로 묶고, 링크 사이 간격도 24px */
+
+/* =========================
+   왼쪽 로고
+========================= */
+
+.gnb-logo {
+  display: flex;
+  align-items: center;
+
+  flex-shrink: 0;
+
+  color: #111827;
+
+  font-size: 18px;
+  font-weight: 800;
+
+  letter-spacing: -0.5px;
+
+  text-decoration: none;
+
+  white-space: nowrap;
+}
+
+.gnb-logo:hover {
+  color: #1d4e89;
+}
+
+
+/* =========================
+   가운데 메뉴 영역
+========================= */
+
 .nav-links {
   display: flex;
   align-items: center;
-  gap: 24px;
+
+  gap: 30px;
+
+  margin-left: 42px;
+
+  height: 100%;
 }
 
-/* "로그인"은 남는 가로 공간을 밀어내고 네비바 맨 오른쪽에 붙는다 */
+
+/* =========================
+   메뉴 링크
+========================= */
+
+.gnb-link {
+  position: relative;
+
+  display: flex;
+  align-items: center;
+
+  height: 100%;
+
+  padding: 0 2px;
+
+  box-sizing: border-box;
+
+  color: #4b5563;
+
+  font-size: 14px;
+  font-weight: 600;
+
+  text-decoration: none;
+
+  white-space: nowrap;
+
+  transition:
+    color 0.18s ease,
+    background 0.18s ease;
+}
+
+.gnb-link:hover {
+  color: #1d4e89;
+}
+
+
+/* 현재 선택된 메뉴 */
+
+.gnb-link.active {
+  color: #1d4e89;
+
+  font-weight: 700;
+}
+
+
+/* 선택된 메뉴 하단 파란 선 */
+
+.gnb-link.active::after {
+  content: "";
+
+  position: absolute;
+
+  left: 0;
+  right: 0;
+  bottom: 0;
+
+  height: 2px;
+
+  background: #1d4e89;
+
+  border-radius: 2px 2px 0 0;
+}
+
+
+/* =========================
+   오른쪽 로그인 / 프로필 영역
+========================= */
+
+.gnb-right {
+  margin-left: auto;
+
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+
+  height: 100%;
+
+  flex-shrink: 0;
+}
+
+
+/* =========================
+   로그인 버튼
+========================= */
+
+.gnb-login-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  min-height: 36px;
+
+  padding: 6px 8px;
+
+  border: none;
+
+  background: transparent;
+
+  color: #4b5563;
+
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 600;
+
+  white-space: nowrap;
+
+  cursor: pointer;
+
+  border-radius: 8px;
+
+  transition:
+    color 0.18s ease,
+    background 0.18s ease;
+}
+
+.gnb-login-button:hover {
+  color: #1d4e89;
+
+  background: #f5f8fc;
+}
+
+
+/* =========================
+   로그인 후 프로필 버튼
+========================= */
+
+.navbar-profile {
+  display: flex;
+  align-items: center;
+
+  gap: 9px;
+
+  min-height: 40px;
+
+  padding: 4px 9px;
+
+  border: none;
+  border-radius: 10px;
+
+  background: transparent;
+
+  font-family: inherit;
+
+  white-space: nowrap;
+
+  cursor: pointer;
+
+  transition:
+    background 0.18s ease;
+}
+
+.navbar-profile:hover {
+  background: #f3f6fa;
+}
+
+
+/* =========================
+   동그란 프로필 이미지 영역
+========================= */
+
+.navbar-profile-avatar {
+  width: 32px;
+  height: 32px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  flex-shrink: 0;
+
+  border-radius: 50%;
+
+  background: #1d4e89;
+
+  color: #ffffff;
+
+  font-size: 13px;
+  font-weight: 700;
+
+  line-height: 1;
+}
+
+
+/* =========================
+   프로필 아이디
+========================= */
+
+.navbar-profile-name {
+  max-width: 140px;
+
+  overflow: hidden;
+
+  text-overflow: ellipsis;
+
+  color: #344054;
+
+  font-size: 14px;
+  font-weight: 600;
+
+  white-space: nowrap;
+}
+
+
+/* =========================
+   혹시 기존 gnb-link--right가
+   남아 있어도 깨지지 않도록
+========================= */
+
 .gnb-link--right {
   margin-left: auto;
 }
 
-/* 로고는 링크 hover 색(파랑)으로 변하지 않도록 고정 */
-.gnb-logo:hover {
-  color: var(--color-heading);
+
+/* =========================
+   반응형
+========================= */
+
+@media (max-width: 900px) {
+  .gnb {
+    padding: 0 20px;
+  }
+
+  .nav-links {
+    gap: 22px;
+
+    margin-left: 30px;
+  }
+
+  .navbar-profile-name {
+    max-width: 100px;
+  }
+}
+
+
+@media (max-width: 700px) {
+  .gnb {
+    padding: 0 14px;
+  }
+
+  .gnb-logo {
+    font-size: 16px;
+  }
+
+  .nav-links {
+    gap: 14px;
+
+    margin-left: 20px;
+  }
+
+  .gnb-link {
+    font-size: 13px;
+  }
+
+  .gnb-login-button {
+    font-size: 13px;
+  }
+
+  .navbar-profile-name {
+    display: none;
+  }
+
+  .navbar-profile {
+    padding: 4px;
+  }
 }

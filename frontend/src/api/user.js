@@ -1,23 +1,437 @@
-// api/user.js
-// 회원(user) 관련 백엔드 API 호출 함수 모음.
-//
-// 담당: 윤서
-// 백엔드 라우트는 config/urls.py 기준 "/api/users/" 아래에 있다.
-//   예) /api/users/  , /api/users/coin-history/
-// 로그인/마이페이지 관련 엔드포인트는 백엔드에 아직 없으니 추가되면 연결할 것.
-// client.js 의 apiGet / apiPost 를 가져다 쓰면 된다. (facilities.js 참고)
+import {
+  BASE_URL,
+  apiGet,
+  apiPost,
+} from "./client";
 
-// import { apiGet, apiPost } from "./client";
 
-// 로그인. (자리만 만들어 둠 - 윤서가 채울 예정)
-// credentials 예: { username, password }
-// 예: return apiPost("/api/users/login/", credentials);
-export function login(credentials) {
-  void credentials; // 파라미터 형태만 표시용 (윤서가 실제 구현 시 사용)
-  throw new Error("login: 아직 구현되지 않았습니다 (윤서 담당)");
+function saveTokens(
+  access,
+  refresh = null
+) {
+  if (access) {
+    localStorage.setItem(
+      "accessToken",
+      access
+    );
+  }
+
+  if (refresh) {
+    localStorage.setItem(
+      "refreshToken",
+      refresh
+    );
+  }
 }
 
-// 마이페이지 정보 조회. (자리만 만들어 둠 - 윤서가 채울 예정)
-export function getMyPage() {
-  throw new Error("getMyPage: 아직 구현되지 않았습니다 (윤서 담당)");
+
+export function clearTokens() {
+  localStorage.removeItem(
+    "accessToken"
+  );
+
+  localStorage.removeItem(
+    "refreshToken"
+  );
+
+  localStorage.removeItem(
+    "username"
+  );
+
+   window.dispatchEvent(
+    new Event("auth-change")
+  );
+}
+
+
+export async function signup(
+  data
+) {
+  const response =
+    await fetch(
+      `${BASE_URL}/api/users/signup/`,
+      {
+        method: "POST",
+
+        headers: {
+          "Content-Type":
+            "application/json",
+        },
+
+        body:
+          JSON.stringify(
+            data
+          ),
+      }
+    );
+
+  const result =
+    await response.json();
+
+  if (!response.ok) {
+    const error =
+      new Error(
+        "회원가입에 실패했습니다."
+      );
+
+    error.data =
+      result;
+
+    throw error;
+  }
+
+  return result;
+}
+
+
+export async function login(
+  data
+) {
+  const result =
+    await apiPost(
+      "/api/users/login/",
+      data
+    );
+
+  saveTokens(
+    result.access,
+    result.refresh
+  );
+
+  return result;
+}
+
+
+export async function refreshAccessToken() {
+  const refreshToken =
+    localStorage.getItem(
+      "refreshToken"
+    );
+
+  if (!refreshToken) {
+    clearTokens();
+
+    throw new Error(
+      "refresh token이 없습니다."
+    );
+  }
+
+  const response =
+    await fetch(
+      `${BASE_URL}/api/users/token/refresh/`,
+      {
+        method: "POST",
+
+        headers: {
+          "Content-Type":
+            "application/json",
+        },
+
+        body:
+          JSON.stringify({
+            refresh:
+              refreshToken,
+          }),
+      }
+    );
+
+  if (!response.ok) {
+    clearTokens();
+
+    throw new Error(
+      "로그인 정보가 만료되었습니다."
+    );
+  }
+
+  const data =
+    await response.json();
+
+  if (!data.access) {
+    clearTokens();
+
+    throw new Error(
+      "새 access token을 발급받지 못했습니다."
+    );
+  }
+
+  saveTokens(
+    data.access,
+    data.refresh || null
+  );
+
+  return data.access;
+}
+
+
+async function authenticatedRequest(
+  path,
+  options = {}
+) {
+  let accessToken =
+    localStorage.getItem(
+      "accessToken"
+    );
+
+  const makeRequest = (
+    token
+  ) => {
+    const headers = {
+      ...(options.headers || {}),
+    };
+
+    if (token) {
+      headers.Authorization =
+        `Bearer ${token}`;
+    }
+
+    return fetch(
+      `${BASE_URL}${path}`,
+      {
+        ...options,
+        headers,
+      }
+    );
+  };
+
+  let response =
+    await makeRequest(
+      accessToken
+    );
+
+  if (
+    response.status === 401
+  ) {
+    try {
+      accessToken =
+        await refreshAccessToken();
+
+      response =
+        await makeRequest(
+          accessToken
+        );
+    } catch (error) {
+      console.error(
+        "토큰 갱신 실패:",
+        error
+      );
+
+      clearTokens();
+
+      throw new Error(
+        "로그인이 만료되었습니다."
+      );
+    }
+  }
+
+  if (!response.ok) {
+    let errorData = {};
+
+    try {
+      errorData =
+        await response.json();
+    } catch {
+      // JSON 응답이 아니면 무시
+    }
+
+    const error =
+      new Error(
+        errorData.detail ||
+        `API 요청 실패: ${response.status}`
+      );
+
+    error.status =
+      response.status;
+
+    error.data =
+      errorData;
+
+    throw error;
+  }
+
+  if (
+    response.status === 204
+  ) {
+    return null;
+  }
+
+  return response.json();
+}
+
+
+export function getMyInfo() {
+  return authenticatedRequest(
+    "/api/users/me/",
+    {
+      method: "GET",
+    }
+  );
+}
+
+
+export function updateMyInfo(
+  data
+) {
+  return authenticatedRequest(
+    "/api/users/me/",
+    {
+      method: "PATCH",
+
+      headers: {
+        "Content-Type":
+          "application/json",
+      },
+
+      body:
+        JSON.stringify(
+          data
+        ),
+    }
+  );
+}
+
+
+export function getMyPrograms() {
+  return authenticatedRequest(
+    "/api/users/my-programs/",
+    {
+      method: "GET",
+    }
+  );
+}
+
+
+export function createMyProgram(
+  formData
+) {
+  return authenticatedRequest(
+    "/api/users/my-programs/",
+    {
+      method: "POST",
+      body:
+        formData,
+    }
+  );
+}
+
+
+/*
+=========================================
+내가 쓴 리뷰
+=========================================
+*/
+
+export function getMyReviews() {
+  return authenticatedRequest(
+    "/api/users/my-reviews/",
+    {
+      method: "GET",
+    }
+  );
+}
+
+
+export function createReview(
+  data
+) {
+  return authenticatedRequest(
+    "/api/users/my-reviews/",
+    {
+      method: "POST",
+
+      headers: {
+        "Content-Type":
+          "application/json",
+      },
+
+      body:
+        JSON.stringify(
+          data
+        ),
+    }
+  );
+}
+
+
+export function updateReview(
+  reviewId,
+  data
+) {
+  return authenticatedRequest(
+    `/api/users/my-reviews/${reviewId}/`,
+    {
+      method: "PATCH",
+
+      headers: {
+        "Content-Type":
+          "application/json",
+      },
+
+      body:
+        JSON.stringify(
+          data
+        ),
+    }
+  );
+}
+
+
+export function deleteReview(
+  reviewId
+) {
+  return authenticatedRequest(
+    `/api/users/my-reviews/${reviewId}/`,
+    {
+      method: "DELETE",
+    }
+  );
+}
+
+
+/*
+=========================================
+시설 관련 조회
+=========================================
+*/
+
+export function getFacilitiesByRegion(
+  region
+) {
+  return apiGet(
+    `/api/facilities/?region=${encodeURIComponent(
+      region
+    )}`
+  );
+}
+
+
+export function getSubFacilities(
+  facilityId
+) {
+  return apiGet(
+    `/api/facilities/subfacilities/?facility=${facilityId}`
+  );
+}
+
+
+export function getProgramsByFacility(
+  facilityId
+) {
+  return apiGet(
+    `/api/facilities/programs/?facility=${facilityId}`
+  );
+}
+
+
+export function getProgramsBySubFacility(
+  facilityId,
+  subfacilityId
+) {
+  return apiGet(
+    `/api/facilities/programs/?facility=${facilityId}&subfacility=${subfacilityId}`
+  );
+}
+
+
+export function logout() {
+  clearTokens();
 }
