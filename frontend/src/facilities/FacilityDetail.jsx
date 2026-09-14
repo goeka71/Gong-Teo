@@ -238,6 +238,28 @@ function FacilityDetail({ facilityId = 1 }) {
     // 여기서는 패널 내용만 렌더링한다(래핑하는 페이지/지도 영역 없음).
     // "/" 는 목록이 아니라 검색/필터 패널이라 "목록으로" 버튼은 두지 않는다.
     <div className="fd-detail">
+      {/* 뒤로가기: "메인"(GNB) 클릭과 같은 화면(목록/검색 패널, "/")으로 이동 */}
+      <button
+        type="button"
+        className="fd-back-btn"
+        onClick={() => navigate("/")}
+      >
+        <svg
+          width="20"
+          height="20"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          aria-hidden="true"
+        >
+          <path d="M15 18l-6-6 6-6" />
+        </svg>
+        <span>메인으로</span>
+      </button>
+
       {/* ---------- 상단: 이미지 + 기본정보 ---------- */}
       <div className="fd-top">
         {/* 1. 시설 이미지 (없으면 회색 placeholder) */}
