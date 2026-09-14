@@ -3,6 +3,7 @@ import Navbar from "./components/Navbar";
 import FacilityMapLayout from "./facilities/FacilityMapLayout";
 import FacilityListPanel from "./facilities/FacilityListPanel";
 import FacilityDetail from "./facilities/FacilityDetail";
+import FacilityReviewsPanel from "./facilities/FacilityReviewsPanel";
 import SubFacilityDetailPanel from "./facilities/SubFacilityDetailPanel";
 import OnedayBoard from "./oneday/OnedayBoard";
 import Login from "./user/Login";
@@ -36,6 +37,12 @@ function SubFacilityDetailRoute() {
   );
 }
 
+// "/facility/:id/reviews" 경로 전용 래퍼.
+function FacilityReviewsRoute() {
+  const { id } = useParams();
+  return <FacilityReviewsPanel facilityId={Number(id)} />;
+}
+
 function App() {
   return (
     <Routes>
@@ -49,6 +56,7 @@ function App() {
             path="/facility/:id/subfacility/:subId"
             element={<SubFacilityDetailRoute />}
           />
+          <Route path="/facility/:id/reviews" element={<FacilityReviewsRoute />} />
         </Route>
         <Route path="/oneday" element={<OnedayBoard />} />
         <Route path="/mypage" element={<MyPage />} />

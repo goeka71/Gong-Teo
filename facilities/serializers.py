@@ -73,10 +73,45 @@ class ProgramSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
 
-class ReviewSerializer(serializers.ModelSerializer):
+class FacilityReviewSerializer(serializers.ModelSerializer):
+    """시설/세부시설 기준 리뷰 공개 목록·미리보기용 (읽기 전용).
+
+    "내 리뷰"(users.MyReviewSerializer)와 달리 작성자 본인이 아닌
+    다른 사용자도 보는 목록이라 작성자 이름을 노출하고, 수정 검증
+    로직은 없다.
+    """
+
+    user_name = serializers.CharField(
+        source="user.name",
+        read_only=True
+    )
+
+    subfacility_name = serializers.CharField(
+        source="subfacility.subfacility_name",
+        read_only=True,
+        allow_null=True
+    )
+
+    program_name = serializers.CharField(
+        source="program.program_name",
+        read_only=True,
+        allow_null=True
+    )
+
     class Meta:
         model = Review
-        fields = "__all__"
+        fields = [
+            "id",
+            "user_name",
+            "subfacility",
+            "subfacility_name",
+            "program",
+            "program_name",
+            "rating",
+            "content",
+            "image",
+            "created_at",
+        ]
 
 
 class FavoriteSerializer(serializers.ModelSerializer):

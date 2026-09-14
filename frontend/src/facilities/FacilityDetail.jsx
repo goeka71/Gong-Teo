@@ -1,21 +1,19 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useOutletContext } from "react-router-dom";
-import { getFacilityDetail, updateFacilityDetail } from "../api/facilities";
+import {
+  getFacilityDetail,
+  getFacilityReviewPreview,
+  updateFacilityDetail,
+} from "../api/facilities";
 import HeartIcon from "./HeartIcon";
 import "./FacilityDetail.css";
 
 // 시설 상세 화면.
 // props.facilityId: 보여줄 시설 id. 없으면 1번.
 //
-// 리뷰 데이터와 "정보 추가·수정" 기능은 아직 API가 없어서 UI 자리만 잡아둔다.
-// (아래 MOCK_REVIEWS / MOCK_RATING 은 임시 목업. 실제 연결 시 교체 예정)
-
-// TODO: 리뷰 API 연결되면 이 목업을 실제 응답으로 교체
-const MOCK_RATING = { avg: 4.6, count: 32 };
-const MOCK_REVIEWS = [
-  { id: 1, name: "지호", rating: 5, content: "시설이 깨끗하고 주차가 편해요." },
-  { id: 2, name: "민아", rating: 4, content: "샤워실이 조금 좁지만 이용하기 좋아요." },
-];
+// "정보 추가·수정" 기능은 아직 API가 없어서 UI 자리만 잡아둔다.
+// 리뷰는 getFacilityReviewPreview(평균 별점 + 개수 + 최근 3개)로 연결됨.
+// 전체 리뷰 조회/작성 화면은 다음 단계(/facility/:id/reviews)에서 채운다.
 
 // DB의 website 값에 스킴이 없거나("gssi.or.kr") 콜론이 빠진 채
 // 저장된 경우가 있다("http//life.gangnam.go.kr"). 이걸 그대로 <a href>에
@@ -194,6 +192,11 @@ function FacilityDetail({ facilityId = 1 }) {
   const [editing, setEditing] = useState(false); // 수정 폼 열림 여부
   const [saveOk, setSaveOk] = useState(false); // "저장됐습니다" 표시 여부
 
+  // 리뷰 미리보기(평균 별점 + 개수 + 최근 3개). 시설 기본정보와는 별개
+  // API라 로딩 실패해도 나머지 상세정보 렌더링을 막지 않는다.
+  const [reviewPreview, setReviewPreview] = useState(null);
+  const [reviewPreviewLoading, setReviewPreviewLoading] = useState(true);
+
   // 찜 여부/토글은 부모(FacilityMapLayout)가 들고 있는 공용 상태를 그대로 쓴다.
   // 지도 쪽 "찜한 시설만 보기" 토글과 같은 값을 봐야 하기 때문(찜 API 는 아직 없음).
   const { wishedIds, toggleWish } = useOutletContext();
@@ -224,6 +227,33 @@ function FacilityDetail({ facilityId = 1 }) {
       ignore = true;
     };
   }, [facilityId, reloadKey]);
+
+  // 리뷰 미리보기도 facilityId 가 바뀔 때마다 따로 불러온다.
+  useEffect(() => {
+    let ignore = false;
+
+    async function loadReviewPreview() {
+      try {
+        setReviewPreviewLoading(true);
+        const json = await getFacilityReviewPreview(facilityId);
+        if (!ignore) {
+          setReviewPreview(json);
+        }
+      } catch (err) {
+        console.error("리뷰 미리보기 조회 실패:", err);
+        if (!ignore) {
+          setReviewPreview(null);
+        }
+      } finally {
+        if (!ignore) setReviewPreviewLoading(false);
+      }
+    }
+
+    loadReviewPreview();
+    return () => {
+      ignore = true;
+    };
+  }, [facilityId]);
 
   if (loading) return <p className="fd-status">불러오는 중…</p>;
   if (error) return <p className="fd-status">에러: {error}</p>;
@@ -398,43 +428,51 @@ function FacilityDetail({ facilityId = 1 }) {
           </dl>
         </section>
 
-        {/* 4. 리뷰 영역 — UI 자리만 (실제 데이터/작성 기능 없음) */}
+        {/* 4. 리뷰 영역 */}
         <section>
           <div className="fd-block-head">
             <h2 className="fd-block-title">
               리뷰{" "}
-              <span className="fd-rating">
-                <Stars rating={MOCK_RATING.avg} /> {MOCK_RATING.avg} (
-                {MOCK_RATING.count})
-              </span>
+              {reviewPreview && reviewPreview.review_count > 0 && (
+                <span className="fd-rating">
+                  <Stars rating={reviewPreview.average_rating} />{" "}
+                  {reviewPreview.average_rating} ({reviewPreview.review_count})
+                </span>
+              )}
             </h2>
             <button
               type="button"
               className="fd-text-btn fd-text-btn--accent"
-              // TODO: 리뷰 작성 기능
+              onClick={() => navigate(`/facility/${facilityId}/reviews`)}
             >
               리뷰 작성
             </button>
           </div>
 
-          <div className="fd-review-list">
-            {MOCK_REVIEWS.map((r) => (
-              <div className="fd-review-card" key={r.id}>
-                <div className="fd-review-top">
-                  <span className="fd-review-name">{r.name}</span>
-                  <Stars rating={r.rating} />
+          {reviewPreviewLoading ? (
+            <p className="fd-review-empty">리뷰를 불러오는 중…</p>
+          ) : !reviewPreview || reviewPreview.review_count === 0 ? (
+            <p className="fd-review-empty">아직 등록된 리뷰가 없어요.</p>
+          ) : (
+            <div className="fd-review-list">
+              {reviewPreview.reviews.map((r) => (
+                <div className="fd-review-card" key={r.id}>
+                  <div className="fd-review-top">
+                    <span className="fd-review-name">{r.user_name}</span>
+                    <Stars rating={r.rating} />
+                  </div>
+                  <p className="fd-review-body">{r.content}</p>
                 </div>
-                <p className="fd-review-body">{r.content}</p>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
 
           <button
             type="button"
             className="fd-review-more"
-            // TODO: 리뷰 전체보기
+            onClick={() => navigate(`/facility/${facilityId}/reviews`)}
           >
-            리뷰 {MOCK_RATING.count}개 전체보기 ›
+            리뷰 {reviewPreview?.review_count ?? 0}개 전체보기 ›
           </button>
         </section>
       </div>

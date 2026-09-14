@@ -177,6 +177,7 @@ def my_programs(request):
 def my_reviews(request):
     """
     GET  : 로그인한 사용자가 작성한 리뷰 목록
+           ?has_photo=true 로 사진 첨부된 리뷰만 필터링 가능
     POST : 로그인한 사용자의 새 리뷰 작성
     """
 
@@ -190,6 +191,13 @@ def my_reviews(request):
             )
             .order_by("-created_at")
         )
+
+        has_photo = request.GET.get("has_photo")
+
+        if has_photo in ("true", "1"):
+            reviews = reviews.filter(
+                image__isnull=False
+            ).exclude(image="")
 
         serializer = MyReviewSerializer(
             reviews,

@@ -37,12 +37,6 @@ urlpatterns = [
     ),
 
     path(
-        "reviews/",
-        views.review_list,
-        name="review-list"
-    ),
-
-    path(
         "favorites/",
         views.favorite_list,
         name="favorite-list"
@@ -72,6 +66,20 @@ urlpatterns = [
         "<int:facility_id>/detail/",
         views.facility_detail_upsert,
         name="facility-detail-upsert"
+    ),
+
+    # 시설 리뷰 미리보기 (상위 3개 + 평균 별점 + 전체 개수). 시설 상세페이지용.
+    path(
+        "<int:facility_id>/reviews/preview/",
+        views.facility_review_preview,
+        name="facility-review-preview"
+    ),
+
+    # 시설 전체 리뷰 목록. ?category=, ?subfacility=, ?has_photo= 로 필터링.
+    path(
+        "<int:facility_id>/reviews/",
+        views.facility_review_list,
+        name="facility-review-list"
     ),
 
     # 시설 하나의 상세 정보 (기본정보 + FacilityDetail + 세부시설 + 종목)
