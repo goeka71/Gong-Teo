@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/6.1/ref/settings/
 """
 
+from datetime import timedelta
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -142,4 +143,12 @@ REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
         "rest_framework_simplejwt.authentication.JWTAuthentication",
     ),
+}
+
+# simplejwt 기본 ACCESS_TOKEN_LIFETIME(5분)이 너무 짧아서, 로그인 후
+# 5분만 지나도 남아있는 accessToken이 공개 API 요청에까지 실려 나가
+# 401로 실패하는 문제가 있었다. 우선 수명만 늘려서 완화한다.
+# (refresh token 자동 발급/만료 정책 등은 로그인 시스템 담당 범위라 건드리지 않음.)
+SIMPLE_JWT = {
+    "ACCESS_TOKEN_LIFETIME": timedelta(hours=1),
 }
