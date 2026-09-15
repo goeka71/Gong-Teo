@@ -72,8 +72,7 @@ async function request(path, options = {}) {
   });
 
   // access token 이 만료/무효해서 401 이 온 경우, 보냈던 토큰이 있었다면
-  // 한 번 갱신해서 재시도한다. (애초에 토큰이 없었던 비로그인 상태의
-  // 401 은 실제 인증 필요 응답이므로 그대로 흘려보낸다.)
+  // 한 번 갱신해서 재시도한다.
   if (response.status === 401 && token) {
     const newToken = await refreshAccessToken();
 
@@ -81,6 +80,16 @@ async function request(path, options = {}) {
       response = await fetch(`${BASE_URL}${path}`, {
         ...options,
         headers: buildHeaders(options.headers, newToken),
+      });
+    } else {
+      // refresh 마저 실패했다는 건(리프레시 토큰이 없거나 만료) 이 세션이
+      // 완전히 죽었다는 뜻이다. clearTokens() 는 refreshAccessToken() 안에서
+      // 이미 호출됐다. 로그인이 필요 없는 공개 API(시설 목록 등)는 원래
+      // 토큰 없이도 되는 요청이니, 죽은 토큰 없이 한 번 더 시도한다.
+      // 그래도 401이면 그 요청 자체가 로그인을 요구하는 것이므로 그대로 던진다.
+      response = await fetch(`${BASE_URL}${path}`, {
+        ...options,
+        headers: buildHeaders(options.headers, null),
       });
     }
   }
