@@ -46,10 +46,23 @@ def signup(request):
 
 
 @api_view(["GET"])
+@permission_classes([IsAuthenticated])
 def coin_history_list(request):
-    data = CoinHistory.objects.all()
-    serializer = CoinHistorySerializer(data, many=True)
-    return Response(serializer.data)
+    histories = (
+        CoinHistory.objects
+        .filter(user=request.user)
+        .order_by("-created_at")
+    )
+
+    serializer = CoinHistorySerializer(
+        histories,
+        many=True
+    )
+
+    return Response({
+        "coin": request.user.coin,
+        "histories": serializer.data,
+    })
 
 
 @api_view(["GET", "PATCH"])

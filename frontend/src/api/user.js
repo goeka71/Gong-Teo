@@ -313,6 +313,21 @@ export function createMyProgram(
   );
 }
 
+/*
+=========================================
+코인 내역
+=========================================
+*/
+
+export function getCoinHistory() {
+  return authenticatedRequest(
+    "/api/users/coin-history/",
+    {
+      method: "GET",
+    }
+  );
+}
+
 
 /*
 =========================================

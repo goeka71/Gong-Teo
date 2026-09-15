@@ -16,6 +16,7 @@ import {
 } from "../api/user";
 
 import "./MyPage.css";
+import CoinHistory from "./CoinHistory";
 
 
 /* =========================
@@ -1135,13 +1136,11 @@ function MyPage() {
 
 
             {view ===
-              "coins" && (
+  "coins" && (
 
-              <EmptyMenuView
-                title="코인 내역"
-                description="코인 적립 및 사용 내역을 확인할 수 있습니다."
-              />
-            )}
+  <CoinHistory />
+
+)}
 
 
             {view ===
