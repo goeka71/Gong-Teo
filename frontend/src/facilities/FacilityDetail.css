@@ -253,20 +253,33 @@
   color: var(--fd-accent);
 }
 
-/* ---------- 4. 리뷰 영역 (UI 자리만) ---------- */
+/* ---------- 4. 리뷰 영역 ----------
+   색만 전역 디자인 시스템(styles/global.css 의 --color-*)을 따르도록
+   바꿨다 — 리뷰 미리보기만 다른 --fd-accent(#2f6fed) 파랑을 써서 로그인/
+   마이페이지 등 나머지 화면(네이비 #1d4e89)과 톤이 어긋나던 걸 맞췄다.
+   레이아웃(둥근 정도/그림자/배경 등)은 원래대로 이 화면 톤(플랫, 그림자 없음)
+   그대로 둔다 — 카드에 그림자/흰 배경을 넣었더니 미리보기 목록만 혼자
+   붕 뜬 흰 박스로 보여서 되돌렸다. */
 
 .fd-rating {
   display: inline-flex;
   align-items: center;
   gap: 6px;
   font-size: 14px;
-  color: #566473;
+  color: var(--color-text-secondary);
   font-weight: 600;
 }
 
 .fd-stars {
-  color: var(--fd-star);
+  color: var(--color-star);
   letter-spacing: 1px;
+}
+
+/* "리뷰 작성" 글자형 버튼 전용 색 — .fd-text-btn--accent 는 "+ 정보 추가"
+   버튼과 공유하는 클래스라 거기엔 손대지 않으려고 분리했다. */
+.fd-review-write-btn {
+  color: var(--color-primary);
+  font-weight: 600;
 }
 
 .fd-review-list {
@@ -276,7 +289,7 @@
 }
 
 .fd-review-card {
-  border: 1px solid var(--fd-line);
+  border: 1px solid var(--color-border);
   border-radius: 12px;
   padding: 16px 18px;
 }
@@ -290,11 +303,12 @@
 
 .fd-review-name {
   font-weight: 700;
+  color: var(--color-heading);
 }
 
 .fd-review-body {
   margin: 0;
-  color: #566473;
+  color: var(--color-text-secondary);
   font-size: 14px;
 }
 
@@ -302,7 +316,7 @@
   margin: 0;
   padding: 24px 0;
   text-align: center;
-  color: #97a2ad;
+  color: var(--color-text-light);
   font-size: 14px;
 }
 
@@ -314,7 +328,7 @@
   background: none;
   font: inherit;
   font-weight: 700;
-  color: var(--fd-accent);
+  color: var(--color-primary);
   cursor: pointer;
 }
 

@@ -15,7 +15,9 @@ import {
   agreeSubFacilityDetail,
   disagreeSubFacilityDetail,
 } from "../api/facilities";
+import FacilityReviewsPanel from "./FacilityReviewsPanel";
 import "./FacilityDetail.css";
+import "./FacilityReviewsPanel.css";
 import "./SubFacilityDetailPanel.css";
 
 // 기여 정보 작성 폼. FacilityDetail.jsx 의 FacilityInfoForm 패턴을 따른다
@@ -245,11 +247,11 @@ function SubFacilityDetailPanel({ facilityId, subfacilityId }) {
         </div>
       )}
 
-      {/* ---------- c) 리뷰 (준비중 — 다른 팀원 담당, 여기서는 자리만) ---------- */}
-      <div className="fd-block-head">
-        <h2 className="fd-block-title">리뷰</h2>
-      </div>
-      <p className="fd-status sfd-review-placeholder">리뷰 기능은 준비중입니다.</p>
+      {/* ---------- c) 리뷰 ----------
+          FacilityReviewsPanel("/facility/:id/reviews" 화면의 그 컴포넌트)을
+          subfacilityId 를 넘겨 재사용한다 — 이 세부시설로 자동 필터링되고,
+          작성 폼도 이 세부시설로 고정된 채로 열린다. */}
+      <FacilityReviewsPanel facilityId={facilityId} subfacilityId={subfacilityId} />
     </div>
   );
 }

@@ -108,10 +108,3 @@
   opacity: 0.55;
   cursor: default;
 }
-
-.sfd-review-placeholder {
-  margin: 0;
-  padding: 20px;
-  border: 1px dashed var(--fd-line);
-  border-radius: 12px;
-}

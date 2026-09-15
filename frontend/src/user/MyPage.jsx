@@ -2539,7 +2539,14 @@ function MyReviewsView({
         );
       }
 
-      return !review.programId;
+      if (
+        reviewType ===
+        "facility"
+      ) {
+        return !review.programId;
+      }
+
+      return true; // "all" — 시설/프로그램 리뷰 모두
     });
 
 
@@ -2792,6 +2799,20 @@ function MyReviewsView({
           <SortButton
             active={
               reviewType ===
+              "all"
+            }
+            onClick={() =>
+              setReviewType(
+                "all"
+              )
+            }
+          >
+            전체
+          </SortButton>
+
+          <SortButton
+            active={
+              reviewType ===
               "facility"
             }
             onClick={() =>
@@ -2879,32 +2900,36 @@ function MyReviewsView({
             아직 작성한 리뷰가 없습니다.
           </strong>
 
-          <p
-            className="my-reviews-style-05"
-          >
-            내가 등록한 수강 프로그램에 리뷰를 남겨보세요.
-          </p>
+          {reviewType !== "facility" && (
+            <>
+              <p
+                className="my-reviews-style-05"
+              >
+                내가 등록한 수강 프로그램에 리뷰를 남겨보세요.
+              </p>
 
-          <button
-            type="button"
-            className="btn btn-primary"
-            disabled={
-              myPrograms.length === 0
-            }
-            onClick={
-              openWrite
-            }
-          >
-            리뷰 쓰기
-          </button>
+              <button
+                type="button"
+                className="btn btn-primary"
+                disabled={
+                  myPrograms.length === 0
+                }
+                onClick={
+                  openWrite
+                }
+              >
+                리뷰 쓰기
+              </button>
 
-          {myPrograms.length ===
-            0 && (
-            <p
-              className="my-reviews-style-04"
-            >
-              리뷰 작성 전 수강 프로그램을 먼저 등록해주세요.
-            </p>
+              {myPrograms.length ===
+                0 && (
+                <p
+                  className="my-reviews-style-04"
+                >
+                  리뷰 작성 전 수강 프로그램을 먼저 등록해주세요.
+                </p>
+              )}
+            </>
           )}
         </div>
       ) : filteredReviews.length ===
@@ -2952,8 +2977,8 @@ function MyReviewsView({
       )}
 
 
-      {reviews.length >
-        0 && (
+      {reviews.length > 0 &&
+        reviewType !== "facility" && (
         <div
           className="my-reviews-style-02"
         >
