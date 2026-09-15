@@ -203,10 +203,26 @@ def onedayapplication_list(request):
 
     if request.method == "GET":
 
-        data = OnedayApplication.objects.select_related(
+        # ==================================
+        # 현재는 로그인 인증 전이므로
+        # 테스트용 user_id = 1 사용
+        # ==================================
+
+        if request.user.is_authenticated:
+            user_id = request.user.id
+        else:
+            user_id = 1
+
+
+        data = OnedayApplication.objects.filter(
+            user_id=user_id,
+        ).select_related(
             "post",
+            "post__enroll",
+            "post__enroll__program",
+            "post__enroll__program__facility",
             "user",
-        ).all()
+        ).order_by("-apply_at")
 
 
         serializer = OnedayApplicationSerializer(

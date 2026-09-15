@@ -14,3 +14,8 @@ export async function createOnedayPost(data) {
 export async function applyOnedayPost(postId) {
   return apiPost("/api/oneday/applications/", { post: postId });
 }
+
+// 내가 신청한 원데이 클래스 목록 조회
+export async function getMyOnedayApplications() {
+  return apiGet("/api/oneday/applications/");
+}

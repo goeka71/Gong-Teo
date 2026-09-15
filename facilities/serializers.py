@@ -115,9 +115,58 @@ class FacilityReviewSerializer(serializers.ModelSerializer):
 
 
 class FavoriteSerializer(serializers.ModelSerializer):
+
+    # 마이페이지 "찜한 시설" 목록 카드 표시용 시설 정보
+    facility_name = serializers.CharField(
+        source="facility.facility_name",
+        read_only=True
+    )
+
+    facility_addr = serializers.CharField(
+        source="facility.addr",
+        read_only=True
+    )
+
+    station = serializers.CharField(
+        source="facility.station",
+        read_only=True,
+        allow_blank=True
+    )
+
+    station_wt = serializers.IntegerField(
+        source="facility.station_wt",
+        read_only=True,
+        allow_null=True
+    )
+
+    bus = serializers.CharField(
+        source="facility.bus",
+        read_only=True,
+        allow_blank=True
+    )
+
+    bus_wt = serializers.IntegerField(
+        source="facility.bus_wt",
+        read_only=True,
+        allow_null=True
+    )
+
     class Meta:
         model = Favorite
-        fields = "__all__"
+
+        fields = [
+            "id",
+            "user",
+            "facility",
+
+            "facility_name",
+            "facility_addr",
+
+            "station",
+            "station_wt",
+            "bus",
+            "bus_wt",
+        ]
 
 
 class SubFacilityDetailSerializer(serializers.ModelSerializer):

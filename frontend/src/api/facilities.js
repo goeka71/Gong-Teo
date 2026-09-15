@@ -107,3 +107,19 @@ export function getFacilityReviews(facilityId, options = {}) {
     `/api/facilities/${facilityId}/reviews/${query ? `?${query}` : ""}`
   );
 }
+
+
+
+// 내가 찜한 시설 목록. 로그인이 필요하다.
+// GET /api/facilities/favorites/
+// 응답: [{ id, user, facility }, ...]
+export function getMyFavorites() {
+  return apiGet("/api/facilities/favorites/");
+}
+
+// 찜 토글: 이미 찜한 시설이면 삭제, 아니면 추가. 로그인이 필요하다.
+// POST /api/facilities/favorites/
+// 응답: { facility, wished }
+export function toggleFavorite(facilityId) {
+  return apiPost("/api/facilities/favorites/", { facility: facilityId });
+}

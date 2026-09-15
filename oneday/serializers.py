@@ -197,7 +197,63 @@ class OnedayPostSerializer(serializers.ModelSerializer):
 # ==========================================
 class OnedayApplicationSerializer(serializers.ModelSerializer):
 
+    # ======================================
+    # 신청한 게시글(post)의 프로그램/시설 정보
+    # 마이페이지의 "신청한 원데이 클래스" 목록 표시용
+    # ======================================
+
+    transfer_date = serializers.DateField(
+        source="post.transfer_date",
+        read_only=True
+    )
+
+    post_status = serializers.CharField(
+        source="post.status",
+        read_only=True
+    )
+
+    program_name = serializers.CharField(
+        source="post.enroll.program.program_name",
+        read_only=True
+    )
+
+    program_day = serializers.CharField(
+        source="post.enroll.program_day",
+        read_only=True
+    )
+
+    program_time = serializers.CharField(
+        source="post.enroll.program_time",
+        read_only=True
+    )
+
+    facility_name = serializers.CharField(
+        source="post.enroll.program.facility.facility_name",
+        read_only=True
+    )
+
+    facility_addr = serializers.CharField(
+        source="post.enroll.program.facility.addr",
+        read_only=True
+    )
+
     class Meta:
         model = OnedayApplication
 
-        fields = "__all__"
+        fields = [
+            "id",
+            "post",
+            "user",
+            "apply_at",
+            "apply_result",
+
+            "transfer_date",
+            "post_status",
+
+            "program_name",
+            "program_day",
+            "program_time",
+
+            "facility_name",
+            "facility_addr",
+        ]
