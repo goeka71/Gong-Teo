@@ -11,11 +11,17 @@ import "./FacilityDetail.css";
 import "./FacilityReviewsPanel.css";
 
 // "/facility/:id/reviews" 화면 — 시설 단위 리뷰 전체보기.
-//
-// 세부시설 전용 필터링/카테고리 고정(세부시설 상세페이지에서 진입할 때
-// 필요한 것)은 다음 단계 범위라 여기서는 하지 않는다. 이 화면은 항상
-// 시설 전체 리뷰를 다루고, 카테고리/세부시설/사진유무는 사용자가 직접
-// 고르는 필터일 뿐이다.
+// 세부시설 상세(SubFacilityDetailPanel)의 "리뷰" 섹션도 이 컴포넌트를 그대로
+// 재사용한다. subfacilityId prop 이 있으면(=세부시설 상세에서 쓰는 경우):
+//   - 목록이 그 세부시설로만 자동 필터링되고(사용자가 필터를 만질 필요 없음)
+//   - 작성 폼은 세부시설이 고정돼서 카테고리(시설/프로그램)·세부시설 선택
+//     UI 자체가 뜨지 않고
+//   - 페이지 전용 크롬(뒤로가기 버튼, 큰 제목, 별점 요약)은 생략하고 대신
+//     SubFacilityDetailPanel 의 다른 섹션("이용자 정보")과 톤을 맞춘 가벼운
+//     섹션 헤더로 렌더링된다(호스트가 이미 .fd-detail 래퍼와 뒤로가기
+//     버튼을 갖고 있으므로).
+// subfacilityId 가 없으면(기존 "/facility/:id/reviews" 경로) 예전 그대로
+// 동작한다 — 아래 로직은 전부 그 기본 경로를 안 건드리도록 짜여 있다.
 
 // Django MEDIA 상대경로("/media/...")를 절대주소로 바꿔준다.
 // (FacilityListPanel.resolveImageUrl / MyPage.resolveReviewImageUrl 과 동일한 문제.)
@@ -66,16 +72,20 @@ const CATEGORY_OPTIONS = [
   { value: "program", label: "프로그램 리뷰" },
 ];
 
-function FacilityReviewsPanel({ facilityId }) {
+function FacilityReviewsPanel({ facilityId, subfacilityId = null }) {
   const navigate = useNavigate();
+  const isScoped = subfacilityId != null;
 
   // 시설 이름 + 세부시설 목록(작성 폼용). getFacilityDetail 응답에
   // sub_facilities 가 이미 포함돼 있어서 따로 조회하지 않는다.
+  // 세부시설 고정 모드(isScoped)에서는 제목/프로그램 선택 UI 자체를 안 쓰므로
+  // 조회하지 않는다 — 호스트(SubFacilityDetailPanel)가 이미 같은 정보를
+  // 따로 갖고 있어 중복 요청이 된다.
   const [facility, setFacility] = useState(null);
   const [programs, setPrograms] = useState([]);
 
-  // 평균 별점 + 전체 개수. 목록 필터와 무관하게 항상 "전체" 기준이라
-  // 목록용 조회와는 별도로 관리한다.
+  // 평균 별점 + 전체 개수. 시설 전체 기준 엔드포인트라 세부시설 단위로는
+  // 못 쪼개서, 세부시설 고정 모드에서는 조회하지 않는다.
   const [preview, setPreview] = useState(null);
 
   const [reviews, setReviews] = useState([]);
@@ -95,6 +105,8 @@ function FacilityReviewsPanel({ facilityId }) {
 
   // 시설 기본정보(이름, 세부시설 목록) + 프로그램 목록(작성 폼 선택지)
   useEffect(() => {
+    if (isScoped) return;
+
     let ignore = false;
 
     async function load() {
@@ -116,10 +128,12 @@ function FacilityReviewsPanel({ facilityId }) {
     return () => {
       ignore = true;
     };
-  }, [facilityId]);
+  }, [facilityId, isScoped]);
 
   // 평균 별점 + 전체 개수
   useEffect(() => {
+    if (isScoped) return;
+
     let ignore = false;
 
     async function load() {
@@ -135,9 +149,9 @@ function FacilityReviewsPanel({ facilityId }) {
     return () => {
       ignore = true;
     };
-  }, [facilityId, reloadKey]);
+  }, [facilityId, reloadKey, isScoped]);
 
-  // 실제 리뷰 목록 (카테고리/사진유무 필터 반영)
+  // 실제 리뷰 목록 (카테고리/사진유무/세부시설 필터 반영)
   useEffect(() => {
     let ignore = false;
 
@@ -147,6 +161,7 @@ function FacilityReviewsPanel({ facilityId }) {
         const data = await getFacilityReviews(facilityId, {
           category: category || undefined,
           hasPhoto: effectiveHasPhoto,
+          subfacility: subfacilityId || undefined,
         });
         if (!ignore) {
           setReviews(data);
@@ -163,7 +178,7 @@ function FacilityReviewsPanel({ facilityId }) {
     return () => {
       ignore = true;
     };
-  }, [facilityId, category, effectiveHasPhoto, reloadKey]);
+  }, [facilityId, subfacilityId, category, effectiveHasPhoto, reloadKey]);
 
   const subFacilities = facility?.sub_facilities ?? [];
 
@@ -176,33 +191,42 @@ function FacilityReviewsPanel({ facilityId }) {
     setWriteOpen(true);
   }
 
-  return (
-    <div className="fd-detail">
+  const header = isScoped ? (
+    // 세부시설 상세 안에 끼워 넣는 섹션이므로, 위의 "이용자 정보" 섹션과
+    // 같은 톤(.fd-block-head/.fd-block-title/.fd-text-btn)으로 맞춘다.
+    <div className="fd-block-head">
+      <h2 className="fd-block-title">리뷰</h2>
       <button
         type="button"
-        className="fd-back-btn"
-        onClick={() => navigate(`/facility/${facilityId}`)}
+        className="fd-text-btn fd-text-btn--accent"
+        onClick={handleWriteClick}
       >
-        ‹ 시설로 돌아가기
+        + 리뷰 작성
       </button>
-
-      <div className="frp-header">
-        <div>
-          <h1 className="frp-title">
-            {facility?.facility_name ?? "시설"} 리뷰
-          </h1>
-          {preview && preview.review_count > 0 && (
-            <p className="frp-summary">
-              <Stars rating={preview.average_rating} /> {preview.average_rating}{" "}
-              ({preview.review_count})
-            </p>
-          )}
-        </div>
-
-        <button type="button" className="frp-write-btn" onClick={handleWriteClick}>
-          리뷰 작성
-        </button>
+    </div>
+  ) : (
+    <div className="frp-header">
+      <div>
+        <h1 className="frp-title">
+          {facility?.facility_name ?? "시설"} 리뷰
+        </h1>
+        {preview && preview.review_count > 0 && (
+          <p className="frp-summary">
+            <Stars rating={preview.average_rating} /> {preview.average_rating}{" "}
+            ({preview.review_count})
+          </p>
+        )}
       </div>
+
+      <button type="button" className="frp-write-btn" onClick={handleWriteClick}>
+        리뷰 작성
+      </button>
+    </div>
+  );
+
+  const body = (
+    <>
+      {header}
 
       {loginRequired && (
         <p className="frp-login-hint">
@@ -294,7 +318,7 @@ function FacilityReviewsPanel({ facilityId }) {
               </div>
               <div className="frp-review-meta">
                 <span>{reviewCategoryLabel(r)}</span>
-                {r.subfacility_name && <span> · {r.subfacility_name}</span>}
+                {!isScoped && r.subfacility_name && <span> · {r.subfacility_name}</span>}
                 {r.created_at && <span> · {r.created_at.slice(0, 10)}</span>}
               </div>
               <p className="frp-review-body">{r.content}</p>
@@ -315,6 +339,7 @@ function FacilityReviewsPanel({ facilityId }) {
           facilityId={facilityId}
           programs={programs}
           subFacilities={subFacilities}
+          fixedSubfacilityId={subfacilityId}
           onClose={() => setWriteOpen(false)}
           onSaved={() => {
             setWriteOpen(false);
@@ -322,18 +347,46 @@ function FacilityReviewsPanel({ facilityId }) {
           }}
         />
       )}
+    </>
+  );
+
+  if (isScoped) {
+    return body;
+  }
+
+  return (
+    <div className="fd-detail">
+      <button
+        type="button"
+        className="fd-back-btn"
+        onClick={() => navigate(`/facility/${facilityId}`)}
+      >
+        ‹ 시설로 돌아가기
+      </button>
+
+      {body}
     </div>
   );
 }
 
 // 리뷰 작성 모달.
-//   facilityId   : 고정 대상 시설 (route 의 :id)
-//   programs     : 이 시설의 Program 목록 (카테고리=프로그램일 때 선택지)
-//   subFacilities: 이 시설의 세부시설 목록 (있으면 선택, "시설 전체"도 가능)
-function ReviewWriteModal({ facilityId, programs, subFacilities, onClose, onSaved }) {
+//   facilityId        : 고정 대상 시설 (route 의 :id)
+//   programs           : 이 시설의 Program 목록 (카테고리=프로그램일 때 선택지)
+//   subFacilities       : 이 시설의 세부시설 목록 (있으면 선택, "시설 전체"도 가능)
+//   fixedSubfacilityId : 세부시설 상세에서 열렸을 때만 전달됨. 있으면 세부시설이
+//                        이미 정해진 채로 시작하고, 카테고리(시설/프로그램)·
+//                        세부시설 선택 UI 자체를 숨긴다.
+function ReviewWriteModal({
+  facilityId,
+  programs,
+  subFacilities,
+  fixedSubfacilityId = null,
+  onClose,
+  onSaved,
+}) {
   const [category, setCategory] = useState("facility"); // "facility" | "program"
   const [programId, setProgramId] = useState("");
-  const [subfacilityId, setSubfacilityId] = useState("");
+  const [subfacilityId, setSubfacilityId] = useState(fixedSubfacilityId ?? "");
   const [rating, setRating] = useState(0);
   const [hoverRating, setHoverRating] = useState(0);
   const [content, setContent] = useState("");
@@ -372,7 +425,7 @@ function ReviewWriteModal({ facilityId, programs, subFacilities, onClose, onSave
       setError("리뷰 내용을 입력해주세요.");
       return;
     }
-    if (category === "program" && !programId) {
+    if (!fixedSubfacilityId && category === "program" && !programId) {
       setError("리뷰를 작성할 프로그램을 선택해주세요.");
       return;
     }
@@ -380,7 +433,9 @@ function ReviewWriteModal({ facilityId, programs, subFacilities, onClose, onSave
     const formData = new FormData();
     formData.append("facility", facilityId);
     if (subfacilityId) formData.append("subfacility", subfacilityId);
-    if (category === "program" && programId) formData.append("program", programId);
+    if (!fixedSubfacilityId && category === "program" && programId) {
+      formData.append("program", programId);
+    }
     formData.append("rating", rating);
     formData.append("content", content.trim());
     if (imageFile) formData.append("image", imageFile);
@@ -408,66 +463,72 @@ function ReviewWriteModal({ facilityId, programs, subFacilities, onClose, onSave
         </div>
 
         <form className="frp-form" onSubmit={handleSubmit}>
-          <div className="frp-form-group">
-            <span className="frp-form-label">카테고리</span>
-            <div className="frp-radio-row">
-              <label>
-                <input
-                  type="radio"
-                  name="review-category"
-                  checked={category === "facility"}
-                  onChange={() => setCategory("facility")}
-                />
-                시설 리뷰
-              </label>
-              <label>
-                <input
-                  type="radio"
-                  name="review-category"
-                  checked={category === "program"}
-                  onChange={() => setCategory("program")}
-                />
-                프로그램 리뷰
-              </label>
-            </div>
-          </div>
+          {fixedSubfacilityId ? (
+            <p className="frp-form-hint">이 세부시설에 대한 리뷰로 등록됩니다.</p>
+          ) : (
+            <>
+              <div className="frp-form-group">
+                <span className="frp-form-label">카테고리</span>
+                <div className="frp-radio-row">
+                  <label>
+                    <input
+                      type="radio"
+                      name="review-category"
+                      checked={category === "facility"}
+                      onChange={() => setCategory("facility")}
+                    />
+                    시설 리뷰
+                  </label>
+                  <label>
+                    <input
+                      type="radio"
+                      name="review-category"
+                      checked={category === "program"}
+                      onChange={() => setCategory("program")}
+                    />
+                    프로그램 리뷰
+                  </label>
+                </div>
+              </div>
 
-          {category === "program" && (
-            <div className="frp-form-group">
-              <span className="frp-form-label">프로그램</span>
-              {programs.length === 0 ? (
-                <p className="frp-form-hint">등록된 프로그램이 없습니다.</p>
-              ) : (
-                <select
-                  value={programId}
-                  onChange={(e) => setProgramId(e.target.value)}
-                >
-                  <option value="">프로그램을 선택해주세요</option>
-                  {programs.map((p) => (
-                    <option key={p.id} value={p.id}>
-                      {p.program_name}
-                    </option>
-                  ))}
-                </select>
+              {category === "program" && (
+                <div className="frp-form-group">
+                  <span className="frp-form-label">프로그램</span>
+                  {programs.length === 0 ? (
+                    <p className="frp-form-hint">등록된 프로그램이 없습니다.</p>
+                  ) : (
+                    <select
+                      value={programId}
+                      onChange={(e) => setProgramId(e.target.value)}
+                    >
+                      <option value="">프로그램을 선택해주세요</option>
+                      {programs.map((p) => (
+                        <option key={p.id} value={p.id}>
+                          {p.program_name}
+                        </option>
+                      ))}
+                    </select>
+                  )}
+                </div>
               )}
-            </div>
-          )}
 
-          {subFacilities.length > 0 && (
-            <div className="frp-form-group">
-              <span className="frp-form-label">세부시설</span>
-              <select
-                value={subfacilityId}
-                onChange={(e) => setSubfacilityId(e.target.value)}
-              >
-                <option value="">시설 전체</option>
-                {subFacilities.map((s) => (
-                  <option key={s.id} value={s.id}>
-                    {s.subfacility_name}
-                  </option>
-                ))}
-              </select>
-            </div>
+              {subFacilities.length > 0 && (
+                <div className="frp-form-group">
+                  <span className="frp-form-label">세부시설</span>
+                  <select
+                    value={subfacilityId}
+                    onChange={(e) => setSubfacilityId(e.target.value)}
+                  >
+                    <option value="">시설 전체</option>
+                    {subFacilities.map((s) => (
+                      <option key={s.id} value={s.id}>
+                        {s.subfacility_name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
+            </>
           )}
 
           <div className="frp-form-group">
