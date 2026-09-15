@@ -42,8 +42,16 @@ class SignupSerializer(serializers.ModelSerializer):
             birth=validated_data.get("birth"),
             phone=validated_data.get("phone", ""),
         )
-        return user
 
+        # 신규 회원은 User 모델의 default=5로 시작.
+        # 최초 코인 지급 내역도 함께 기록한다.
+        CoinHistory.objects.create(
+            user=user,
+            coin_desc="회원가입 축하 코인 (+5)",
+            coin_res=user.coin,
+        )
+
+        return user
 
 class CoinHistorySerializer(serializers.ModelSerializer):
     class Meta:
