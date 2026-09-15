@@ -2,46 +2,12 @@ import {
   BASE_URL,
   apiGet,
   apiPost,
+  saveTokens,
+  clearTokens,
+  refreshAccessToken,
 } from "./client";
 
-
-function saveTokens(
-  access,
-  refresh = null
-) {
-  if (access) {
-    localStorage.setItem(
-      "accessToken",
-      access
-    );
-  }
-
-  if (refresh) {
-    localStorage.setItem(
-      "refreshToken",
-      refresh
-    );
-  }
-}
-
-
-export function clearTokens() {
-  localStorage.removeItem(
-    "accessToken"
-  );
-
-  localStorage.removeItem(
-    "refreshToken"
-  );
-
-  localStorage.removeItem(
-    "username"
-  );
-
-   window.dispatchEvent(
-    new Event("auth-change")
-  );
-}
+export { clearTokens, refreshAccessToken };
 
 
 export async function signup(
@@ -102,66 +68,6 @@ export async function login(
 }
 
 
-export async function refreshAccessToken() {
-  const refreshToken =
-    localStorage.getItem(
-      "refreshToken"
-    );
-
-  if (!refreshToken) {
-    clearTokens();
-
-    throw new Error(
-      "refresh token이 없습니다."
-    );
-  }
-
-  const response =
-    await fetch(
-      `${BASE_URL}/api/users/token/refresh/`,
-      {
-        method: "POST",
-
-        headers: {
-          "Content-Type":
-            "application/json",
-        },
-
-        body:
-          JSON.stringify({
-            refresh:
-              refreshToken,
-          }),
-      }
-    );
-
-  if (!response.ok) {
-    clearTokens();
-
-    throw new Error(
-      "로그인 정보가 만료되었습니다."
-    );
-  }
-
-  const data =
-    await response.json();
-
-  if (!data.access) {
-    clearTokens();
-
-    throw new Error(
-      "새 access token을 발급받지 못했습니다."
-    );
-  }
-
-  saveTokens(
-    data.access,
-    data.refresh || null
-  );
-
-  return data.access;
-}
-
 
 async function authenticatedRequest(
   path,
@@ -201,26 +107,19 @@ async function authenticatedRequest(
   if (
     response.status === 401
   ) {
-    try {
-      accessToken =
-        await refreshAccessToken();
+    accessToken =
+      await refreshAccessToken();
 
-      response =
-        await makeRequest(
-          accessToken
-        );
-    } catch (error) {
-      console.error(
-        "토큰 갱신 실패:",
-        error
-      );
-
-      clearTokens();
-
+    if (!accessToken) {
       throw new Error(
         "로그인이 만료되었습니다."
       );
     }
+
+    response =
+      await makeRequest(
+        accessToken
+      );
   }
 
   if (!response.ok) {

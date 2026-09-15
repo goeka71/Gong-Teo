@@ -22,7 +22,9 @@ import {
   getFacilityDetailList,
   getFacilityList,
   getFacilitySportList,
+  getMyFavorites,
   getSportList,
+  toggleFavorite,
 } from "../api/facilities";
 import FacilityMarker from "./FacilityMarker";
 import HeartIcon from "./HeartIcon";
@@ -75,18 +77,48 @@ function FacilityMapLayout() {
   // "추천 시설" 카드에 띄울 무작위 시설 id. 새로고침 버튼을 누르면 바뀐다.
   const [recommendedId, setRecommendedId] = useState(null);
 
-  // 찜한 시설 id 목록. 찜 API 가 아직 없어서 화면(프론트)에서만 들고 있는
-  // 임시 상태 — 상세페이지의 "시설 찜하기" 버튼과 지도의 강조 토글이
-  // 이 상태 하나를 공유해야 해서(상세 패널과 지도가 이 레이아웃의 공통
-  // 자식이므로) 여기서 관리한다. 새로고침하면 초기화된다.
+  // 찜한 시설 id 목록. 서버(Favorite 모델)에 저장되며, 상세페이지의
+  // "시설 찜하기" 버튼과 지도의 강조 토글이 이 상태 하나를 공유한다
+  // (상세 패널과 지도가 이 레이아웃의 공통 자식이므로 여기서 관리한다).
   const [wishedIds, setWishedIds] = useState(() => new Set());
 
+  // 로그인한 사용자만 찜 목록을 불러온다. 비로그인 상태면 빈 채로 둔다.
+  useEffect(() => {
+    if (!localStorage.getItem("accessToken")) return;
+
+    getMyFavorites()
+      .then((data) => {
+        setWishedIds(new Set(data.map((favorite) => favorite.facility)));
+      })
+      .catch((err) => {
+        console.error("찜 목록을 불러오지 못했습니다.", err);
+      });
+  }, []);
+
   const toggleWish = useCallback((facilityId) => {
+    if (!localStorage.getItem("accessToken")) {
+      alert("로그인 후 찜 기능을 사용할 수 있습니다.");
+      return;
+    }
+
+    // 낙관적 업데이트: 서버 응답을 기다리지 않고 즉시 화면에 반영하고,
+    // 요청이 실패하면 원래 상태로 되돌린다.
     setWishedIds((prev) => {
       const next = new Set(prev);
       if (next.has(facilityId)) next.delete(facilityId);
       else next.add(facilityId);
       return next;
+    });
+
+    toggleFavorite(facilityId).catch((err) => {
+      console.error("찜 처리에 실패했습니다.", err);
+
+      setWishedIds((prev) => {
+        const next = new Set(prev);
+        if (next.has(facilityId)) next.delete(facilityId);
+        else next.add(facilityId);
+        return next;
+      });
     });
   }, []);
 
@@ -343,7 +375,14 @@ function FacilityMapLayout() {
   // 자체가 목록에 없어서 선택 표시가 전혀 보이지 않는 문제가 있었다.
   // 선택된 시설은 어떤 화면이든 항상 마커 목록에 포함되도록 보정한다.
   const mapFacilities = useMemo(() => {
-    const base = showNearbyOnly ? nearby.list : filteredFacilities;
+    // "찜한 시설만 보기" 가 켜져 있으면 내 위치 반경과 무관하게 찜한
+    // 시설을 전부 보여줘야 하므로, 주변 시설(nearby.list)이 아니라
+    // 검색·필터가 적용된 전체 목록을 기준으로 좁힌다.
+    const base = showWishOnly
+      ? filteredFacilities
+      : showNearbyOnly
+        ? nearby.list
+        : filteredFacilities;
 
     let list = base;
     if (selectedFacilityId != null && !base.some((f) => f.id === selectedFacilityId)) {
@@ -353,7 +392,6 @@ function FacilityMapLayout() {
       if (selected) list = [...base, selected];
     }
 
-    // "찜한 시설만 보기" 가 켜져 있으면 찜한 시설로만 좁힌다.
     if (showWishOnly) {
       list = list.filter((facility) => wishedIds.has(facility.id));
     }
@@ -399,9 +437,10 @@ function FacilityMapLayout() {
             nearbyRadius: nearby.radius,
             recommendedFacility,
             refreshRecommendation,
-            // 찜(자리만 마련, 백엔드 연동 전) — 상세페이지 버튼이 여기 씀.
+            // 찜 — 상세페이지 버튼, 지도 강조 토글, 좌측 목록이 모두 여기서 씀.
             wishedIds,
             toggleWish,
+            showWishOnly,
           }}
         />
       </div>
@@ -418,9 +457,8 @@ function FacilityMapLayout() {
         )}
         {!error && !loading && (
           <>
-            {/* 찜한 시설만 강조해서 보기. 찜 자체는 아직 상세페이지 버튼으로만
-                화면(프론트)에 임시 저장되지만, 이 토글은 실제로 mapFacilities 를
-                찜한 시설로 좁혀서 마커 표시를 다르게 보여준다. */}
+            {/* 찜한 시설만 보기. mapFacilities 를 찜한 시설로 좁혀서
+                지도 마커를, showWishOnly 를 통해 좌측 목록도 함께 좁힌다. */}
             <button
               type="button"
               className={

@@ -2,7 +2,7 @@ from django.db.models import F
 from django.shortcuts import get_object_or_404
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 
 from .models import (
@@ -219,18 +219,65 @@ def review_list(request):
 
 
 # =========================================================
-# 찜 목록
+# 찜 목록 조회 / 찜 토글(추가·삭제)
 # =========================================================
-@api_view(["GET"])
+@api_view(["GET", "POST"])
+@permission_classes([IsAuthenticated])
 def favorite_list(request):
-    data = Favorite.objects.all()
 
-    serializer = FavoriteSerializer(
-        data,
-        many=True
+    # ======================================
+    # GET
+    # 내가 찜한 시설 목록
+    # ======================================
+
+    if request.method == "GET":
+
+        data = Favorite.objects.filter(
+            user=request.user
+        ).select_related("facility")
+
+        serializer = FavoriteSerializer(
+            data,
+            many=True
+        )
+
+        return Response(serializer.data)
+
+    # ======================================
+    # POST
+    # 찜 토글: 이미 찜한 시설이면 삭제, 아니면 추가
+    # ======================================
+
+    facility_id = request.data.get("facility")
+
+    if not facility_id:
+        return Response(
+            {"detail": "facility는 필수입니다."},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+    facility = get_object_or_404(Facility, id=facility_id)
+
+    favorite = Favorite.objects.filter(
+        user=request.user,
+        facility=facility,
+    ).first()
+
+    if favorite:
+        favorite.delete()
+        return Response(
+            {"facility": facility.id, "wished": False}
+        )
+
+    Favorite.objects.create(
+        user=request.user,
+        facility=facility,
     )
 
-    return Response(serializer.data)
+    return Response(
+        {"facility": facility.id, "wished": True},
+        status=status.HTTP_201_CREATED
+    )
 
 
 # =========================================================

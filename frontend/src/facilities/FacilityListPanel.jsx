@@ -201,6 +201,8 @@ function FacilityListPanel() {
     nearbyRadius,
     recommendedFacility,
     refreshRecommendation,
+    wishedIds,
+    showWishOnly,
   } = useOutletContext();
 
   // 종목 선택지는 sport_name 기준으로 중복 없이.
@@ -209,8 +211,14 @@ function FacilityListPanel() {
   const hasActiveFilter =
     query.keyword || query.region || query.sport || query.amenity;
 
+  // "찜한 시설만 보기" 가 켜져 있으면 검색·필터가 적용된 시설 중
+  // 찜한 시설만 좁혀서 보여준다 (지도의 마커 목록과 같은 기준).
+  const wishOnlyFacilities = showWishOnly
+    ? facilities.filter((facility) => wishedIds.has(facility.id))
+    : null;
+
   // 검색·필터가 없을 때만 "추천 + 주변" 탐색 화면을 보여준다.
-  const discoveryMode = !hasActiveFilter;
+  const discoveryMode = !hasActiveFilter && !showWishOnly;
   const nearbyReady =
     discoveryMode &&
     locationStatus === "granted" &&
@@ -395,8 +403,43 @@ function FacilityListPanel() {
         </section>
       )}
 
+      {/* ---------- 찜한 시설 목록 (하트 토글 on) ---------- */}
+      {showWishOnly && (
+        <>
+          {!facilitiesLoading && (
+            <p className="flp-result-count">
+              찜한 시설 <strong>{wishOnlyFacilities.length}</strong>곳
+            </p>
+          )}
+
+          {facilitiesLoading && (
+            <p className="flp-placeholder">시설 정보를 불러오는 중입니다...</p>
+          )}
+
+          {!facilitiesLoading && wishOnlyFacilities.length === 0 && (
+            <p className="flp-placeholder">
+              아직 찜한 시설이 없어요. 시설 상세페이지에서 하트를 눌러
+              찜해보세요.
+            </p>
+          )}
+
+          {!facilitiesLoading && wishOnlyFacilities.length > 0 && (
+            <ul className="flp-card-list">
+              {wishOnlyFacilities.map((facility) => (
+                <FacilityCard
+                  key={facility.id}
+                  facility={facility}
+                  selected={facility.id === selectedFacilityId}
+                  onClick={() => handleCardClick(facility)}
+                />
+              ))}
+            </ul>
+          )}
+        </>
+      )}
+
       {/* ---------- 검색 결과 목록 (검색·필터 중 / 위치 폴백) ---------- */}
-      {showFullList && (
+      {!showWishOnly && showFullList && (
         <>
           {!facilitiesLoading && (
             <p className="flp-result-count">

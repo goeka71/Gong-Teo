@@ -168,6 +168,30 @@
   border: 1px solid #e7ebf0;
 }
 
+.program-status-style-11-oneday {
+  background: #fff7f0;
+  border: 1px solid #f5d9bd;
+}
+
+.program-status-style-badge {
+  padding: 2px 8px;
+  border-radius: 20px;
+  background: #eaf2fb;
+  color: #1d4e89;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.program-status-style-badge-oneday {
+  background: #ffece0;
+  color: #c2660a;
+}
+
+.program-status-style-17-oneday {
+  background: #ffece0;
+  color: #c2660a;
+}
+
 .program-status-style-10 {
   margin-top: 7px;
   color: #687386;
@@ -1138,4 +1162,101 @@
 .review-type-button {
   padding: 10px 20px;
   font-size: 15px;
+}
+
+/* =========================================================
+   찜한 시설 카드 목록
+   원데이 게시판(oneday-post-card)과 같은 카드형 그리드 디자인.
+   ========================================================= */
+
+.wfv-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 20px;
+}
+
+.wfv-card {
+  background: var(--color-white);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  padding: 20px;
+  box-shadow: var(--shadow-card);
+  cursor: pointer;
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  transition: box-shadow 0.15s ease, transform 0.15s ease, border-color 0.15s ease;
+}
+
+.wfv-card:hover {
+  box-shadow: var(--shadow-floating);
+  border-color: var(--color-border-strong);
+  transform: translateY(-2px);
+}
+
+.wfv-card-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 14px;
+}
+
+.wfv-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: var(--color-bg-chip);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+}
+
+.wfv-heart {
+  color: var(--fd-wish, #e2685f);
+  display: flex;
+  align-items: center;
+}
+
+.wfv-card-body {
+  flex: 1;
+}
+
+.wfv-facility-name {
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--color-heading);
+  margin-bottom: 4px;
+}
+
+.wfv-facility-addr {
+  font-size: 14px;
+  color: var(--color-text-muted);
+  margin-bottom: 10px;
+}
+
+.wfv-location-row {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 13px;
+  color: var(--color-text-muted);
+}
+
+.wfv-card-bottom {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  padding-top: 12px;
+  margin-top: 12px;
+  border-top: 1px solid var(--color-border-light);
+}
+
+.wfv-view-button {
+  background: var(--color-primary, #1d4e89);
+  color: var(--color-white);
+  font-size: 13px;
+  font-weight: 700;
+  padding: 7px 16px;
+  border-radius: var(--radius-sm);
 }

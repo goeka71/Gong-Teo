@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 import {
   getMyInfo,
@@ -15,7 +16,24 @@ import {
   deleteReview as deleteReviewApi,
 } from "../api/user";
 
+import { getMyOnedayApplications } from "../api/oneday";
+import { getMyFavorites } from "../api/facilities";
+import { formatWalkTime } from "../utils/time";
+import HeartIcon from "../facilities/HeartIcon";
+
+import { BASE_URL } from "../api/client";
+
 import "./MyPage.css";
+
+
+// Django MEDIA 상대경로("/media/...")를 절대주소로 바꿔준다.
+// (리뷰 시리얼라이저가 request context 없이 만들어져서 image 값이
+//  상대경로로 오기 때문 - FacilityListPanel 의 resolveImageUrl 과 동일한 문제.)
+function resolveReviewImageUrl(image) {
+  if (!image) return "";
+  if (/^https?:\/\//i.test(image)) return image;
+  return `${BASE_URL}${image}`;
+}
 
 
 /* =========================
@@ -175,6 +193,17 @@ function isProgramOnDate(program, date) {
 }
 
 
+// 신청한 원데이 클래스는 정기 프로그램과 달리
+// 양도받은 그 하루(transfer_date)에만 일정이 있다.
+function isApplicationOnDate(application, date) {
+  if (!application.transfer_date) {
+    return false;
+  }
+
+  return application.transfer_date === formatDateKey(date);
+}
+
+
 /* =========================
    메인 MyPage
 ========================= */
@@ -200,6 +229,19 @@ function MyPage() {
   const [
     programsLoading,
     setProgramsLoading,
+  ] = useState(true);
+
+
+  /* 신청한 원데이 클래스 */
+
+  const [
+    onedayApplications,
+    setOnedayApplications,
+  ] = useState([]);
+
+  const [
+    onedayApplicationsLoading,
+    setOnedayApplicationsLoading,
   ] = useState(true);
 
 
@@ -351,6 +393,36 @@ function MyPage() {
       };
 
     loadMyPrograms();
+  }, []);
+
+
+  /* =========================
+     신청한 원데이 클래스 조회
+  ========================= */
+
+  useEffect(() => {
+    const loadOnedayApplications =
+      async () => {
+        try {
+          setOnedayApplicationsLoading(true);
+
+          const data =
+            await getMyOnedayApplications();
+
+          setOnedayApplications(
+            Array.isArray(data) ? data : []
+          );
+        } catch (err) {
+          console.error(
+            "신청한 원데이 클래스 조회 실패:",
+            err
+          );
+        } finally {
+          setOnedayApplicationsLoading(false);
+        }
+      };
+
+    loadOnedayApplications();
   }, []);
 
 
@@ -928,6 +1000,10 @@ function MyPage() {
                   programsLoading
                 }
 
+                onedayApplications={
+                  onedayApplications
+                }
+
                 onRegisterClick={() =>
                   setView(
                     "register"
@@ -1102,9 +1178,13 @@ function MyPage() {
             {view ===
               "oneday" && (
 
-              <EmptyMenuView
-                title="신청한 원데이 클래스"
-                description="신청한 원데이 클래스 내역을 확인할 수 있습니다."
+              <MyOnedayApplicationsView
+                applications={
+                  onedayApplications
+                }
+                loading={
+                  onedayApplicationsLoading
+                }
               />
             )}
 
@@ -1127,10 +1207,7 @@ function MyPage() {
             {view ===
               "favorites" && (
 
-              <EmptyMenuView
-                title="찜한 시설"
-                description="찜한 공공체육시설을 확인할 수 있습니다."
-              />
+              <FavoriteFacilitiesView />
             )}
 
 
@@ -1304,6 +1381,7 @@ function MyPageSidebar({
 function ProgramStatusView({
   myPrograms,
   programsLoading,
+  onedayApplications,
   onRegisterClick,
 }) {
   const today =
@@ -1397,34 +1475,60 @@ function ProgramStatusView({
     }, [calendarDate]);
 
 
-  const selectedSchedules =
-    useMemo(() => {
+  const buildSchedulesForDate =
+    (date) => {
 
-      return myPrograms.filter(
-        (program) =>
-          isProgramOnDate(
-            program,
-            selectedDate
+      const programItems =
+        myPrograms
+          .filter((program) =>
+            isProgramOnDate(
+              program,
+              date
+            )
           )
-      );
+          .map((program) => ({
+            type: "program",
+            key: `program-${program.id}`,
+            data: program,
+          }));
 
-    }, [
-      myPrograms,
-      selectedDate,
-    ]);
+      const onedayItems =
+        onedayApplications
+          .filter((application) =>
+            isApplicationOnDate(
+              application,
+              date
+            )
+          )
+          .map((application) => ({
+            type: "oneday",
+            key: `oneday-${application.id}`,
+            data: application,
+          }));
+
+      return [
+        ...programItems,
+        ...onedayItems,
+      ];
+    };
+
+
+  const selectedSchedules =
+    useMemo(
+      () =>
+        buildSchedulesForDate(
+          selectedDate
+        ),
+      [
+        myPrograms,
+        onedayApplications,
+        selectedDate,
+      ]
+    );
 
 
   const getSchedulesForDate =
-    (date) => {
-
-      return myPrograms.filter(
-        (program) =>
-          isProgramOnDate(
-            program,
-            date
-          )
-      );
-    };
+    buildSchedulesForDate;
 
 
   const moveMonth =
@@ -1789,17 +1893,23 @@ function ProgramStatusView({
                       {schedules
                         .slice(0, 2)
                         .map(
-                          (program) => (
+                          (item) => (
 
                             <div
                               key={
-                                program.id
+                                item.key
                               }
 
-                              className="program-status-style-17"
+                              className={
+                                item.type ===
+                                "oneday"
+                                  ? "program-status-style-17 program-status-style-17-oneday"
+                                  : "program-status-style-17"
+                              }
                             >
                               {
-                                program.program_name
+                                item.data
+                                  .program_name
                               }
                             </div>
                           )
@@ -1870,57 +1980,89 @@ function ProgramStatusView({
               >
 
                 {selectedSchedules.map(
-                  (program) => (
+                  (item) => {
 
-                    <div
-                      key={
-                        program.id
-                      }
+                    const program = item.data;
 
-                      className="program-status-style-11"
-                    >
+                    const isOneday =
+                      item.type === "oneday";
 
-                      <strong>
-                        {
-                          program.program_name
-                        }
-                      </strong>
-
-
+                    return (
                       <div
-                        className="program-status-style-10"
+                        key={
+                          item.key
+                        }
+
+                        className={
+                          isOneday
+                            ? "program-status-style-11 program-status-style-11-oneday"
+                            : "program-status-style-11"
+                        }
                       >
 
-                        <div>
-                          {
-                            program.facility_name
-                          }
-                        </div>
-
-
-                        {program.subfacility_name && (
-
-                          <div>
+                        <div
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: "6px",
+                            flexWrap: "wrap",
+                          }}
+                        >
+                          <strong>
                             {
-                              program.subfacility_name
+                              program.program_name
                             }
-                          </div>
-                        )}
+                          </strong>
+
+                          <span
+                            className={
+                              isOneday
+                                ? "program-status-style-badge program-status-style-badge-oneday"
+                                : "program-status-style-badge"
+                            }
+                          >
+                            {isOneday
+                              ? "원데이 신청"
+                              : "정기 수강"}
+                          </span>
+                        </div>
 
 
                         <div
-                          className="program-status-style-09"
+                          className="program-status-style-10"
                         >
-                          {
-                            program.program_time ||
-                            "-"
-                          }
+
+                          <div>
+                            {
+                              program.facility_name
+                            }
+                          </div>
+
+
+                          {program.subfacility_name && (
+
+                            <div>
+                              {
+                                program.subfacility_name
+                              }
+                            </div>
+                          )}
+
+
+                          <div
+                            className="program-status-style-09"
+                          >
+                            {
+                              program.program_time ||
+                              "-"
+                            }
+                          </div>
+
                         </div>
 
                       </div>
-
-                    </div>
-                  )
+                    );
+                  }
                 )}
 
               </div>
@@ -1937,11 +2079,33 @@ function ProgramStatusView({
 
         <div className="card-body">
 
-          <h2
-            className="program-status-style-08"
+          <div
+            style={{
+              display: "flex",
+              alignItems: "flex-start",
+              justifyContent: "space-between",
+              gap: "12px",
+              flexWrap: "wrap",
+            }}
           >
-            등록한 수강 프로그램
-          </h2>
+
+            <h2
+              className="program-status-style-08"
+            >
+              등록한 수강 프로그램
+            </h2>
+
+            <span
+              style={{
+                fontSize: "12px",
+                color: "#a46b00",
+                fontWeight: "600",
+              }}
+            >
+              원데이 양도 글쓰기 작성은 프로그램 승인이 완료된 이후에 가능합니다
+            </span>
+
+          </div>
 
 
           <p
@@ -2218,58 +2382,23 @@ function MyReviewsView({
 
 
   /*
-  Review 모델에는 program FK가 없기 때문에
-  facility / subfacility 기준으로
-  내가 등록한 수강 프로그램과 다시 연결해서
-  프로그램명을 화면에 표시한다.
+  Review.program(facilities.Program FK)이 생겨서 더 이상
+  facility/subfacility 문자열 대조로 프로그램을 추측할 필요가 없다.
+  program_name 은 서버가 이미 계산해서 내려주고,
+  myProgramId(내 수강 등록 건 id)만 "리뷰 수정" 모달의
+  드롭다운 초기값으로 쓰기 위해 program id 로 역매칭한다.
   */
   const normalizeReview = (
-    review,
-    fallback = {}
+    review
   ) => {
-    const preferredProgram =
-      fallback.myProgramId
+    const matchedMyProgram =
+      review.program
         ? myPrograms.find(
             (program) =>
-              String(program.id) ===
-              String(
-                fallback.myProgramId
-              )
+              String(program.program) ===
+              String(review.program)
           )
         : null;
-
-    const matchedProgram =
-      preferredProgram ||
-      myPrograms.find(
-        (program) => {
-          const sameFacility =
-            String(
-              program.facility_id
-            ) ===
-            String(
-              review.facility
-            );
-
-          const reviewSubfacility =
-            review.subfacility ?? "";
-
-          const programSubfacility =
-            program.subfacility ?? "";
-
-          const sameSubfacility =
-            String(
-              programSubfacility
-            ) ===
-            String(
-              reviewSubfacility
-            );
-
-          return (
-            sameFacility &&
-            sameSubfacility
-          );
-        }
-      );
 
     const createdAt =
       review.created_at
@@ -2290,18 +2419,15 @@ function MyReviewsView({
         review.id,
 
       myProgramId:
-        matchedProgram?.id ||
-        fallback.myProgramId ||
+        matchedMyProgram?.id ||
         "",
 
       programId:
-        matchedProgram?.program ||
-        fallback.programId ||
+        review.program ||
         "",
 
       programName:
-        matchedProgram?.program_name ||
-        fallback.programName ||
+        review.program_name ||
         "",
 
       facilityId:
@@ -2309,7 +2435,6 @@ function MyReviewsView({
 
       facilityName:
         review.facility_name ||
-        fallback.facilityName ||
         "",
 
       subfacilityId:
@@ -2317,7 +2442,6 @@ function MyReviewsView({
 
       subfacilityName:
         review.subfacility_name ||
-        fallback.subfacilityName ||
         "",
 
       rating:
@@ -2335,14 +2459,10 @@ function MyReviewsView({
 
       date,
 
-      /*
-      현재 Review 모델에는
-      이미지 필드가 없기 때문에
-      사진은 DB 저장 불가.
-      */
       image:
-        fallback.image ||
-        "",
+        resolveReviewImageUrl(
+          review.image
+        ),
     };
   };
 
@@ -2402,9 +2522,9 @@ function MyReviewsView({
   /* =========================
      리뷰 종류 필터 + 정렬
 
-     현재 Review 모델에는 program FK가 없어서
-     programName이 매칭된 리뷰를 프로그램 리뷰로,
-     매칭되지 않은 리뷰를 시설 리뷰로 구분한다.
+     Review.program 이 설정되어 있으면 프로그램 리뷰,
+     없으면 시설 리뷰로 구분한다 (subfacility 유무로
+     세부시설 리뷰를 구분하는 것과 동일한 패턴).
   ========================= */
 
   const filteredReviews =
@@ -2414,11 +2534,11 @@ function MyReviewsView({
         "program"
       ) {
         return Boolean(
-          review.programName
+          review.programId
         );
       }
 
-      return !review.programName;
+      return !review.programId;
     });
 
 
@@ -2478,27 +2598,65 @@ function MyReviewsView({
   const saveReview =
     async (data) => {
       try {
-        const requestData = {
-          facility:
+        const formData =
+          new FormData();
+
+        formData.append(
+          "facility",
+          Number(
+            data.facilityId
+          )
+        );
+
+        if (
+          data.subfacilityId
+        ) {
+          formData.append(
+            "subfacility",
             Number(
-              data.facilityId
-            ),
+              data.subfacilityId
+            )
+          );
+        }
 
-          subfacility:
-            data.subfacilityId
-              ? Number(
-                  data.subfacilityId
-                )
-              : null,
-
-          rating:
+        if (
+          data.programId
+        ) {
+          formData.append(
+            "program",
             Number(
-              data.rating
-            ),
+              data.programId
+            )
+          );
+        }
 
-          content:
-            data.content,
-        };
+        formData.append(
+          "rating",
+          Number(
+            data.rating
+          )
+        );
+
+        formData.append(
+          "content",
+          data.content
+        );
+
+        if (
+          data.imageFile
+        ) {
+          formData.append(
+            "image",
+            data.imageFile
+          );
+        } else if (
+          data.imageRemoved
+        ) {
+          formData.append(
+            "remove_image",
+            "true"
+          );
+        }
 
 
         if (
@@ -2507,13 +2665,12 @@ function MyReviewsView({
         ) {
           const created =
             await createReview(
-              requestData
+              formData
             );
 
           const normalized =
             normalizeReview(
-              created,
-              data
+              created
             );
 
           setReviews(
@@ -2527,13 +2684,12 @@ function MyReviewsView({
           const updated =
             await updateReview(
               editingReview.id,
-              requestData
+              formData
             );
 
           const normalized =
             normalizeReview(
-              updated,
-              data
+              updated
             );
 
           setReviews(
@@ -3063,13 +3219,12 @@ function ReviewFormModal({
   );
 
 
+  // 새로 첨부한 File 객체. 서버로 실제 전송되는 것은 이 값이고,
+  // review.image(기존 서버 URL)는 편집 시 미리보기 초기값으로만 쓰인다.
   const [
-    image,
-    setImage,
-  ] = useState(
-    review?.image ||
-    ""
-  );
+    imageFile,
+    setImageFile,
+  ] = useState(null);
 
 
   const [
@@ -3079,6 +3234,14 @@ function ReviewFormModal({
     review?.image ||
     ""
   );
+
+
+  // 기존에 서버에 저장돼 있던 사진을 사용자가 "삭제"한 경우 true.
+  // 새 파일을 첨부하면 그쪽이 우선이라 이 값은 무시된다.
+  const [
+    imageRemoved,
+    setImageRemoved,
+  ] = useState(false);
 
 
   const [
@@ -3141,9 +3304,11 @@ function ReviewFormModal({
         );
 
 
-      setImage(url);
+      setImageFile(file);
 
       setImagePreview(url);
+
+      setImageRemoved(false);
 
       setFormError("");
     };
@@ -3211,7 +3376,9 @@ function ReviewFormModal({
         content:
           content.trim(),
 
-        image,
+        imageFile,
+
+        imageRemoved,
       });
     };
 
@@ -3540,10 +3707,14 @@ function ReviewFormModal({
                   type="button"
 
                   onClick={() => {
-                    setImage("");
+                    setImageFile(null);
 
                     setImagePreview(
                       ""
+                    );
+
+                    setImageRemoved(
+                      true
                     );
                   }}
 
@@ -4665,6 +4836,275 @@ function ProgramRegisterView({
   );
 }
 
+
+/* =========================
+   찜한 시설
+========================= */
+
+function FavoriteFacilitiesView() {
+  const navigate = useNavigate();
+
+  const [favorites, setFavorites] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let ignore = false;
+
+    const load = async () => {
+      try {
+        setLoading(true);
+
+        const data = await getMyFavorites();
+
+        if (!ignore) {
+          setFavorites(Array.isArray(data) ? data : []);
+        }
+      } catch (err) {
+        console.error("찜한 시설 조회 실패:", err);
+
+        if (!ignore) {
+          setFavorites([]);
+        }
+      } finally {
+        if (!ignore) {
+          setLoading(false);
+        }
+      }
+    };
+
+    load();
+
+    return () => {
+      ignore = true;
+    };
+  }, []);
+
+  const goToFacility = (facilityId) => {
+    navigate(`/facility/${facilityId}`);
+  };
+
+  return (
+    <>
+      <div className="page-header">
+        <div>
+          <h1 className="page-title">찜한 시설</h1>
+          <p className="page-description">
+            찜한 공공체육시설을 모아 볼 수 있습니다.
+          </p>
+        </div>
+      </div>
+
+      {loading ? (
+        <div className="card">
+          <div className="card-body">
+            <p>찜한 시설을 불러오는 중입니다.</p>
+          </div>
+        </div>
+      ) : favorites.length === 0 ? (
+        <div className="card">
+          <div
+            className="card-body"
+            style={{ textAlign: "center", padding: "40px 0" }}
+          >
+            <div style={{ fontSize: "32px", marginBottom: "8px" }}>🤍</div>
+            <p>아직 찜한 시설이 없어요. 지도에서 시설을 찜해보세요.</p>
+          </div>
+        </div>
+      ) : (
+        <div className="wfv-grid">
+          {favorites.map((favorite) => (
+            <div
+              key={favorite.id}
+              role="button"
+              tabIndex={0}
+              className="wfv-card"
+              onClick={() => goToFacility(favorite.facility)}
+              onKeyDown={(event) => {
+                if (event.key === "Enter") goToFacility(favorite.facility);
+              }}
+            >
+              <div className="wfv-card-top">
+                <span className="wfv-icon">🏟️</span>
+                <span className="wfv-heart">
+                  <HeartIcon filled size={14} />
+                </span>
+              </div>
+
+              <div className="wfv-card-body">
+                <div className="wfv-facility-name">
+                  {favorite.facility_name}
+                </div>
+
+                <div className="wfv-facility-addr">
+                  {favorite.facility_addr}
+                </div>
+
+                <div className="wfv-location-row">
+                  {favorite.station && (
+                    <span>
+                      🚇 {favorite.station}
+                      {favorite.station_wt != null
+                        ? ` · 도보 ${formatWalkTime(favorite.station_wt)}`
+                        : ""}
+                    </span>
+                  )}
+
+                  {favorite.bus && (
+                    <span>
+                      🚌 {favorite.bus}
+                      {favorite.bus_wt != null
+                        ? ` · 도보 ${formatWalkTime(favorite.bus_wt)}`
+                        : ""}
+                    </span>
+                  )}
+                </div>
+              </div>
+
+              <div className="wfv-card-bottom">
+                <span className="wfv-view-button">상세보기</span>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </>
+  );
+}
+
+/* =========================
+   신청한 원데이 클래스
+========================= */
+
+function getApplyResultInfo(result) {
+  if (result === "assigned") {
+    return {
+      text: "배정",
+      background: "#eaf7ef",
+      color: "#218653",
+    };
+  }
+
+  if (result === "rejected") {
+    return {
+      text: "미배정",
+      background: "#fff0f0",
+      color: "#c63c3c",
+    };
+  }
+
+  return {
+    text: "대기",
+    background: "#fff6df",
+    color: "#a46b00",
+  };
+}
+
+function MyOnedayApplicationsView({ applications, loading }) {
+  return (
+    <>
+      <div className="page-header">
+        <div>
+          <h1 className="page-title">신청한 원데이 클래스</h1>
+          <p className="page-description">
+            신청한 원데이 클래스 내역을 확인할 수 있습니다.
+          </p>
+        </div>
+      </div>
+
+      <div className="card">
+        <div className="card-body">
+          {loading ? (
+            <p>신청 내역을 불러오는 중입니다.</p>
+          ) : applications.length === 0 ? (
+            <div style={{ textAlign: "center", padding: "40px 0" }}>
+              <div style={{ fontSize: "32px", marginBottom: "8px" }}>
+                🏃
+              </div>
+              <p>신청한 원데이 클래스가 없습니다.</p>
+            </div>
+          ) : (
+            <div
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                gap: "12px",
+              }}
+            >
+              {applications.map((application) => {
+                const result = getApplyResultInfo(
+                  application.apply_result
+                );
+
+                return (
+                  <div
+                    key={application.id}
+                    style={{
+                      border: "1px solid #e8ebef",
+                      borderRadius: "12px",
+                      padding: "14px 16px",
+                    }}
+                  >
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "flex-start",
+                        justifyContent: "space-between",
+                        gap: "8px",
+                      }}
+                    >
+                      <strong>{application.program_name}</strong>
+
+                      <span
+                        style={{
+                          padding: "5px 9px",
+                          borderRadius: "20px",
+                          background: result.background,
+                          color: result.color,
+                          fontSize: "12px",
+                          fontWeight: "700",
+                          height: "fit-content",
+                          flexShrink: 0,
+                        }}
+                      >
+                        {result.text}
+                      </span>
+                    </div>
+
+                    <p
+                      style={{
+                        margin: "4px 0 8px",
+                        fontSize: "13px",
+                        color: "#666",
+                      }}
+                    >
+                      {application.facility_name}
+                    </p>
+
+                    <div
+                      style={{
+                        display: "flex",
+                        flexWrap: "wrap",
+                        gap: "10px",
+                        fontSize: "13px",
+                        color: "#666",
+                      }}
+                    >
+                      <span>📅 {application.transfer_date}</span>
+
+                      {application.program_time && (
+                        <span>⏰ {application.program_time}</span>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      </div>
+    </>
+  );
+}
 
 /* =========================
    준비중 메뉴
