@@ -1,4 +1,8 @@
-import { useEffect, useState } from "react";
+import {
+  useEffect,
+  useState,
+} from "react";
+
 import {
   NavLink,
   useNavigate,
@@ -7,13 +11,21 @@ import {
 import Login from "../user/Login";
 import Signup from "../user/Signup";
 
+import {
+  getMyInfo,
+} from "../api/user";
+
 import "./Navbar.css";
+
 
 function Navbar() {
   const navigate = useNavigate();
 
-  const [authModal, setAuthModal] =
-    useState(null);
+  const [
+    authModal,
+    setAuthModal,
+  ] = useState(null);
+
 
   /*
     accessToken이 있고 username도 있으면
@@ -21,47 +33,127 @@ function Navbar() {
   */
   const getCurrentUsername = () => {
     const token =
-      localStorage.getItem("accessToken");
+      localStorage.getItem(
+        "accessToken"
+      );
 
     const savedUsername =
-      localStorage.getItem("username");
+      localStorage.getItem(
+        "username"
+      );
 
-    if (token && savedUsername) {
+    if (
+      token &&
+      savedUsername
+    ) {
       return savedUsername;
     }
 
     return null;
   };
 
-  const [username, setUsername] =
-    useState(getCurrentUsername);
+
+  const [
+    username,
+    setUsername,
+  ] = useState(
+    getCurrentUsername
+  );
+
+
+  /*
+    현재 보유 코인
+  */
+  const [
+    coin,
+    setCoin,
+  ] = useState(null);
+
+
+  /*
+    로그인한 사용자의
+    현재 코인 불러오기
+  */
+  const loadCoin = async () => {
+    const token =
+      localStorage.getItem(
+        "accessToken"
+      );
+
+    if (!token) {
+      setCoin(null);
+      return;
+    }
+
+    try {
+      const user =
+        await getMyInfo();
+
+      setCoin(
+        user.coin ?? 0
+      );
+
+    } catch (error) {
+      console.error(
+        "코인 정보 불러오기 실패:",
+        error
+      );
+
+      setCoin(null);
+    }
+  };
+
 
   /*
     로그인 상태 다시 확인
   */
   const syncLoginState = () => {
+    const currentUsername =
+      getCurrentUsername();
+
     setUsername(
-      getCurrentUsername()
+      currentUsername
     );
+
+    if (currentUsername) {
+      loadCoin();
+    } else {
+      setCoin(null);
+    }
   };
+
 
   const openLogin = () => {
     setAuthModal("login");
   };
 
+
   const openSignup = () => {
     setAuthModal("signup");
   };
+
 
   const closeAuthModal = () => {
     setAuthModal(null);
 
     /*
       로그인 성공했다면
-      여기서 username이 바로 반영됨
+      username + coin 바로 반영
     */
     syncLoginState();
   };
+
+
+  /*
+    처음 Navbar가 열렸을 때
+    로그인 상태라면 코인 불러오기
+  */
+  useEffect(() => {
+    if (getCurrentUsername()) {
+      loadCoin();
+    }
+  }, []);
+
 
   /*
     다른 곳에서 로그인/로그아웃 상태가
@@ -94,6 +186,7 @@ function Navbar() {
       );
     };
   }, []);
+
 
   return (
     <>
@@ -153,23 +246,46 @@ function Navbar() {
 
           {/* 로그인 후 */}
           {username && (
-            <button
-              type="button"
-              className="navbar-profile"
-              onClick={() =>
-                navigate("/mypage")
-              }
-            >
-              <span className="navbar-profile-avatar">
-                {username
-                  .charAt(0)
-                  .toUpperCase()}
-              </span>
+            <>
 
-              <span className="navbar-profile-name">
-                {username}
-              </span>
-            </button>
+              {/* 보유 코인 */}
+              <div className="navbar-coin">
+
+                <span className="navbar-coin-icon">
+                  🪙
+                </span>
+
+                <span className="navbar-coin-number">
+                  {coin ?? "-"}
+                </span>
+
+              </div>
+
+
+              {/* 사용자 */}
+              <button
+                type="button"
+                className="navbar-profile"
+                onClick={() =>
+                  navigate(
+                    "/mypage"
+                  )
+                }
+              >
+
+                <span className="navbar-profile-avatar">
+                  {username
+                    .charAt(0)
+                    .toUpperCase()}
+                </span>
+
+                <span className="navbar-profile-name">
+                  {username}
+                </span>
+
+              </button>
+
+            </>
           )}
 
         </div>
@@ -178,7 +294,9 @@ function Navbar() {
 
 
       {/* 로그인 팝업 */}
-      {authModal === "login" && (
+      {authModal ===
+        "login" && (
+
         <Login
           onClose={
             closeAuthModal
@@ -191,7 +309,9 @@ function Navbar() {
 
 
       {/* 회원가입 팝업 */}
-      {authModal === "signup" && (
+      {authModal ===
+        "signup" && (
+
         <Signup
           onClose={
             closeAuthModal
@@ -205,5 +325,6 @@ function Navbar() {
     </>
   );
 }
+
 
 export default Navbar;
