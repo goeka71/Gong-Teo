@@ -66,6 +66,12 @@ function reviewCategoryLabel(review) {
   return review.program ? `프로그램 · ${review.program_name}` : "시설 리뷰";
 }
 
+// "2026-09-16T10:30:00" -> "2026-09-16 10:30" (작성일시 표시용).
+function formatDateTime(isoString) {
+  if (!isoString) return "";
+  return isoString.replace("T", " ").slice(0, 16);
+}
+
 const CATEGORY_OPTIONS = [
   { value: "", label: "전체" },
   { value: "facility", label: "시설 리뷰" },
@@ -92,16 +98,18 @@ function FacilityReviewsPanel({ facilityId, subfacilityId = null }) {
   const [reviewsLoading, setReviewsLoading] = useState(true);
   const [reviewsError, setReviewsError] = useState(null);
 
+  // 상단 사진 미리보기 캐로셀 + "더보기" 앨범용. 카테고리 필터와 무관하게
+  // 항상 이 시설(또는 세부시설)의 사진 있는 리뷰 전체를 따로 들고 있는다.
+  const [photoReviews, setPhotoReviews] = useState([]);
+  const [photoReviewsLoading, setPhotoReviewsLoading] = useState(true);
+
   const [category, setCategory] = useState(""); // "" | "facility" | "program"
-  const [hasPhotoOnly, setHasPhotoOnly] = useState(false);
-  const [viewMode, setViewMode] = useState("list"); // "list" | "photos"
+  // "더보기" 를 누르면 캐로셀+피드 대신 사진 앨범(그리드) 화면으로 전환된다.
+  const [showPhotoGrid, setShowPhotoGrid] = useState(false);
 
   const [writeOpen, setWriteOpen] = useState(false);
   const [loginRequired, setLoginRequired] = useState(false);
   const [reloadKey, setReloadKey] = useState(0); // 작성 성공 후 목록/통계 재조회 트리거
-
-  // 사진 모아보기 탭에서는 사진유무 토글과 무관하게 항상 사진 있는 것만 본다.
-  const effectiveHasPhoto = viewMode === "photos" ? true : hasPhotoOnly;
 
   // 시설 기본정보(이름, 세부시설 목록) + 프로그램 목록(작성 폼 선택지)
   useEffect(() => {
@@ -151,7 +159,7 @@ function FacilityReviewsPanel({ facilityId, subfacilityId = null }) {
     };
   }, [facilityId, reloadKey, isScoped]);
 
-  // 실제 리뷰 목록 (카테고리/사진유무/세부시설 필터 반영)
+  // 리뷰 피드 (카테고리/세부시설 필터 반영)
   useEffect(() => {
     let ignore = false;
 
@@ -160,7 +168,6 @@ function FacilityReviewsPanel({ facilityId, subfacilityId = null }) {
         setReviewsLoading(true);
         const data = await getFacilityReviews(facilityId, {
           category: category || undefined,
-          hasPhoto: effectiveHasPhoto,
           subfacility: subfacilityId || undefined,
         });
         if (!ignore) {
@@ -178,7 +185,33 @@ function FacilityReviewsPanel({ facilityId, subfacilityId = null }) {
     return () => {
       ignore = true;
     };
-  }, [facilityId, subfacilityId, category, effectiveHasPhoto, reloadKey]);
+  }, [facilityId, subfacilityId, category, reloadKey]);
+
+  // 사진 미리보기 캐로셀 + 앨범용. 카테고리 필터와 무관하게 항상 전체를 본다.
+  useEffect(() => {
+    let ignore = false;
+
+    async function load() {
+      try {
+        setPhotoReviewsLoading(true);
+        const data = await getFacilityReviews(facilityId, {
+          hasPhoto: true,
+          subfacility: subfacilityId || undefined,
+        });
+        if (!ignore) setPhotoReviews(data);
+      } catch (err) {
+        console.error("사진 리뷰 조회 실패:", err);
+        if (!ignore) setPhotoReviews([]);
+      } finally {
+        if (!ignore) setPhotoReviewsLoading(false);
+      }
+    }
+
+    load();
+    return () => {
+      ignore = true;
+    };
+  }, [facilityId, subfacilityId, reloadKey]);
 
   const subFacilities = facility?.sub_facilities ?? [];
 
@@ -198,7 +231,7 @@ function FacilityReviewsPanel({ facilityId, subfacilityId = null }) {
       <h2 className="fd-block-title">리뷰</h2>
       <button
         type="button"
-        className="fd-text-btn fd-text-btn--accent"
+        className="fd-text-btn frp-write-btn--text"
         onClick={handleWriteClick}
       >
         + 리뷰 작성
@@ -237,101 +270,122 @@ function FacilityReviewsPanel({ facilityId, subfacilityId = null }) {
         </p>
       )}
 
-      {/* 목록형 ↔ 사진 그리드형. 카테고리 필터는 두 탭이 공유하고,
-          "사진 있는 리뷰만" 토글은 목록 탭에서만 노출한다
-          (사진 탭은 항상 사진 있는 것만 보는 탭이라 토글이 무의미). */}
-      <div className="frp-tabs">
-        <button
-          type="button"
-          className={"frp-tab" + (viewMode === "list" ? " frp-tab--active" : "")}
-          onClick={() => setViewMode("list")}
-        >
-          목록
-        </button>
-        <button
-          type="button"
-          className={"frp-tab" + (viewMode === "photos" ? " frp-tab--active" : "")}
-          onClick={() => setViewMode("photos")}
-        >
-          사진 모아보기
-        </button>
-      </div>
+      {showPhotoGrid ? (
+        // "더보기" 로 들어온 사진 앨범 화면. 카테고리 필터와 무관하게
+        // photoReviews(이 시설/세부시설의 사진 있는 리뷰 전체)를 그대로 보여준다.
+        <>
+          <button
+            type="button"
+            className="frp-photo-grid-back"
+            onClick={() => setShowPhotoGrid(false)}
+          >
+            ‹ 목록으로
+          </button>
 
-      <div className="frp-filters">
-        <div className="frp-filter-group">
-          {CATEGORY_OPTIONS.map((opt) => (
-            <button
-              key={opt.value}
-              type="button"
-              className={
-                "frp-filter-chip" +
-                (category === opt.value ? " frp-filter-chip--active" : "")
-              }
-              onClick={() => setCategory(opt.value)}
-            >
-              {opt.label}
-            </button>
-          ))}
-        </div>
-
-        {viewMode === "list" && (
-          <label className="frp-photo-toggle">
-            <input
-              type="checkbox"
-              checked={hasPhotoOnly}
-              onChange={(e) => setHasPhotoOnly(e.target.checked)}
-            />
-            사진 있는 리뷰만
-          </label>
-        )}
-      </div>
-
-      {reviewsLoading ? (
-        <p className="frp-status">불러오는 중…</p>
-      ) : reviewsError ? (
-        <p className="frp-status">에러: {reviewsError}</p>
-      ) : reviews.length === 0 ? (
-        <p className="frp-status">
-          {viewMode === "photos"
-            ? "사진이 첨부된 리뷰가 아직 없어요."
-            : "해당하는 리뷰가 없어요."}
-        </p>
-      ) : viewMode === "photos" ? (
-        <div className="frp-photo-grid">
-          {reviews.map((r) => (
-            <div className="frp-photo-cell" key={r.id}>
-              <img src={resolveReviewImageUrl(r.image)} alt={r.content} />
-              <div className="frp-photo-caption">
-                <span>{r.user_name}</span>
-                <Stars rating={r.rating} />
-              </div>
+          {photoReviewsLoading ? (
+            <p className="frp-status">불러오는 중…</p>
+          ) : photoReviews.length === 0 ? (
+            <p className="frp-status">사진이 첨부된 리뷰가 아직 없어요.</p>
+          ) : (
+            <div className="frp-photo-grid">
+              {photoReviews.map((r) => (
+                <div className="frp-photo-cell" key={r.id}>
+                  <img src={resolveReviewImageUrl(r.image)} alt={r.content} />
+                  <div className="frp-photo-caption">
+                    <span>{r.user_name}</span>
+                    <Stars rating={r.rating} />
+                  </div>
+                </div>
+              ))}
             </div>
-          ))}
-        </div>
+          )}
+        </>
       ) : (
-        <div className="frp-list">
-          {reviews.map((r) => (
-            <div className="frp-review-card" key={r.id}>
-              <div className="frp-review-top">
-                <span className="frp-review-name">{r.user_name}</span>
-                <Stars rating={r.rating} />
-              </div>
-              <div className="frp-review-meta">
-                <span>{reviewCategoryLabel(r)}</span>
-                {!isScoped && r.subfacility_name && <span> · {r.subfacility_name}</span>}
-                {r.created_at && <span> · {r.created_at.slice(0, 10)}</span>}
-              </div>
-              <p className="frp-review-body">{r.content}</p>
-              {r.image && (
-                <img
-                  className="frp-review-image"
-                  src={resolveReviewImageUrl(r.image)}
-                  alt="리뷰 사진"
-                />
+        <>
+          {/* 사진 있는 리뷰 미리보기 — 가로 스크롤 앨범. 5개 넘으면 끝에
+              "더보기" 를 붙여서 누르면 위 사진 앨범(그리드) 화면으로 전환. */}
+          {!photoReviewsLoading && photoReviews.length > 0 && (
+            <div className="frp-photo-strip">
+              {photoReviews.slice(0, 5).map((r) => (
+                <button
+                  type="button"
+                  key={r.id}
+                  className="frp-photo-strip-item"
+                  onClick={() => setShowPhotoGrid(true)}
+                >
+                  <img src={resolveReviewImageUrl(r.image)} alt={r.content} />
+                </button>
+              ))}
+
+              {photoReviews.length > 5 && (
+                <button
+                  type="button"
+                  className="frp-photo-strip-more"
+                  onClick={() => setShowPhotoGrid(true)}
+                >
+                  <span className="frp-photo-strip-more-count">
+                    +{photoReviews.length - 5}
+                  </span>
+                  더보기
+                </button>
               )}
             </div>
-          ))}
-        </div>
+          )}
+
+          {/* 카테고리 필터 — 아래 리뷰 피드에만 적용된다(위 사진 미리보기는
+              항상 전체 기준). 마이페이지 "내가 쓴 리뷰"의 필터 버튼과 같은
+              모양(.frp-sort-btn)으로 맞췄다. */}
+          <div className="frp-filters">
+            {CATEGORY_OPTIONS.map((opt) => (
+              <button
+                key={opt.value}
+                type="button"
+                className={
+                  "frp-sort-btn" +
+                  (category === opt.value ? " frp-sort-btn--active" : "")
+                }
+                onClick={() => setCategory(opt.value)}
+              >
+                {opt.label}
+              </button>
+            ))}
+          </div>
+
+          {/* 리뷰 피드 — 카드(테두리/그림자) 대신 옅은 구분선으로만 나눈다. */}
+          {reviewsLoading ? (
+            <p className="frp-status">불러오는 중…</p>
+          ) : reviewsError ? (
+            <p className="frp-status">에러: {reviewsError}</p>
+          ) : reviews.length === 0 ? (
+            <p className="frp-status">해당하는 리뷰가 없어요.</p>
+          ) : (
+            <div className="frp-feed">
+              {reviews.map((r) => (
+                <div className="frp-feed-item" key={r.id}>
+                  <div className="frp-review-top">
+                    <span className="frp-review-name">{r.user_name}</span>
+                    <Stars rating={r.rating} />
+                  </div>
+                  <div className="frp-review-meta">
+                    <span>{reviewCategoryLabel(r)}</span>
+                    {!isScoped && r.subfacility_name && (
+                      <span> · {r.subfacility_name}</span>
+                    )}
+                    {r.created_at && <span> · {formatDateTime(r.created_at)}</span>}
+                  </div>
+                  <p className="frp-review-body">{r.content}</p>
+                  {r.image && (
+                    <img
+                      className="frp-review-image"
+                      src={resolveReviewImageUrl(r.image)}
+                      alt="리뷰 사진"
+                    />
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+        </>
       )}
 
       {writeOpen && (

@@ -1,8 +1,11 @@
 /* ============================================================
    FacilityReviewsPanel 전용 스타일
    - 모든 선택자에 .frp- 접두사를 붙여 다른 화면 CSS와 격리한다.
-   - 색상 변수(--fd-*)는 FacilityMapLayout.css 의 .fml-panel 에서
-     정의된 걸 그대로 물려받아 쓴다(이 컴포넌트도 그 안에서 렌더링됨).
+   - 색상/둥근 정도/그림자는 전역 디자인 시스템(styles/global.css 의
+     --color-*, --radius-*, --shadow-*)을 그대로 따른다 — 예전엔 이 화면만
+     FacilityMapLayout.css 의 로컬 --fd-* 팔레트(다른 파랑 #2f6fed 등)를
+     썼는데, 그러면 로그인/마이페이지 등 나머지 화면(네이비 #1d4e89 계열)과
+     톤이 어긋나서 전역 토큰으로 맞췄다.
    ============================================================ */
 
 .frp-header {
@@ -17,37 +20,51 @@
   margin: 0 0 4px;
   font-size: 20px;
   font-weight: 700;
-  color: var(--fd-text);
+  color: var(--color-heading);
 }
 
 .frp-summary {
   margin: 0;
-  color: var(--fd-muted);
+  color: var(--color-text-muted);
   font-size: 14px;
 }
 
 .frp-stars {
-  color: var(--fd-star);
+  color: var(--color-star);
   letter-spacing: 1px;
 }
 
 .frp-write-btn {
   flex-shrink: 0;
   border: none;
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   padding: 10px 16px;
-  background: var(--fd-accent);
+  background: var(--color-primary);
   color: #fff;
   font-weight: 700;
   cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.frp-write-btn:hover {
+  background: var(--color-primary-hover);
+}
+
+/* 세부시설 상세에 끼워 넣는 섹션 헤더의 "+ 리뷰 작성" — 글자형 버튼이라
+   .fd-text-btn 은 그대로 쓰고, 색만 이 화면 전용으로 덮어쓴다
+   (.fd-text-btn--accent 는 "이용자 정보"의 "+ 정보 추가" 버튼과 공유하는
+   클래스라 거기엔 손대지 않으려고 별도 클래스로 분리했다). */
+.frp-write-btn--text {
+  color: var(--color-primary);
+  font-weight: 600;
 }
 
 .frp-login-hint {
   margin: 10px 0 0;
   padding: 10px 12px;
-  border-radius: 8px;
-  background: #fff6e5;
-  color: #8a6d1e;
+  border-radius: var(--radius-xs);
+  background: var(--color-warning-bg);
+  color: var(--color-warning);
   font-size: 13px;
 }
 
@@ -55,79 +72,128 @@
   border: none;
   background: none;
   padding: 0;
-  color: var(--fd-accent);
+  color: var(--color-primary);
   font: inherit;
   font-weight: 700;
   text-decoration: underline;
   cursor: pointer;
 }
 
-/* ---------- 탭 (목록 ↔ 사진 모아보기) ---------- */
+/* ---------- 사진 미리보기 캐로셀 ----------
+   가로로 스크롤되는 앨범 형태. 5개 넘으면 끝에 "더보기" 타일이 붙는다. */
 
-.frp-tabs {
+.frp-photo-strip {
   display: flex;
-  gap: 4px;
-  margin-top: 20px;
-  border-bottom: 1px solid var(--fd-line);
+  align-items: center;
+  gap: 8px;
+  margin-top: 16px;
+  padding-bottom: 4px;
+  overflow-x: auto;
 }
 
-.frp-tab {
-  padding: 10px 4px;
-  margin-right: 20px;
+.frp-photo-strip-item {
+  flex: none;
+  width: 88px;
+  height: 88px;
+  padding: 0;
+  border: none;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  cursor: pointer;
+  background: var(--color-border);
+}
+
+.frp-photo-strip-item img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.frp-photo-strip-more {
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  width: 88px;
+  height: 88px;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: var(--color-bg-chip);
+  color: var(--color-text-secondary);
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.frp-photo-strip-more-count {
+  font-size: 15px;
+  color: var(--color-primary);
+}
+
+.frp-photo-grid-back {
+  margin-bottom: 14px;
+  padding: 4px 0;
   border: none;
   background: none;
+  color: var(--color-text-secondary);
   font: inherit;
+  font-size: 13px;
   font-weight: 600;
-  color: var(--fd-muted);
   cursor: pointer;
-  border-bottom: 2px solid transparent;
 }
 
-.frp-tab--active {
-  color: var(--fd-text);
-  border-bottom-color: var(--fd-accent);
-}
-
-/* ---------- 필터 ---------- */
+/* ---------- 필터(카테고리) ----------
+   마이페이지 "내가 쓴 리뷰" 필터 버튼(.review-sort-button, 한 줄에 같은
+   모양 버튼들)과 같은 모양으로 맞췄다. 이 필터는 아래 리뷰 피드에만
+   적용되고, 위 사진 캐로셀은 항상 전체 기준이라 영향받지 않는다. */
 
 .frp-filters {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-  margin: 14px 0;
+  gap: 8px;
+  margin: 20px 0 4px;
 }
 
-.frp-filter-group {
-  display: flex;
-  gap: 6px;
-}
-
-.frp-filter-chip {
-  border: 1px solid var(--fd-line);
-  border-radius: 999px;
-  padding: 6px 14px;
-  background: #fff;
-  font: inherit;
-  font-size: 13px;
-  color: var(--fd-muted);
-  cursor: pointer;
-}
-
-.frp-filter-chip--active {
-  border-color: var(--fd-accent);
-  color: var(--fd-accent);
-  font-weight: 700;
-}
-
-.frp-photo-toggle {
+/* 마이페이지 review-sort-button 과 같은 톤(회색 테두리, 선택 시 옅은
+   회색 채움)의 필터/전환 버튼. */
+.frp-sort-btn {
+  min-width: 0;
+  height: 30px;
+  padding: 0 12px;
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  font-size: 13px;
-  color: var(--fd-muted);
+  justify-content: center;
+  border: 1px solid #dfe3e8;
+  border-radius: 7px;
+  background: #ffffff;
+  color: #6b7280;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1;
+  white-space: nowrap;
   cursor: pointer;
+  transition:
+    background-color 0.15s ease,
+    border-color 0.15s ease,
+    color 0.15s ease;
+}
+
+.frp-sort-btn:hover {
+  background: #f7f8fa;
+  border-color: #cfd5dc;
+  color: #333333;
+}
+
+.frp-sort-btn--active {
+  background: #f1f3f5;
+  border-color: #c9cfd6;
+  color: #222222;
+  font-weight: 700;
 }
 
 /* ---------- 상태 텍스트 ---------- */
@@ -136,21 +202,28 @@
   max-width: 480px;
   margin: 48px auto;
   text-align: center;
-  color: var(--fd-muted);
+  color: var(--color-text-muted);
 }
 
-/* ---------- 목록형 ---------- */
+/* ---------- 리뷰 피드 ----------
+   네모 카드 대신 옅은 구분선으로만 리뷰를 나눈다. */
 
-.frp-list {
+.frp-feed {
   display: flex;
   flex-direction: column;
-  gap: 12px;
 }
 
-.frp-review-card {
-  border: 1px solid var(--fd-line);
-  border-radius: 12px;
-  padding: 16px 18px;
+.frp-feed-item {
+  padding: 16px 0;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.frp-feed-item:first-child {
+  padding-top: 12px;
+}
+
+.frp-feed-item:last-child {
+  border-bottom: none;
 }
 
 .frp-review-top {
@@ -162,17 +235,18 @@
 
 .frp-review-name {
   font-weight: 700;
+  color: var(--color-heading);
 }
 
 .frp-review-meta {
   margin-bottom: 6px;
-  color: var(--fd-muted);
+  color: var(--color-text-muted);
   font-size: 12px;
 }
 
 .frp-review-body {
   margin: 0;
-  color: #566473;
+  color: var(--color-text-secondary);
   font-size: 14px;
   white-space: pre-wrap;
 }
@@ -182,7 +256,7 @@
   margin-top: 10px;
   max-width: 220px;
   max-height: 220px;
-  border-radius: 8px;
+  border-radius: var(--radius-xs);
   object-fit: cover;
 }
 
@@ -196,9 +270,9 @@
 
 .frp-photo-cell {
   position: relative;
-  border-radius: 10px;
+  border-radius: var(--radius-sm);
   overflow: hidden;
-  background: var(--fd-line);
+  background: var(--color-border);
   aspect-ratio: 1 / 1;
 }
 
@@ -228,12 +302,17 @@
   color: #fff;
 }
 
-/* ---------- 작성 모달 ---------- */
+/* ---------- 작성 모달 ----------
+   로그인/회원가입 팝업(user/Auth.css 의 .auth-overlay/.auth-modal)과
+   같은 배경 블러 + 그림자 + 둥근 정도를 써서 "팝업" 이 사이트 전체에서
+   같은 느낌이 나게 맞춘다. */
 
 .frp-modal-backdrop {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.4);
+  background: rgba(16, 24, 40, 0.52);
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -246,8 +325,9 @@
   max-width: 420px;
   max-height: 90vh;
   overflow-y: auto;
-  background: var(--fd-bg);
-  border-radius: 16px;
+  background: var(--color-white);
+  border-radius: var(--radius-2xl);
+  box-shadow: var(--shadow-modal);
   padding: 20px;
 }
 
@@ -261,6 +341,7 @@
 .frp-modal-head h2 {
   margin: 0;
   font-size: 18px;
+  color: var(--color-heading);
 }
 
 .frp-modal-close {
@@ -269,7 +350,7 @@
   font-size: 22px;
   line-height: 1;
   cursor: pointer;
-  color: var(--fd-muted);
+  color: var(--color-text-muted);
 }
 
 .frp-form {
@@ -287,22 +368,34 @@
 .frp-form-label {
   font-size: 13px;
   font-weight: 700;
-  color: var(--fd-text);
+  color: var(--color-text);
 }
 
 .frp-form-hint {
   margin: 0;
   font-size: 13px;
-  color: var(--fd-muted);
+  color: var(--color-text-muted);
 }
 
 .frp-form-group select,
 .frp-form-group textarea {
-  border: 1px solid var(--fd-line);
-  border-radius: 8px;
+  border: 1px solid var(--color-border-input);
+  border-radius: var(--radius-sm);
   padding: 8px 10px;
   font: inherit;
-  color: var(--fd-text);
+  color: var(--color-text);
+  background: var(--color-bg-soft);
+  outline: none;
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.frp-form-group select:focus,
+.frp-form-group textarea:focus {
+  border-color: var(--color-primary);
+  background: var(--color-white);
+  box-shadow: 0 0 0 3px rgba(29, 78, 137, 0.08);
 }
 
 .frp-form-group textarea {
@@ -325,7 +418,7 @@
   background: none;
   font-size: 26px;
   line-height: 1;
-  color: var(--fd-star);
+  color: var(--color-star);
   cursor: pointer;
   padding: 0;
 }
@@ -340,7 +433,7 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
-  border-radius: 8px;
+  border-radius: var(--radius-xs);
 }
 
 .frp-image-preview button {
@@ -362,9 +455,9 @@
   justify-content: center;
   width: 96px;
   height: 96px;
-  border: 1px dashed var(--fd-line);
-  border-radius: 8px;
-  color: var(--fd-muted);
+  border: 1px dashed var(--color-border-strong);
+  border-radius: var(--radius-xs);
+  color: var(--color-text-muted);
   font-size: 13px;
   cursor: pointer;
 }
@@ -375,7 +468,7 @@
 
 .frp-form-error {
   margin: 0;
-  color: #d9453d;
+  color: #d92d20;
   font-size: 13px;
 }
 
@@ -386,23 +479,38 @@
 }
 
 .frp-form-actions button {
-  border-radius: 8px;
+  border-radius: var(--radius-md);
   padding: 10px 16px;
   font: inherit;
+  font-weight: 700;
   cursor: pointer;
+  transition:
+    background-color 0.15s ease,
+    border-color 0.15s ease,
+    color 0.15s ease;
 }
 
 .frp-form-actions button[type="submit"] {
   border: none;
-  background: var(--fd-accent);
+  background: var(--color-primary);
   color: #fff;
-  font-weight: 700;
+}
+
+.frp-form-actions button[type="submit"]:hover:not(:disabled) {
+  background: var(--color-primary-hover);
 }
 
 .frp-form-actions button[type="button"] {
-  border: 1px solid var(--fd-line);
-  background: #fff;
-  color: var(--fd-text);
+  border: 1px solid var(--color-border-strong);
+  background: var(--color-white);
+  color: var(--color-text-secondary);
+  font-weight: 600;
+}
+
+.frp-form-actions button[type="button"]:hover:not(:disabled) {
+  background: var(--color-primary-soft);
+  border-color: var(--color-primary);
+  color: var(--color-primary);
 }
 
 @media (max-aspect-ratio: 1/1) {

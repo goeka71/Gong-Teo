@@ -442,7 +442,7 @@ function FacilityDetail({ facilityId = 1 }) {
             </h2>
             <button
               type="button"
-              className="fd-text-btn fd-text-btn--accent"
+              className="fd-text-btn fd-review-write-btn"
               onClick={() => navigate(`/facility/${facilityId}/reviews`)}
             >
               리뷰 작성
