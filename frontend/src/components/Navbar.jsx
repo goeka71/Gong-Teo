@@ -197,7 +197,7 @@ function Navbar() {
           to="/"
           className="gnb-logo"
         >
-          양윤서메롱
+        공 [ 터 ]
         </NavLink>
 
 
