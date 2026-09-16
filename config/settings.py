@@ -266,3 +266,46 @@ REST_FRAMEWORK = {
 SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(hours=1),
 }
+
+
+# =========================================================
+# Logging
+# =========================================================
+#
+# DEBUG=False (배포 환경)에서는 Django 기본 설정상 500 에러가
+# mail_admins 핸들러로만 전달되는데, ADMINS가 비어 있어서
+# 실제로는 아무 데도 기록되지 않고 사라진다.
+#
+# Render는 stdout을 로그로 수집하므로, django.request 로거를
+# 콘솔 핸들러에 연결해서 500 에러 발생 시 Traceback이
+# 배포 로그에 그대로 보이도록 한다.
+#
+
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "formatters": {
+        "verbose": {
+            "format": "[{levelname}] {asctime} {name} {message}",
+            "style": "{",
+        },
+    },
+    "handlers": {
+        "console": {
+            "class": "logging.StreamHandler",
+            "formatter": "verbose",
+        },
+    },
+    "loggers": {
+        "django": {
+            "handlers": ["console"],
+            "level": "INFO",
+            "propagate": False,
+        },
+        "django.request": {
+            "handlers": ["console"],
+            "level": "ERROR",
+            "propagate": False,
+        },
+    },
+}
