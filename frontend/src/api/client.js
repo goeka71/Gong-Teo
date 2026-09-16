@@ -1,6 +1,6 @@
 // api/client.js
 
-export const BASE_URL = "http://127.0.0.1:8000";
+export const BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://127.0.0.1:8000";
 
 export function saveTokens(access, refresh) {
   if (access) localStorage.setItem("accessToken", access);
