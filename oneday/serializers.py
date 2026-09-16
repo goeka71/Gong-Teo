@@ -74,6 +74,16 @@ class MyProgramSerializer(serializers.ModelSerializer):
 class OnedayPostSerializer(serializers.ModelSerializer):
 
     # ======================================
+    # 작성자 정보 (본인 글 신청 방지용)
+    # ======================================
+
+    enroll_user_id = serializers.IntegerField(
+        source="enroll.user_id",
+        read_only=True
+    )
+
+
+    # ======================================
     # Program 정보
     # ======================================
 
@@ -163,6 +173,7 @@ class OnedayPostSerializer(serializers.ModelSerializer):
             # 게시글 기본 정보
             "id",
             "enroll",
+            "enroll_user_id",
             "transfer_date",
             "status",
             "created_at",

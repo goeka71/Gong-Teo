@@ -299,6 +299,17 @@ def onedayapplication_list(request):
             user_id = 1
 
 
+        if post.enroll.user_id == user_id:
+
+            return Response(
+                {
+                    "detail":
+                        "본인이 작성한 원데이는 신청할 수 없습니다."
+                },
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+
         OnedayApplication.objects.create(
             post=post,
             user_id=user_id,

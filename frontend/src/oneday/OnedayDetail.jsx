@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { applyOnedayPost } from "../api/oneday";
+import { getMyInfo } from "../api/user";
 import { formatWalkTime } from "../utils/time";
 import "./OnedayDetail.css";
 
@@ -216,6 +217,41 @@ function OnedayDetail({ post, onBack, onApplySuccess }) {
     useState(false);
 
 
+  // 현재 로그인한 유저 id (본인 글 신청 방지용)
+  const [currentUserId, setCurrentUserId] =
+    useState(null);
+
+
+  useEffect(() => {
+
+    let ignore = false;
+
+    async function loadCurrentUser() {
+
+      try {
+
+        const data = await getMyInfo();
+
+        if (!ignore) {
+          setCurrentUserId(data.id);
+        }
+
+      } catch {
+        // 로그인하지 않은 경우 등은 무시한다.
+      }
+
+    }
+
+
+    loadCurrentUser();
+
+    return () => {
+      ignore = true;
+    };
+
+  }, []);
+
+
   // ==========================================
   // 카카오맵 연결
   // ==========================================
@@ -396,6 +432,10 @@ function OnedayDetail({ post, onBack, onApplySuccess }) {
   // ==========================================
   function openApplyModal() {
 
+    if (isOwnPost) {
+      return;
+    }
+
     setIsConfirmed(false);
 
     setIsApplyModalOpen(true);
@@ -465,6 +505,12 @@ function OnedayDetail({ post, onBack, onApplySuccess }) {
 
   const isOpen =
     post.status === "open";
+
+
+  // 본인이 작성한 원데이인지 여부
+  const isOwnPost =
+    currentUserId !== null &&
+    post.enroll_user_id === currentUserId;
 
 
   return (
@@ -885,13 +931,15 @@ function OnedayDetail({ post, onBack, onApplySuccess }) {
 
             <button
               className="apply-button"
-              disabled={!isOpen}
+              disabled={!isOpen || isOwnPost}
               onClick={openApplyModal}
             >
 
-              {isOpen
-                ? "원데이 신청하기"
-                : "신청 마감된 원데이입니다"}
+              {isOwnPost
+                ? "본인이 작성한 원데이입니다"
+                : isOpen
+                  ? "원데이 신청하기"
+                  : "신청 마감된 원데이입니다"}
 
             </button>
 
