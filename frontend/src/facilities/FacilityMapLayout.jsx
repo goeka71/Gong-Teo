@@ -370,6 +370,12 @@ function FacilityMapLayout() {
   // 그 밖에는 기존처럼 검색·필터 결과 전체를 표시한다.
   const showNearbyOnly = !hasActiveQuery && userLocation != null;
 
+  // 좌측 목록 패널(FacilityListPanel)과 동일하게, 반경(2km→3km→5km) 안에
+  // 시설이 하나도 없으면 "주변 시설만" 모드를 사실상 해제하고 전체 시설로
+  // 폴백한다. 그렇지 않으면 목록은 전체가 보이는데 지도엔 마커가 하나도
+  // 없는 불일치가 생긴다.
+  const nearbyEmpty = showNearbyOnly && nearby.list.length === 0;
+
   // "추천 시설"은 위치와 무관하게 전체 시설 중에서 뽑히기 때문에, 초기
   // 화면(주변 시설만 표시)에서 반경 밖의 추천 시설을 선택하면 그 마커
   // 자체가 목록에 없어서 선택 표시가 전혀 보이지 않는 문제가 있었다.
@@ -380,7 +386,7 @@ function FacilityMapLayout() {
     // 검색·필터가 적용된 전체 목록을 기준으로 좁힌다.
     const base = showWishOnly
       ? filteredFacilities
-      : showNearbyOnly
+      : showNearbyOnly && !nearbyEmpty
         ? nearby.list
         : filteredFacilities;
 
@@ -399,6 +405,7 @@ function FacilityMapLayout() {
     return list;
   }, [
     showNearbyOnly,
+    nearbyEmpty,
     nearby.list,
     filteredFacilities,
     selectedFacilityId,
@@ -494,7 +501,7 @@ function FacilityMapLayout() {
                   >
                     <div className="fml-user-dot" title="내 위치" />
                   </CustomOverlayMap>
-                  {showNearbyOnly && (
+                  {showNearbyOnly && !nearbyEmpty && (
                     <KakaoCircle
                       center={userLocation}
                       radius={nearby.radius}
