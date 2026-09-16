@@ -21,6 +21,10 @@ class Command(BaseCommand):
     help = "공공데이터 csv를 DB에 import합니다"
 
     def handle(self, *args, **options):
+        if Facility.objects.exists():
+            self.stdout.write(self.style.WARNING("이미 데이터 있음, 건너뜀"))
+            return
+
         # ── 1. 부모 테이블 먼저 (id 직접 지정) ──
 
         # Facility
