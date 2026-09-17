@@ -249,17 +249,22 @@ function Navbar() {
             <>
 
               {/* 보유 코인 */}
-              <div className="navbar-coin">
+<button
+  type="button"
+  className="navbar-coin"
+  onClick={() =>
+    navigate("/mypage?view=coins")
+  }
+  title="코인 내역 보기"
+>
+  <span className="navbar-coin-icon">
+    🪙
+  </span>
 
-                <span className="navbar-coin-icon">
-                  🪙
-                </span>
-
-                <span className="navbar-coin-number">
-                  {coin ?? "-"}
-                </span>
-
-              </div>
+  <span className="navbar-coin-number">
+    {coin ?? "-"}
+  </span>
+</button>
 
 
               {/* 사용자 */}

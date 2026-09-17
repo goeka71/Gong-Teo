@@ -498,6 +498,10 @@ function ReviewWriteModal({
       setSubmitting(true);
       setError("");
       await createReview(formData);
+
+      // 리뷰 작성으로 변경된 코인을 Navbar에 즉시 반영
+      window.dispatchEvent(new Event("auth-change"));
+
       onSaved();
     } catch (err) {
       setError(extractErrorMessage(err));

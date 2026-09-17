@@ -157,14 +157,20 @@ function OnedayBoard() {
   };
 
   // -----------------------------------------
-  // 원데이 신청 성공 → 게시글 상태 반영
-  // -----------------------------------------
-  const handleApplySuccess = (updatedPost) => {
-    setSelectedPost(updatedPost);
-    setPosts((prev) =>
-      prev.map((post) => (post.id === updatedPost.id ? updatedPost : post))
-    );
-  };
+// 원데이 신청 성공 → 게시글 상태 + 코인 반영
+// -----------------------------------------
+const handleApplySuccess = (updatedPost) => {
+  setSelectedPost(updatedPost);
+
+  setPosts((prev) =>
+    prev.map((post) =>
+      post.id === updatedPost.id ? updatedPost : post
+    )
+  );
+
+  // 양도받기 성공 후 Navbar의 최신 코인 개수 다시 불러오기
+  window.dispatchEvent(new Event("auth-change"));
+};
 
   // -----------------------------------------
   // GPS 위치 가져오기

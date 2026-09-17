@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 
 import {
   getMyInfo,
@@ -213,6 +213,8 @@ function isApplicationOnDate(application, date) {
 ========================= */
 
 function MyPage() {
+  const [searchParams] = useSearchParams();
+
   const [user, setUser] =
     useState(null);
 
@@ -221,6 +223,13 @@ function MyPage() {
 
   const [view, setView] =
     useState("programs");
+    useEffect(() => {
+  const requestedView = searchParams.get("view");
+
+  if (requestedView === "coins") {
+    setView("coins");
+  }
+}, [searchParams]);
 
 
   /* 수강 프로그램 */
@@ -2676,6 +2685,11 @@ function MyReviewsView({
             await createReview(
               formData
             );
+
+          // 새 리뷰 작성으로 변경된 코인을 Navbar에 즉시 반영
+          window.dispatchEvent(
+            new Event("auth-change")
+          );
 
           const normalized =
             normalizeReview(

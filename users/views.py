@@ -4,6 +4,7 @@ import string
 from django.conf import settings
 from django.core.mail import send_mail
 from django.shortcuts import get_object_or_404
+from django.db import transaction
 
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
@@ -264,6 +265,7 @@ def my_reviews(request):
     GET  : 로그인한 사용자가 작성한 리뷰 목록
            ?has_photo=true 로 사진 첨부된 리뷰만 필터링 가능
     POST : 로그인한 사용자의 새 리뷰 작성
+           새 리뷰 작성 성공 시 코인 +1
     """
 
     if request.method == "GET":
@@ -298,9 +300,21 @@ def my_reviews(request):
     )
 
     if serializer.is_valid():
-        review = serializer.save(
-            user=request.user
-        )
+        with transaction.atomic():
+            review = serializer.save(
+                user=request.user
+            )
+
+            request.user.coin += 1
+            request.user.save(
+                update_fields=["coin"]
+            )
+
+            CoinHistory.objects.create(
+                user=request.user,
+                coin_desc="리뷰 작성 (+1)",
+                coin_res=request.user.coin,
+            )
 
         return Response(
             MyReviewSerializer(
