@@ -74,6 +74,7 @@ def password_reset_send_code(request):
     send_mail(
         subject="공 [터] 비밀번호 재설정 인증번호",
         message=(
+            f"회원님의 아이디는 {user.username} 입니다.\n\n"
             f"인증번호는 {code} 입니다.\n"
             f"인증번호는 발급 후 {PasswordResetCode.CODE_VALID_MINUTES}분간 유효합니다."
         ),
