@@ -351,6 +351,24 @@
   font-size: 14px;
 }
 
+.my-reviews-filter-empty {
+  padding: 70px 20px;
+  text-align: center;
+  color: #8a95a6;
+}
+
+.my-reviews-filter-empty strong {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 17px;
+  color: #111827;
+}
+
+.my-reviews-filter-empty p {
+  margin: 0;
+  font-size: 14px;
+}
+
 
 /* ---------- ReviewCard ---------- */
 .review-card-style-13 {
