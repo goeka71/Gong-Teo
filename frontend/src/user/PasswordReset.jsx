@@ -107,7 +107,7 @@ function PasswordReset() {
     <div className="page password-reset-page">
       <div className="card password-reset-card">
         <div className="card-body">
-          <h1 className="password-reset-title">비밀번호 찾기</h1>
+          <h1 className="password-reset-title">아이디/비밀번호 변경</h1>
 
           <p className="password-reset-description">
             가입하신 이메일로 인증번호를 받아
