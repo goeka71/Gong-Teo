@@ -75,9 +75,14 @@ class PasswordResetConfirmSerializer(serializers.Serializer):
         return value
 
     def validate(self, data):
-        try:
-            user = User.objects.get(email=data["email"])
-        except User.DoesNotExist:
+        user = (
+            User.objects
+            .filter(email=data["email"])
+            .order_by("id")
+            .first()
+        )
+
+        if user is None:
             raise serializers.ValidationError({
                 "email": "해당 이메일로 가입된 계정이 없습니다."
             })

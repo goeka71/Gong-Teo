@@ -63,7 +63,7 @@ def password_reset_send_code(request):
         )
 
     email = serializer.validated_data["email"]
-    user = User.objects.get(email=email)
+    user = User.objects.filter(email=email).order_by("id").first()
 
     code = "".join(
         random.choices(string.ascii_uppercase + string.digits, k=6)
