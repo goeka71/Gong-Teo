@@ -1,3 +1,4 @@
+from django.contrib.auth.password_validation import validate_password
 from rest_framework import serializers
 
 from .models import User, CoinHistory
@@ -52,6 +53,56 @@ class SignupSerializer(serializers.ModelSerializer):
         )
 
         return user
+
+class PasswordResetSendCodeSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+
+    def validate_email(self, value):
+        if not User.objects.filter(email=value).exists():
+            raise serializers.ValidationError(
+                "해당 이메일로 가입된 계정이 없습니다."
+            )
+        return value
+
+
+class PasswordResetConfirmSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+    code = serializers.CharField(max_length=6)
+    new_password = serializers.CharField(write_only=True)
+
+    def validate_new_password(self, value):
+        validate_password(value)
+        return value
+
+    def validate(self, data):
+        try:
+            user = User.objects.get(email=data["email"])
+        except User.DoesNotExist:
+            raise serializers.ValidationError({
+                "email": "해당 이메일로 가입된 계정이 없습니다."
+            })
+
+        reset_code = (
+            user.password_reset_codes
+            .filter(code=data["code"], is_used=False)
+            .order_by("-created_at")
+            .first()
+        )
+
+        if reset_code is None:
+            raise serializers.ValidationError({
+                "code": "인증번호가 올바르지 않습니다."
+            })
+
+        if reset_code.is_expired():
+            raise serializers.ValidationError({
+                "code": "인증번호가 만료되었습니다. 다시 요청해주세요."
+            })
+
+        data["user"] = user
+        data["reset_code"] = reset_code
+        return data
+
 
 class CoinHistorySerializer(serializers.ModelSerializer):
     class Meta:

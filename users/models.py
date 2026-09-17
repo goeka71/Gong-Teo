@@ -1,5 +1,8 @@
+from datetime import timedelta
+
 from django.db import models
 from django.contrib.auth.models import AbstractUser
+from django.utils import timezone
 
 
 class User(AbstractUser):
@@ -24,3 +27,22 @@ class CoinHistory(models.Model):
 
     def __str__(self):
         return f"{self.user.username} - {self.coin_desc}"
+
+
+class PasswordResetCode(models.Model):
+    CODE_VALID_MINUTES = 5
+
+    user = models.ForeignKey(
+        'users.User', on_delete=models.CASCADE, related_name="password_reset_codes"
+    )
+    code = models.CharField("인증번호", max_length=6)
+    created_at = models.DateTimeField("생성 일시", auto_now_add=True)
+    is_used = models.BooleanField("사용 여부", default=False)
+
+    def is_expired(self):
+        return timezone.now() > self.created_at + timedelta(
+            minutes=self.CODE_VALID_MINUTES
+        )
+
+    def __str__(self):
+        return f"{self.user.username} - {self.code}"

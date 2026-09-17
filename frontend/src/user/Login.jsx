@@ -189,9 +189,8 @@ function Login({
             type="button"
             className="auth-text-button"
             onClick={() => {
-              alert(
-                "비밀번호 찾기 기능은 준비 중입니다."
-              );
+              closeModal();
+              navigate("/password-reset");
             }}
           >
             비밀번호 찾기

@@ -1,3 +1,8 @@
+import random
+import string
+
+from django.conf import settings
+from django.core.mail import send_mail
 from django.shortcuts import get_object_or_404
 
 from rest_framework.decorators import api_view, permission_classes
@@ -5,7 +10,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import status
 
-from .models import User, CoinHistory
+from .models import User, CoinHistory, PasswordResetCode
 from .serializers import (
     UserSerializer,
     SignupSerializer,
@@ -14,6 +19,8 @@ from .serializers import (
     MyProgramSerializer,
     MyProgramCreateSerializer,
     MyReviewSerializer,
+    PasswordResetSendCodeSerializer,
+    PasswordResetConfirmSerializer,
 )
 
 from oneday.models import MyProgram
@@ -42,6 +49,66 @@ def signup(request):
     return Response(
         serializer.errors,
         status=status.HTTP_400_BAD_REQUEST,
+    )
+
+
+@api_view(["POST"])
+def password_reset_send_code(request):
+    serializer = PasswordResetSendCodeSerializer(data=request.data)
+
+    if not serializer.is_valid():
+        return Response(
+            serializer.errors,
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    email = serializer.validated_data["email"]
+    user = User.objects.get(email=email)
+
+    code = "".join(
+        random.choices(string.ascii_uppercase + string.digits, k=6)
+    )
+
+    PasswordResetCode.objects.create(user=user, code=code)
+
+    send_mail(
+        subject="[체육ON] 비밀번호 재설정 인증번호",
+        message=(
+            f"인증번호는 {code} 입니다.\n"
+            f"인증번호는 발급 후 {PasswordResetCode.CODE_VALID_MINUTES}분간 유효합니다."
+        ),
+        from_email=settings.DEFAULT_FROM_EMAIL,
+        recipient_list=[email],
+    )
+
+    return Response(
+        {"detail": "인증번호가 이메일로 발송되었습니다."},
+        status=status.HTTP_200_OK,
+    )
+
+
+@api_view(["POST"])
+def password_reset_confirm(request):
+    serializer = PasswordResetConfirmSerializer(data=request.data)
+
+    if not serializer.is_valid():
+        return Response(
+            serializer.errors,
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    user = serializer.validated_data["user"]
+    reset_code = serializer.validated_data["reset_code"]
+
+    user.set_password(serializer.validated_data["new_password"])
+    user.save()
+
+    reset_code.is_used = True
+    reset_code.save(update_fields=["is_used"])
+
+    return Response(
+        {"detail": "비밀번호가 변경되었습니다."},
+        status=status.HTTP_200_OK,
     )
 
 

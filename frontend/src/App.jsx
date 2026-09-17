@@ -9,6 +9,7 @@ import OnedayBoard from "./oneday/OnedayBoard";
 import Login from "./user/Login";
 import MyPage from "./user/MyPage";
 import Signup from "./user/Signup";
+import PasswordReset from "./user/PasswordReset";
 
 // 공통 레이아웃: 모든 화면 위에 상단바(Navbar)를 두고,
 // 그 아래(Outlet)에 현재 경로에 해당하는 화면을 끼워 넣는다.
@@ -62,6 +63,7 @@ function App() {
         <Route path="/mypage" element={<MyPage />} />
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
+        <Route path="/password-reset" element={<PasswordReset />} />
       </Route>
     </Routes>
   );

@@ -68,6 +68,79 @@ export async function login(
 }
 
 
+/*
+=========================================
+비밀번호 재설정
+=========================================
+*/
+
+async function postJsonWithErrors(
+  path,
+  data
+) {
+  const response =
+    await fetch(
+      `${BASE_URL}${path}`,
+      {
+        method: "POST",
+
+        headers: {
+          "Content-Type":
+            "application/json",
+        },
+
+        body:
+          JSON.stringify(
+            data
+          ),
+      }
+    );
+
+  const result =
+    await response.json();
+
+  if (!response.ok) {
+    const error =
+      new Error(
+        "요청에 실패했습니다."
+      );
+
+    error.data =
+      result;
+
+    throw error;
+  }
+
+  return result;
+}
+
+
+export function sendPasswordResetCode(
+  email
+) {
+  return postJsonWithErrors(
+    "/api/users/password/send-code/",
+    { email }
+  );
+}
+
+
+export function resetPassword({
+  email,
+  code,
+  newPassword,
+}) {
+  return postJsonWithErrors(
+    "/api/users/password/reset/",
+    {
+      email,
+      code,
+      new_password: newPassword,
+    }
+  );
+}
+
+
 
 async function authenticatedRequest(
   path,

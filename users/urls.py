@@ -21,6 +21,18 @@ urlpatterns = [
     ),
 
     path(
+        "password/send-code/",
+        views.password_reset_send_code,
+        name="password-reset-send-code"
+    ),
+
+    path(
+        "password/reset/",
+        views.password_reset_confirm,
+        name="password-reset-confirm"
+    ),
+
+    path(
         "login/",
         TokenObtainPairView.as_view(),
         name="token-obtain-pair"
