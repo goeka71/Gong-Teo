@@ -127,6 +127,10 @@ class Review(models.Model):
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="reviews"
     )
+    # 원데이 신청(oneday.OnedayApplication)으로 참여한 프로그램에 대한
+    # 리뷰인 경우 True. 조회 화면에서 프로그램명 앞에 "(원데이)" 를
+    # 붙이는 데만 쓰이는 표시용 플래그라 원본 신청 건과의 FK 연결은 두지 않는다.
+    is_oneday = models.BooleanField("원데이 리뷰 여부", default=False)
     rating = models.IntegerField("별점")
     content = models.TextField("리뷰내용", blank=True)
     image = models.ImageField(
