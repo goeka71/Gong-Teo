@@ -1396,6 +1396,14 @@ useEffect(() => {
                 programsLoading={
                   programsLoading
                 }
+
+                onedayApplications={
+                  onedayApplications
+                }
+
+                onedayApplicationsLoading={
+                  onedayApplicationsLoading
+                }
               />
             )}
 
@@ -2533,6 +2541,8 @@ function ProgramInfoRow({
 function MyReviewsView({
   myPrograms,
   programsLoading,
+  onedayApplications,
+  onedayApplicationsLoading,
 }) {
   const [
     reviews,
@@ -2576,21 +2586,73 @@ function MyReviewsView({
 
 
   /*
+  리뷰 작성 대상 = 내가 등록한 수강 프로그램 + 내가 신청해서
+  배정(assigned)받은 원데이 클래스. 서로 다른 테이블(MyProgram /
+  OnedayApplication)이라 공통 모양으로 합쳐서 드롭다운 하나에 보여준다.
+  id 는 두 출처가 섞여도 겹치지 않도록 "mp-"/"od-" 접두어를 붙인
+  합성 키를 쓴다.
+  */
+  const reviewTargets = useMemo(
+    () => {
+      const fromPrograms = myPrograms.map(
+        (program) => ({
+          id: `mp-${program.id}`,
+          isOneday: false,
+          program: program.program,
+          program_name: program.program_name,
+          facility_id: program.facility_id,
+          facility_name: program.facility_name,
+          subfacility: program.subfacility,
+          subfacility_name: program.subfacility_name || "",
+          program_day: program.program_day,
+          program_time: program.program_time,
+        })
+      );
+
+      const fromOneday = onedayApplications
+        .filter(
+          (application) =>
+            application.apply_result === "assigned"
+        )
+        .map(
+          (application) => ({
+            id: `od-${application.id}`,
+            isOneday: true,
+            program: application.program,
+            program_name: application.program_name,
+            facility_id: application.facility,
+            facility_name: application.facility_name,
+            subfacility: application.subfacility,
+            subfacility_name: application.subfacility_name || "",
+            program_day: application.program_day,
+            program_time: application.program_time,
+          })
+        );
+
+      return [...fromPrograms, ...fromOneday];
+    },
+    [myPrograms, onedayApplications]
+  );
+
+
+  /*
   Review.program(facilities.Program FK)이 생겨서 더 이상
   facility/subfacility 문자열 대조로 프로그램을 추측할 필요가 없다.
   program_name 은 서버가 이미 계산해서 내려주고,
-  myProgramId(내 수강 등록 건 id)만 "리뷰 수정" 모달의
-  드롭다운 초기값으로 쓰기 위해 program id 로 역매칭한다.
+  targetId(리뷰 작성 대상 합성 키)만 "리뷰 수정" 모달의
+  드롭다운 초기값으로 쓰기 위해 program id + is_oneday 로 역매칭한다.
   */
   const normalizeReview = (
     review
   ) => {
-    const matchedMyProgram =
+    const matchedTarget =
       review.program
-        ? myPrograms.find(
-            (program) =>
-              String(program.program) ===
-              String(review.program)
+        ? reviewTargets.find(
+            (target) =>
+              String(target.program) ===
+                String(review.program) &&
+              Boolean(target.isOneday) ===
+                Boolean(review.is_oneday)
           )
         : null;
 
@@ -2612,17 +2674,27 @@ function MyReviewsView({
       id:
         review.id,
 
-      myProgramId:
-        matchedMyProgram?.id ||
+      targetId:
+        matchedTarget?.id ||
         "",
 
       programId:
         review.program ||
         "",
 
+      isOneday:
+        Boolean(
+          review.is_oneday
+        ),
+
       programName:
-        review.program_name ||
-        "",
+        review.program_name
+          ? `${
+              review.is_oneday
+                ? "(원데이) "
+                : ""
+            }${review.program_name}`
+          : "",
 
       facilityId:
         review.facility,
@@ -2666,7 +2738,10 @@ function MyReviewsView({
   ========================= */
 
   useEffect(() => {
-    if (programsLoading) {
+    if (
+      programsLoading ||
+      onedayApplicationsLoading
+    ) {
       return;
     }
 
@@ -2709,7 +2784,8 @@ function MyReviewsView({
 
   }, [
     programsLoading,
-    myPrograms,
+    onedayApplicationsLoading,
+    reviewTargets,
   ]);
 
 
@@ -2828,6 +2904,13 @@ function MyReviewsView({
             Number(
               data.programId
             )
+          );
+
+          formData.append(
+            "is_oneday",
+            data.isOneday
+              ? "true"
+              : "false"
           );
         }
 
@@ -3073,6 +3156,7 @@ function MyReviewsView({
 
 
       {programsLoading ||
+      onedayApplicationsLoading ||
       reviewsLoading ? (
         <div
           className="card my-reviews-style-09"
@@ -3103,14 +3187,14 @@ function MyReviewsView({
               <p
                 className="my-reviews-style-05"
               >
-                내가 등록한 수강 프로그램에 리뷰를 남겨보세요.
+                내가 등록한 수강 프로그램이나 신청한 원데이 클래스에 리뷰를 남겨보세요.
               </p>
 
               <button
                 type="button"
                 className="btn btn-primary"
                 disabled={
-                  myPrograms.length === 0
+                  reviewTargets.length === 0
                 }
                 onClick={
                   openWrite
@@ -3119,12 +3203,12 @@ function MyReviewsView({
                 리뷰 쓰기
               </button>
 
-              {myPrograms.length ===
+              {reviewTargets.length ===
                 0 && (
                 <p
                   className="my-reviews-style-04"
                 >
-                  리뷰 작성 전 수강 프로그램을 먼저 등록해주세요.
+                  리뷰 작성 전 수강 프로그램 등록 또는 원데이 신청을 먼저 진행해주세요.
                 </p>
               )}
             </>
@@ -3183,14 +3267,14 @@ function MyReviewsView({
           <span
             className="my-reviews-style-01"
           >
-            내가 등록한 수강 프로그램에 리뷰를 남겨보세요.
+            내가 등록한 수강 프로그램이나 신청한 원데이 클래스에 리뷰를 남겨보세요.
           </span>
 
           <button
             type="button"
             className="btn btn-primary"
             disabled={
-              myPrograms.length ===
+              reviewTargets.length ===
               0
             }
             onClick={
@@ -3211,8 +3295,8 @@ function MyReviewsView({
           review={
             editingReview
           }
-          myPrograms={
-            myPrograms
+          programOptions={
+            reviewTargets
           }
           onClose={() => {
             setModalOpen(
@@ -3320,13 +3404,16 @@ function ReviewCard({
         </div>
 
 
-        <div
-          className="review-card-style-07"
-        >
-          {
-            review.programName
-          }
-        </div>
+        {review.programName && (
+
+          <div
+            className="review-card-style-07"
+          >
+            {
+              review.programName
+            }
+          </div>
+        )}
 
 
         <div
@@ -3403,17 +3490,17 @@ function ReviewCard({
 function ReviewFormModal({
   mode,
   review,
-  myPrograms,
+  programOptions,
   onClose,
   onSave,
 }) {
   const [
-    myProgramId,
-    setMyProgramId,
+    targetId,
+    setTargetId,
   ] = useState(
-    review?.myProgramId
+    review?.targetId
       ? String(
-          review.myProgramId
+          review.targetId
         )
       : ""
   );
@@ -3474,11 +3561,20 @@ function ReviewFormModal({
   ] = useState("");
 
 
-  const selectedMyProgram =
-    myPrograms.find(
-      (program) =>
-        String(program.id) ===
-        String(myProgramId)
+  // 시설 리뷰(program 없이 작성된 리뷰)는 "내가 등록한 수강 프로그램" 목록
+  // (programOptions)에 대응하는 항목이 존재하지 않는다. 수정 모달에서는
+  // 이런 리뷰를 프로그램 선택 없이, 원본 리뷰의 시설/세부시설 정보 그대로
+  // 수정할 수 있게 한다.
+  const isFacilityReview =
+    mode === "edit" &&
+    Boolean(review) &&
+    !review.programId;
+
+  const selectedTarget =
+    programOptions.find(
+      (option) =>
+        String(option.id) ===
+        String(targetId)
     );
 
 
@@ -3541,9 +3637,12 @@ function ReviewFormModal({
   const handleSubmit =
     () => {
 
-      if (!selectedMyProgram) {
+      if (
+        !isFacilityReview &&
+        !selectedTarget
+      ) {
         setFormError(
-          "수강 프로그램을 선택해주세요."
+          "리뷰를 작성할 프로그램을 선택해주세요."
         );
 
         return;
@@ -3572,27 +3671,67 @@ function ReviewFormModal({
       }
 
 
+      if (isFacilityReview) {
+        onSave({
+          targetId: "",
+
+          programId: "",
+
+          programName: "",
+
+          isOneday: false,
+
+          facilityId:
+            review.facilityId,
+
+          facilityName:
+            review.facilityName,
+
+          subfacilityId:
+            review.subfacilityId,
+
+          subfacilityName:
+            review.subfacilityName ||
+            "",
+
+          rating,
+
+          content:
+            content.trim(),
+
+          imageFile,
+
+          imageRemoved,
+        });
+
+        return;
+      }
+
+
       onSave({
-        myProgramId:
-          selectedMyProgram.id,
+        targetId:
+          selectedTarget.id,
 
         programId:
-          selectedMyProgram.program,
+          selectedTarget.program,
 
         programName:
-          selectedMyProgram.program_name,
+          selectedTarget.program_name,
+
+        isOneday:
+          selectedTarget.isOneday,
 
         facilityId:
-          selectedMyProgram.facility_id,
+          selectedTarget.facility_id,
 
         facilityName:
-          selectedMyProgram.facility_name,
+          selectedTarget.facility_name,
 
         subfacilityId:
-          selectedMyProgram.subfacility,
+          selectedTarget.subfacility,
 
         subfacilityName:
-          selectedMyProgram.subfacility_name ||
+          selectedTarget.subfacility_name ||
           "",
 
         rating,
@@ -3635,7 +3774,9 @@ function ReviewFormModal({
             <p
               className="review-form-modal-style-14"
             >
-              내가 등록한 수강 프로그램에 대한 후기를 남겨주세요.
+              {isFacilityReview
+                ? "시설 이용 후기를 수정해주세요."
+                : "내가 등록한 수강 프로그램에 대한 후기를 남겨주세요."}
             </p>
 
           </div>
@@ -3660,67 +3801,7 @@ function ReviewFormModal({
           className="review-form-modal-style-12"
         >
 
-          <div className="form-group">
-
-            <label className="form-label">
-              수강 프로그램
-            </label>
-
-
-            <select
-              className="select"
-
-              value={
-                myProgramId
-              }
-
-              onChange={(
-                event
-              ) => {
-                setMyProgramId(
-                  event.target.value
-                );
-
-                setFormError(
-                  ""
-                );
-              }}
-            >
-
-              <option value="">
-                리뷰를 작성할 프로그램을 선택해주세요
-              </option>
-
-
-              {myPrograms.map(
-                (program) => (
-
-                  <option
-                    key={
-                      program.id
-                    }
-
-                    value={
-                      program.id
-                    }
-                  >
-                    {program.facility_name}
-                    {" · "}
-                    {program.program_name}
-
-                    {program.subfacility_name
-                      ? ` · ${program.subfacility_name}`
-                      : ""}
-                  </option>
-                )
-              )}
-
-            </select>
-
-          </div>
-
-
-          {selectedMyProgram && (
+          {isFacilityReview ? (
 
             <div
               className="review-form-modal-style-11"
@@ -3729,7 +3810,7 @@ function ReviewFormModal({
               <ReviewProgramRow
                 label="시설"
                 value={
-                  selectedMyProgram.facility_name
+                  review.facilityName
                 }
               />
 
@@ -3737,41 +3818,139 @@ function ReviewFormModal({
               <ReviewProgramRow
                 label="세부시설"
                 value={
-                  selectedMyProgram.subfacility_name ||
+                  review.subfacilityName ||
                   "없음"
                 }
               />
 
-
-              <ReviewProgramRow
-                label="프로그램"
-                value={
-                  selectedMyProgram.program_name
-                }
-              />
-
-
-              <ReviewProgramRow
-                label="요일"
-                value={
-                  selectedMyProgram.program_day
-                    ? selectedMyProgram.program_day
-                        .split(",")
-                        .join(" · ")
-                    : "-"
-                }
-              />
-
-
-              <ReviewProgramRow
-                label="시간"
-                value={
-                  selectedMyProgram.program_time ||
-                  "-"
-                }
-              />
-
             </div>
+
+          ) : (
+
+            <>
+
+              <div className="form-group">
+
+                <label className="form-label">
+                  수강 프로그램
+                </label>
+
+
+                <select
+                  className="select"
+
+                  value={
+                    targetId
+                  }
+
+                  onChange={(
+                    event
+                  ) => {
+                    setTargetId(
+                      event.target.value
+                    );
+
+                    setFormError(
+                      ""
+                    );
+                  }}
+                >
+
+                  <option value="">
+                    리뷰를 작성할 프로그램을 선택해주세요
+                  </option>
+
+
+                  {programOptions.map(
+                    (option) => (
+
+                      <option
+                        key={
+                          option.id
+                        }
+
+                        value={
+                          option.id
+                        }
+                      >
+                        {option.isOneday
+                          ? "(원데이) "
+                          : ""}
+                        {option.facility_name}
+                        {" · "}
+                        {option.program_name}
+
+                        {option.subfacility_name
+                          ? ` · ${option.subfacility_name}`
+                          : ""}
+                      </option>
+                    )
+                  )}
+
+                </select>
+
+              </div>
+
+
+              {selectedTarget && (
+
+                <div
+                  className="review-form-modal-style-11"
+                >
+
+                  <ReviewProgramRow
+                    label="시설"
+                    value={
+                      selectedTarget.facility_name
+                    }
+                  />
+
+
+                  <ReviewProgramRow
+                    label="세부시설"
+                    value={
+                      selectedTarget.subfacility_name ||
+                      "없음"
+                    }
+                  />
+
+
+                  <ReviewProgramRow
+                    label="프로그램"
+                    value={
+                      `${
+                        selectedTarget.isOneday
+                          ? "(원데이) "
+                          : ""
+                      }${selectedTarget.program_name}`
+                    }
+                  />
+
+
+                  <ReviewProgramRow
+                    label="요일"
+                    value={
+                      selectedTarget.program_day
+                        ? selectedTarget.program_day
+                            .split(",")
+                            .join(" · ")
+                        : "-"
+                    }
+                  />
+
+
+                  <ReviewProgramRow
+                    label="시간"
+                    value={
+                      selectedTarget.program_time ||
+                      "-"
+                    }
+                  />
+
+                </div>
+              )}
+
+            </>
           )}
 
 
@@ -4128,13 +4307,20 @@ function ReviewDeleteModal({
               review.facilityName
             }
           </strong>
-          의{" "}
-          <strong>
-            {
-              review.programName
-            }
-          </strong>
-          에 작성한 리뷰가 삭제됩니다.
+          {review.programName ? (
+            <>
+              의{" "}
+              <strong>
+                {
+                  review.programName
+                }
+              </strong>
+              에
+            </>
+          ) : (
+            "에"
+          )}
+          {" "}작성한 리뷰가 삭제됩니다.
         </p>
 
 
@@ -5150,7 +5336,7 @@ function FavoriteFacilitiesView() {
               <div className="wfv-card-top">
                 <span className="wfv-icon">🏟️</span>
                 <span className="wfv-heart">
-                  <HeartIcon filled size={14} />
+                  <HeartIcon filled size={20} />
                 </span>
               </div>
 

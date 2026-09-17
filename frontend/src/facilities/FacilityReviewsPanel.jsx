@@ -63,7 +63,9 @@ function Stars({ rating }) {
 }
 
 function reviewCategoryLabel(review) {
-  return review.program ? `프로그램 · ${review.program_name}` : "시설 리뷰";
+  if (!review.program) return "시설 리뷰";
+  const prefix = review.is_oneday ? "(원데이) " : "";
+  return `프로그램 · ${prefix}${review.program_name}`;
 }
 
 // "2026-09-16T10:30:00" -> "2026-09-16 10:30" (작성일시 표시용).

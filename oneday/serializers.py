@@ -248,6 +248,33 @@ class OnedayApplicationSerializer(serializers.ModelSerializer):
         read_only=True
     )
 
+    # ======================================
+    # 마이페이지 "리뷰 쓰기"에서 원데이 신청 건을 리뷰 대상으로
+    # 선택할 수 있도록 program/facility/subfacility id 를 내려준다.
+    # 세부시설(subfacility)은 등록 시 비워둘 수 있어 null 이 될 수
+    # 있으므로 SerializerMethodField 로 안전하게 처리한다.
+    # ======================================
+
+    program = serializers.SerializerMethodField()
+    facility = serializers.SerializerMethodField()
+    subfacility = serializers.SerializerMethodField()
+
+    subfacility_name = serializers.CharField(
+        source="post.enroll.subfacility.subfacility_name",
+        read_only=True,
+        allow_null=True,
+        default=None,
+    )
+
+    def get_program(self, obj):
+        return obj.post.enroll.program_id
+
+    def get_facility(self, obj):
+        return obj.post.enroll.program.facility_id
+
+    def get_subfacility(self, obj):
+        return obj.post.enroll.subfacility_id
+
     class Meta:
         model = OnedayApplication
 
@@ -261,10 +288,15 @@ class OnedayApplicationSerializer(serializers.ModelSerializer):
             "transfer_date",
             "post_status",
 
+            "program",
             "program_name",
             "program_day",
             "program_time",
 
+            "facility",
             "facility_name",
             "facility_addr",
+
+            "subfacility",
+            "subfacility_name",
         ]

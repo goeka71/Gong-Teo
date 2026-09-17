@@ -107,6 +107,7 @@ class FacilityReviewSerializer(serializers.ModelSerializer):
             "subfacility_name",
             "program",
             "program_name",
+            "is_oneday",
             "rating",
             "content",
             "image",
