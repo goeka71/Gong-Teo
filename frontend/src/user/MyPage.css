@@ -1317,3 +1317,69 @@
 .form-group {
   margin-bottom: 18px;
 }
+
+.time-select-wrap {
+  position: relative;
+  width: 100%;
+}
+
+.time-select-button {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  text-align: left;
+}
+
+.time-select-icon {
+  font-size: 18px;
+  color: #111827;
+}
+
+.time-select-dropdown {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  z-index: 1000;
+
+  width: 360px;
+  padding: 10px;
+
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+
+  background: #ffffff;
+  border: 1px solid #dfe5ec;
+  border-radius: 10px;
+
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+}
+
+.time-option {
+  height: 34px;
+
+  border: 1px solid #e1e6ed;
+  border-radius: 7px;
+
+  background: #ffffff;
+  color: #303846;
+
+  font-family: inherit;
+  font-size: 13px;
+
+  cursor: pointer;
+}
+
+.time-option:hover {
+  background: #f2f6fb;
+  border-color: #b9c9dc;
+}
+
+.time-option.active {
+  background: #1d4e89;
+  border-color: #1d4e89;
+  color: #ffffff;
+  font-weight: 700;
+}

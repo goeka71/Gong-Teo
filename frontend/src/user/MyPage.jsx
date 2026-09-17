@@ -372,6 +372,83 @@ function MyPageLoginRequired({
   );
 }
 
+function TimeSelect({
+  value,
+  onChange,
+  placeholder = "시간 선택",
+}) {
+  const [open, setOpen] = useState(false);
+
+  const times = Array.from(
+    { length: 48 },
+    (_, index) => {
+      const hour = String(
+        Math.floor(index / 2)
+      ).padStart(2, "0");
+
+      const minute =
+        index % 2 === 0 ? "00" : "30";
+
+      return `${hour}:${minute}`;
+    }
+  );
+
+  return (
+    <div className="time-select-wrap">
+
+      <button
+        type="button"
+        className="input time-select-button"
+        onClick={() =>
+          setOpen((prev) => !prev)
+        }
+      >
+        <span
+          className={
+            value
+              ? "time-select-value"
+              : "time-select-placeholder"
+          }
+        >
+          {value || placeholder}
+        </span>
+
+        <span className="time-select-icon">
+          ◷
+        </span>
+      </button>
+
+
+      {open && (
+        <div className="time-select-dropdown">
+
+          {times.map((time) => (
+
+            <button
+              key={time}
+              type="button"
+              className={
+                value === time
+                  ? "time-option active"
+                  : "time-option"
+              }
+              onClick={() => {
+                onChange(time);
+                setOpen(false);
+              }}
+            >
+              {time}
+            </button>
+
+          ))}
+
+        </div>
+      )}
+
+    </div>
+  );
+}
+
 function MyPage() {
   const [searchParams] = useSearchParams();
   const isLoggedIn =
@@ -4864,63 +4941,34 @@ function ProgramRegisterView({
 
             <div className="form-group">
 
-              <label className="form-label">
-                수강 시간
-              </label>
+  <label className="form-label">
+    수강 시간
+  </label>
 
 
-              <div
-                className="program-register-style-11"
-              >
+  <div className="program-register-style-11">
 
-                <input
-                  className="input"
-
-                  type="time"
-
-                  value={
-                    startTime
-                  }
-
-                  onChange={(
-                    event
-                  ) =>
-                    setStartTime(
-                      event.target.value
-                    )
-                  }
-                />
+    <TimeSelect
+      value={startTime}
+      onChange={setStartTime}
+      placeholder="시작 시간"
+    />
 
 
-                <span
-                  className="program-register-style-10"
-                >
-                  ~
-                </span>
+    <span className="program-register-style-10">
+      ~
+    </span>
 
 
-                <input
-                  className="input"
+    <TimeSelect
+      value={endTime}
+      onChange={setEndTime}
+      placeholder="종료 시간"
+    />
 
-                  type="time"
+  </div>
 
-                  value={
-                    endTime
-                  }
-
-                  onChange={(
-                    event
-                  ) =>
-                    setEndTime(
-                      event.target.value
-                    )
-                  }
-                />
-
-              </div>
-
-            </div>
-
+</div>
 
             <div className="form-group">
 
