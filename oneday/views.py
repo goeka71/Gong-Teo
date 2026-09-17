@@ -229,6 +229,7 @@ def onedayapplication_list(request):
             "post__enroll",
             "post__enroll__program",
             "post__enroll__program__facility",
+            "post__enroll__subfacility",
             "user",
         ).order_by("-apply_at")
 
