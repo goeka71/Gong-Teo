@@ -14,6 +14,7 @@ import {
   createReview,
   updateReview,
   deleteReview as deleteReviewApi,
+  withdrawMyAccount,
 } from "../api/user";
 
 
@@ -5288,17 +5289,31 @@ function SettingsView({
 
   /* =========================
      회원 탈퇴 최종 처리
-
-     현재 프로젝트에는 회원 탈퇴 API가
-     아직 연결되어 있지 않으므로
-     확인창까지만 구현한다.
   ========================= */
-  const handleWithdraw = () => {
+  const handleWithdraw = async () => {
     setConfirmAction(null);
 
-    alert(
-      "회원 탈퇴 API는 아직 연결되지 않았습니다. 백엔드 탈퇴 API 연결 후 이 위치에서 실제 탈퇴 요청을 보내면 됩니다."
-    );
+    try {
+      await withdrawMyAccount();
+
+      localStorage.removeItem("accessToken");
+      localStorage.removeItem("refreshToken");
+      localStorage.removeItem("username");
+
+      /* Navbar에 로그인 상태 변경 알림 */
+      window.dispatchEvent(
+        new Event("auth-change")
+      );
+
+      /* 탈퇴 후 메인으로 이동 */
+      window.location.href = "/";
+    } catch (err) {
+      console.error("회원 탈퇴 오류:", err);
+
+      alert(
+        "회원 탈퇴에 실패했습니다. 잠시 후 다시 시도해주세요."
+      );
+    }
   };
 
   return (

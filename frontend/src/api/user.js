@@ -262,6 +262,16 @@ export function updateMyInfo(
 }
 
 
+export function withdrawMyAccount() {
+  return authenticatedRequest(
+    "/api/users/me/",
+    {
+      method: "DELETE",
+    }
+  );
+}
+
+
 export function getMyPrograms() {
   return authenticatedRequest(
     "/api/users/my-programs/",

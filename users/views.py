@@ -132,12 +132,16 @@ def coin_history_list(request):
     })
 
 
-@api_view(["GET", "PATCH"])
+@api_view(["GET", "PATCH", "DELETE"])
 @permission_classes([IsAuthenticated])
 def my_info(request):
     if request.method == "GET":
         serializer = UserSerializer(request.user)
         return Response(serializer.data)
+
+    if request.method == "DELETE":
+        request.user.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
     serializer = UserUpdateSerializer(
         request.user,
