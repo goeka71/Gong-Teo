@@ -33,6 +33,13 @@ class SignupSerializer(serializers.ModelSerializer):
             "phone",
         ]
 
+    def validate_email(self, value):
+        if value and User.objects.filter(email=value).exists():
+            raise serializers.ValidationError(
+                "등록된 이메일입니다."
+            )
+        return value
+
     def create(self, validated_data):
         user = User.objects.create_user(
             username=validated_data["username"],
