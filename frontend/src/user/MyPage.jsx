@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 
 import {
+  login,
   getMyInfo,
   getMyPrograms,
   getFacilitiesByRegion,
@@ -211,9 +212,170 @@ function isApplicationOnDate(application, date) {
 /* =========================
    메인 MyPage
 ========================= */
+function MyPageLoginRequired({
+  onLoginSuccess,
+}) {
+  const navigate = useNavigate();
+
+  const [username, setUsername] =
+    useState("");
+
+  const [password, setPassword] =
+    useState("");
+
+  const [loginError, setLoginError] =
+    useState("");
+
+  const [submitting, setSubmitting] =
+    useState(false);
+
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    setLoginError("");
+
+    try {
+      setSubmitting(true);
+
+      await login({
+        username: username.trim(),
+        password,
+      });
+
+      localStorage.setItem(
+        "username",
+        username.trim()
+      );
+
+      window.dispatchEvent(
+        new Event("auth-change")
+      );
+
+      await onLoginSuccess();
+
+    } catch (error) {
+      console.error(
+        "로그인 오류:",
+        error
+      );
+
+      setLoginError(
+        "아이디 또는 비밀번호를 확인해주세요."
+      );
+
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+
+  return (
+    <div className="mypage-login-page">
+
+      <div className="mypage-login-card">
+
+        <h1 className="auth-logo">
+          공 [터]
+        </h1>
+
+        <p className="auth-description">
+          마이페이지를 이용하기 위해서는
+          <br />
+          로그인이 필요합니다.
+        </p>
+
+
+        <form
+          onSubmit={handleSubmit}
+          className="auth-form"
+        >
+
+          <input
+            className="auth-input"
+            type="text"
+            value={username}
+            onChange={(e) => {
+              setUsername(e.target.value);
+              setLoginError("");
+            }}
+            placeholder="아이디"
+            autoComplete="username"
+            required
+          />
+
+          <input
+            className="auth-input"
+            type="password"
+            value={password}
+            onChange={(e) => {
+              setPassword(e.target.value);
+              setLoginError("");
+            }}
+            placeholder="비밀번호"
+            autoComplete="current-password"
+            required
+          />
+
+
+          {loginError && (
+            <div className="auth-error">
+              {loginError}
+            </div>
+          )}
+
+
+          <button
+            type="submit"
+            className="auth-primary-button"
+            disabled={submitting}
+          >
+            {submitting
+              ? "로그인 중..."
+              : "로그인"}
+          </button>
+
+        </form>
+
+
+        <div className="auth-links">
+
+          <button
+            type="button"
+            className="auth-text-button"
+            onClick={() =>
+              navigate("/signup")
+            }
+          >
+            회원가입
+          </button>
+
+          <span className="auth-link-divider">
+            |
+          </span>
+
+          <button
+            type="button"
+            className="auth-text-button"
+            onClick={() =>
+              navigate("/password-reset")
+            }
+          >
+            아이디/비밀번호 변경
+          </button>
+
+        </div>
+
+      </div>
+
+    </div>
+  );
+}
 
 function MyPage() {
   const [searchParams] = useSearchParams();
+  const isLoggedIn =
+  !!localStorage.getItem("accessToken");
 
   const [user, setUser] =
     useState(null);
@@ -361,25 +523,31 @@ function MyPage() {
      사용자 정보 불러오기
   ========================= */
 
-  useEffect(() => {
-    const loadMyInfo = async () => {
-      try {
-        const data =
-          await getMyInfo();
+  const loadMyInfo = async () => {
+  try {
+    const data =
+      await getMyInfo();
 
-        setUser(data);
-      } catch (err) {
-        console.error(err);
+    setUser(data);
+    setError("");
 
-        setError(
-          "회원 정보를 불러오지 못했습니다."
-        );
-      }
-    };
+  } catch (err) {
+    console.error(err);
 
-    loadMyInfo();
-  }, []);
+    setError(
+      "회원 정보를 불러오지 못했습니다."
+    );
+  }
+};
 
+
+useEffect(() => {
+  if (!isLoggedIn) {
+    return;
+  }
+
+  loadMyInfo();
+}, []);
 
   /* =========================
      내 수강 프로그램 조회
@@ -956,6 +1124,21 @@ function MyPage() {
       }
     };
 
+    if (!isLoggedIn) {
+  return (
+    <div className="page">
+      <div className="page-container">
+
+        <MyPageLoginRequired
+          onLoginSuccess={
+            loadMyInfo
+          }
+        />
+
+      </div>
+    </div>
+  );
+}
 
   if (error) {
     return (
