@@ -5046,7 +5046,7 @@ function FavoriteFacilitiesView() {
               <div className="wfv-card-top">
                 <span className="wfv-icon">🏟️</span>
                 <span className="wfv-heart">
-                  <HeartIcon filled size={14} />
+                  <HeartIcon filled size={20} />
                 </span>
               </div>
 
