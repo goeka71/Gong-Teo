@@ -5867,37 +5867,37 @@ function SettingsView({
 
 
       <SettingsSection title="계정">
-        <SettingsActionRow
-          title="로그아웃"
-          description="현재 기기에서 로그인된 계정을 로그아웃합니다."
-        >
-          <button
-            type="button"
-            className="settings-account-button"
-            onClick={() =>
-              setConfirmAction("logout")
-            }
-          >
-            로그아웃
-          </button>
-        </SettingsActionRow>
+  <SettingsActionRow
+    title="로그아웃"
+    description="현재 기기에서 로그인된 계정을 로그아웃합니다."
+  >
+    <button
+      type="button"
+      className="btn btn-outline settings-red-button"
+      onClick={() =>
+        setConfirmAction("logout")
+      }
+    >
+      로그아웃
+    </button>
+  </SettingsActionRow>
 
-        <SettingsActionRow
-          title="회원 탈퇴"
-          description="탈퇴 후 회원 정보는 복구할 수 없습니다."
-          danger
-        >
-          <button
-            type="button"
-            className="settings-account-button settings-account-button--danger"
-            onClick={() =>
-              setConfirmAction("withdraw")
-            }
-          >
-            회원 탈퇴
-          </button>
-        </SettingsActionRow>
-      </SettingsSection>
+  <SettingsActionRow
+    title="회원 탈퇴"
+    description="탈퇴 후 회원 정보는 복구할 수 없습니다."
+    danger
+  >
+    <button
+      type="button"
+      className="btn btn-outline settings-red-button"
+      onClick={() =>
+        setConfirmAction("withdraw")
+      }
+    >
+      회원 탈퇴
+    </button>
+  </SettingsActionRow>
+</SettingsSection>
 
 
       {/* =====================
