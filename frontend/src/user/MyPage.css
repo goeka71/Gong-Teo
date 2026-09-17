@@ -1307,3 +1307,13 @@
 .settings-red-button {
   color: #dc2626;
 }
+
+
+.form-label {
+  display: block;
+  margin-bottom: 5px;
+}
+
+.form-group {
+  margin-bottom: 18px;
+}
