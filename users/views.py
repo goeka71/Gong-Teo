@@ -72,7 +72,7 @@ def password_reset_send_code(request):
     PasswordResetCode.objects.create(user=user, code=code)
 
     send_mail(
-        subject="[공터] 비밀번호 재설정 인증번호",
+        subject="공 [터] 비밀번호 재설정 인증번호",
         message=(
             f"인증번호는 {code} 입니다.\n"
             f"인증번호는 발급 후 {PasswordResetCode.CODE_VALID_MINUTES}분간 유효합니다."

@@ -219,11 +219,11 @@ function Signup({
         </button>
 
         <h1 className="auth-logo">
-          공터
+          공 [터]
         </h1>
 
         <p className="auth-description">
-          공터 회원가입
+          공 [터] 회원가입
         </p>
 
         <form
