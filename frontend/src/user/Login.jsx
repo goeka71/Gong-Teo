@@ -107,7 +107,7 @@ function Login({
 
         {/* 로고 */}
         <h1 className="auth-logo">
-          체육ON
+          공터
         </h1>
 
         <p className="auth-description">
