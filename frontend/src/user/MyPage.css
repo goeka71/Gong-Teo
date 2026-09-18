@@ -1383,3 +1383,606 @@
   color: #ffffff;
   font-weight: 700;
 }
+
+/* =========================================================
+   MyPage 모바일 UI
+========================================================= */
+
+.mypage-mobile-home,
+.mypage-mobile-back {
+  display: none;
+}
+
+
+@media (max-width: 768px) {
+
+  /* =========================
+     전체 레이아웃
+  ========================= */
+
+  .mypage-style-02 {
+    width: 100%;
+    max-width: none;
+
+    margin: 0;
+    padding: 18px 16px 50px;
+
+    display: block;
+
+    box-sizing: border-box;
+  }
+
+
+  /* PC 사이드바 숨김 */
+  .mypage-sidebar-style-07 {
+    display: none;
+  }
+
+
+  /* 모바일 홈 */
+  .mypage-mobile-home {
+    display: block;
+    width: 100%;
+  }
+
+
+  /* 모바일 홈일 때 내용 숨김 */
+  .mypage-mobile-content-hidden {
+    display: none;
+  }
+
+
+  /* =========================
+     프로필
+  ========================= */
+
+  .mypage-mobile-profile {
+    display: grid;
+
+    grid-template-columns:
+      48px
+      minmax(0, 1fr)
+      auto;
+
+    gap: 12px;
+    align-items: center;
+
+    padding: 18px;
+
+    border: 1px solid #e5e9ef;
+    border-radius: 16px;
+
+    background: #ffffff;
+
+    box-shadow:
+      0 4px 16px
+      rgba(15, 23, 42, 0.05);
+  }
+
+
+  .mypage-mobile-profile-icon {
+    width: 48px;
+    height: 48px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 50%;
+
+    background: #edf2f7;
+
+    font-size: 21px;
+  }
+
+
+  .mypage-mobile-profile-info {
+    min-width: 0;
+  }
+
+
+  .mypage-mobile-profile-info strong {
+    display: block;
+
+    color: #202632;
+
+    font-size: 17px;
+    font-weight: 800;
+  }
+
+
+  .mypage-mobile-profile-info span {
+    display: block;
+
+    margin-top: 4px;
+
+    color: #8b95a1;
+
+    font-size: 12px;
+  }
+
+
+  .mypage-mobile-coin {
+    padding: 7px 10px;
+
+    border-radius: 20px;
+
+    background: #fff3d6;
+    color: #8a6200;
+
+    font-size: 12px;
+    font-weight: 800;
+
+    white-space: nowrap;
+  }
+
+
+  /* =========================
+     메뉴 그룹
+  ========================= */
+
+  .mypage-mobile-section {
+    margin-top: 28px;
+  }
+
+
+  .mypage-mobile-section h2 {
+    margin: 0 0 12px;
+
+    color: #303846;
+
+    font-size: 15px;
+    font-weight: 800;
+  }
+
+
+  .mypage-mobile-menu-grid {
+    display: grid;
+
+    grid-template-columns:
+      repeat(2, minmax(0, 1fr));
+
+    gap: 11px;
+  }
+
+
+  .mypage-mobile-menu-card {
+    min-height: 112px;
+
+    padding: 16px 14px;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: flex-start;
+
+    border: 1px solid #e2e7ee;
+    border-radius: 14px;
+
+    background: #ffffff;
+    color: #303846;
+
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 700;
+
+    line-height: 1.45;
+    text-align: left;
+
+    cursor: pointer;
+  }
+
+
+  .mypage-mobile-menu-card:active {
+    background: #f5f8fc;
+  }
+
+
+  .mypage-mobile-menu-icon {
+    width: 38px;
+    height: 38px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 10px;
+
+    background: #edf3fa;
+    color: #1d4e89;
+
+    font-size: 19px;
+    font-weight: 800;
+  }
+
+
+  /* 환경설정 */
+  .mypage-mobile-settings {
+    width: 100%;
+
+    margin-top: 24px;
+    padding: 17px 18px;
+
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    border: 1px solid #e2e7ee;
+    border-radius: 14px;
+
+    background: #ffffff;
+    color: #303846;
+
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 700;
+
+    cursor: pointer;
+  }
+
+
+  .mypage-mobile-settings > span:first-child {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+
+  .mypage-mobile-settings-icon {
+    font-size: 18px;
+  }
+
+
+  /* =========================
+     메뉴 상세 화면
+  ========================= */
+
+  .mypage-mobile-back {
+    display: inline-flex;
+
+    align-items: center;
+
+    margin: 0 0 20px;
+    padding: 0;
+
+    border: none;
+
+    background: transparent;
+    color: #526071;
+
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 700;
+
+    cursor: pointer;
+  }
+
+
+  .mypage-style-01 {
+    width: 100%;
+  }
+
+
+  .mypage-style-01 .page-title {
+    font-size: 23px;
+    line-height: 1.35;
+  }
+
+
+  .mypage-style-01 .page-description {
+    font-size: 13px;
+    line-height: 1.6;
+  }
+
+
+  .mypage-style-01 .card-body {
+    padding: 16px;
+  }
+
+
+  /* =========================
+     수강 프로그램 현황
+  ========================= */
+
+  .program-status-style-24 {
+    flex-direction: column;
+    align-items: stretch;
+
+    gap: 14px;
+  }
+
+
+  .program-status-style-24 .btn {
+    width: 100%;
+  }
+
+
+  .program-status-style-23 {
+    grid-template-columns: 1fr;
+
+    gap: 14px;
+  }
+
+
+  .program-status-style-22 {
+    gap: 8px;
+
+    margin-bottom: 15px;
+  }
+
+
+  .program-status-style-20 {
+    font-size: 18px;
+  }
+
+
+  .program-status-style-18 button {
+    min-height: 54px !important;
+
+    padding: 4px !important;
+
+    font-size: 11px !important;
+  }
+
+
+  /* 달력 안 일정 글자는 모바일에서 숨기고
+     날짜 선택 후 아래 상세 영역에서 확인 */
+  .program-status-style-17 {
+    display: none;
+  }
+
+
+  .program-status-style-05 {
+    grid-template-columns: 1fr;
+  }
+
+
+  .program-status-style-04 {
+    padding: 15px;
+  }
+
+
+  /* =========================
+     수강 프로그램 등록
+  ========================= */
+
+  .program-register-style-13 {
+    grid-template-columns: 1fr;
+
+    gap: 16px;
+  }
+
+
+  .program-register-style-04 {
+    position: static;
+  }
+
+
+  .program-register-style-11 {
+    grid-template-columns: 1fr;
+
+    gap: 8px;
+  }
+
+
+  .program-register-style-10 {
+    display: none;
+  }
+
+
+  .program-register-style-09 {
+    gap: 6px;
+  }
+
+
+  .input,
+  .select {
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+
+
+  /* 우리가 만든 시간 선택창도 모바일 대응 */
+  .time-select-dropdown {
+    width:
+      min(
+        340px,
+        calc(100vw - 48px)
+      );
+
+    max-height: 260px;
+
+    overflow-y: auto;
+
+    grid-template-columns:
+      repeat(3, 1fr);
+  }
+
+
+  /* =========================
+     내가 쓴 리뷰
+  ========================= */
+
+  .my-reviews-style-14 {
+    flex-direction: column;
+    align-items: flex-start;
+
+    gap: 12px;
+  }
+
+
+  .my-reviews-style-10 {
+    flex-wrap: wrap;
+  }
+
+
+  .review-card-style-13 {
+    grid-template-columns:
+      72px
+      minmax(0, 1fr);
+
+    gap: 12px;
+
+    padding: 14px;
+  }
+
+
+  .review-card-style-12 {
+    width: 72px;
+    height: 72px;
+  }
+
+
+  .review-card-style-03 {
+    grid-column: 1 / -1;
+
+    grid-template-columns:
+      1fr 1fr;
+  }
+
+
+  .my-reviews-style-02 {
+    flex-direction: column;
+    align-items: flex-start;
+
+    gap: 14px;
+
+    padding: 17px;
+  }
+
+
+  /* 리뷰 작성 팝업 */
+  .review-form-modal-style-18 {
+    padding: 14px;
+  }
+
+
+  .review-form-modal-style-17 {
+    max-height: 92vh;
+
+    border-radius: 14px;
+  }
+
+
+  .review-form-modal-style-16,
+  .review-form-modal-style-12,
+  .review-form-modal-style-01 {
+    padding-left: 17px;
+    padding-right: 17px;
+  }
+
+
+  .review-delete-modal-style-05 {
+    width: calc(100% - 32px);
+
+    box-sizing: border-box;
+  }
+
+
+  /* =========================
+     찜한 시설
+  ========================= */
+
+  .wfv-grid {
+    grid-template-columns: 1fr;
+
+    gap: 12px;
+  }
+
+
+  .wfv-card {
+    padding: 16px;
+  }
+
+
+  /* =========================
+     환경설정
+  ========================= */
+
+  .settings-view-style-13 {
+    margin-bottom: 25px;
+  }
+
+
+  .settings-view-style-12 {
+    font-size: 24px;
+  }
+
+
+  .settings-view-style-10 {
+    margin-bottom: 30px;
+  }
+
+
+  .settings-form-row-style-04 {
+    grid-template-columns: 1fr;
+
+    gap: 10px;
+
+    min-height: 0;
+
+    padding: 18px 0;
+  }
+
+
+  .settings-view-style-05,
+  .settings-view-style-06 {
+    max-width: none;
+  }
+
+
+  .settings-view-style-04,
+  .settings-view-style-03 {
+    margin:
+      10px 0 0;
+  }
+
+
+  .settings-view-style-02 {
+    justify-content: stretch;
+  }
+
+
+  .settings-view-style-01 {
+    width: 100%;
+  }
+
+
+  .settings-action-row-style-02 {
+    flex-direction: column;
+
+    align-items: stretch;
+
+    gap: 14px;
+  }
+
+
+  .settings-action-row-style-01 {
+    width: 100%;
+  }
+
+
+  .settings-action-row-style-01 button {
+    width: 100%;
+  }
+
+
+  /* =========================
+     로그인 필요 화면
+  ========================= */
+
+  .mypage-login-page {
+    min-height:
+      calc(100vh - 90px);
+
+    padding: 25px 16px;
+  }
+
+
+  .mypage-login-card {
+    padding: 30px 20px;
+
+    border-radius: 16px;
+  }
+
+}

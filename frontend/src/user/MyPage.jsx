@@ -462,6 +462,12 @@ function MyPage() {
 
   const [view, setView] =
     useState("programs");
+
+  const [
+  mobileHomeOpen,
+  setMobileHomeOpen,
+] = useState(true);
+
     useEffect(() => {
   const requestedView = searchParams.get("view");
 
@@ -1251,15 +1257,54 @@ useEffect(() => {
         >
 
           <MyPageSidebar
-            view={view}
-            setView={setView}
-            user={user}
-          />
+  view={view}
+  setView={setView}
+  user={user}
+/>
 
 
-          <main
-            className="mypage-style-01"
-          >
+<MobileMyPageHome
+  user={user}
+  open={mobileHomeOpen}
+  onSelect={(menuKey) => {
+    setView(menuKey);
+
+    setMobileHomeOpen(
+      false
+    );
+
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth",
+    });
+  }}
+/>
+
+
+<main
+  className={`mypage-style-01 ${
+    mobileHomeOpen
+      ? "mypage-mobile-content-hidden"
+      : ""
+  }`}
+>
+
+  <button
+    type="button"
+    className="mypage-mobile-back"
+    onClick={() => {
+      setMobileHomeOpen(
+        true
+      );
+
+      window.scrollTo({
+        top: 0,
+        behavior: "smooth",
+      });
+    }}
+  >
+    ‹ 마이페이지
+  </button>
 
             {view ===
               "programs" && (
@@ -1521,6 +1566,203 @@ useEffect(() => {
   );
 }
 
+/* =========================
+   모바일 마이페이지 홈
+========================= */
+
+const MOBILE_MENU_ICONS = {
+  programs: "📚",
+  register: "＋",
+  oneday: "🎟️",
+  reviews: "✏️",
+  favorites: "♡",
+  coins: "🪙",
+  settings: "⚙️",
+};
+
+
+function MobileMyPageHome({
+  user,
+  open,
+  onSelect,
+}) {
+  if (!open) {
+    return null;
+  }
+
+  const getMenu = (key) =>
+    MY_PAGE_MENUS.find(
+      (menu) =>
+        menu.key === key
+    );
+
+  const learningMenus = [
+    getMenu("programs"),
+    getMenu("register"),
+  ];
+
+  const activityMenus = [
+    getMenu("oneday"),
+    getMenu("reviews"),
+    getMenu("favorites"),
+    getMenu("coins"),
+  ];
+
+  const settingsMenu =
+    getMenu("settings");
+
+  return (
+    <section
+      className="mypage-mobile-home"
+    >
+
+      <div
+        className="mypage-mobile-profile"
+      >
+        <div
+          className="mypage-mobile-profile-icon"
+        >
+          👤
+        </div>
+
+        <div
+          className="mypage-mobile-profile-info"
+        >
+          <strong>
+            {user.name ||
+              user.username}
+            님
+          </strong>
+
+          <span>
+            공공체육시설 활동을
+            확인해보세요.
+          </span>
+        </div>
+
+        <div
+          className="mypage-mobile-coin"
+        >
+          🪙 {user.coin}
+        </div>
+      </div>
+
+
+      <div
+        className="mypage-mobile-section"
+      >
+        <h2>
+          나의 수강
+        </h2>
+
+        <div
+          className="mypage-mobile-menu-grid"
+        >
+          {learningMenus.map(
+            (menu) => (
+              <button
+                key={menu.key}
+                type="button"
+                className="mypage-mobile-menu-card"
+                onClick={() =>
+                  onSelect(
+                    menu.key
+                  )
+                }
+              >
+                <span
+                  className="mypage-mobile-menu-icon"
+                >
+                  {
+                    MOBILE_MENU_ICONS[
+                      menu.key
+                    ]
+                  }
+                </span>
+
+                <span>
+                  {menu.label}
+                </span>
+              </button>
+            )
+          )}
+        </div>
+      </div>
+
+
+      <div
+        className="mypage-mobile-section"
+      >
+        <h2>
+          나의 활동
+        </h2>
+
+        <div
+          className="mypage-mobile-menu-grid"
+        >
+          {activityMenus.map(
+            (menu) => (
+              <button
+                key={menu.key}
+                type="button"
+                className="mypage-mobile-menu-card"
+                onClick={() =>
+                  onSelect(
+                    menu.key
+                  )
+                }
+              >
+                <span
+                  className="mypage-mobile-menu-icon"
+                >
+                  {
+                    MOBILE_MENU_ICONS[
+                      menu.key
+                    ]
+                  }
+                </span>
+
+                <span>
+                  {menu.label}
+                </span>
+              </button>
+            )
+          )}
+        </div>
+      </div>
+
+
+      <button
+        type="button"
+        className="mypage-mobile-settings"
+        onClick={() =>
+          onSelect(
+            settingsMenu.key
+          )
+        }
+      >
+        <span>
+          <span
+            className="mypage-mobile-settings-icon"
+          >
+            {
+              MOBILE_MENU_ICONS.settings
+            }
+          </span>
+
+          {
+            settingsMenu.label
+          }
+        </span>
+
+        <span>
+          〉
+        </span>
+      </button>
+
+    </section>
+  );
+}
 
 /* =========================
    왼쪽 메뉴
