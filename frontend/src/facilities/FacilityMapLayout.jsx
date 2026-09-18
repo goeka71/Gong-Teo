@@ -8,7 +8,7 @@
 // 때문이다(FacilityListPanel 은 Outlet 안, 지도는 그 바깥 형제).
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Outlet, useNavigate } from "react-router-dom";
+import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import {
   Circle as KakaoCircle,
   CustomOverlayMap,
@@ -26,6 +26,7 @@ import {
   getSportList,
   toggleFavorite,
 } from "../api/facilities";
+import FacilityBottomSheet from "./FacilityBottomSheet";
 import FacilityMarker from "./FacilityMarker";
 import HeartIcon from "./HeartIcon";
 import { DEFAULT_QUERY } from "./facilityQuery";
@@ -45,6 +46,7 @@ const DEFAULT_CENTER = { lat: 37.5665, lng: 126.978 };
 
 function FacilityMapLayout() {
   const navigate = useNavigate();
+  const location = useLocation();
 
   const [loading, error] = useKakaoLoader({
     appkey: import.meta.env.VITE_KAKAO_MAP_KEY,
@@ -421,36 +423,42 @@ function FacilityMapLayout() {
     navigate(`/facility/${facility.id}`);
   };
 
+  // 자식 라우트(목록/상세/세부시설/리뷰)가 공통으로 쓰는 컨텍스트.
+  // 홈 오버레이든 바텀시트든 같은 값을 그대로 넘긴다.
+  const outletContext = {
+    facilities: filteredFacilities,
+    facilitiesLoading,
+    selectedFacilityId,
+    setSelectedFacilityId,
+    query,
+    setQuery,
+    sportOptions: sports,
+    regionOptions,
+    // 위치 기반 초기 화면(추천 시설 + 주변 시설)용.
+    locationStatus,
+    retryLocation,
+    nearbyFacilities: nearby.list,
+    nearbyRadius: nearby.radius,
+    recommendedFacility,
+    refreshRecommendation,
+    // 찜 — 상세페이지 버튼, 지도 강조 토글, 좌측 목록이 모두 여기서 씀.
+    wishedIds,
+    toggleWish,
+    showWishOnly,
+  };
+
   return (
     <div className="fml-layout">
-      {/* 좌측 패널: 목록/상세 등 자식 라우트 내용이 여기로 들어온다.
-          검색/필터 쿼리와 필터링된 시설 목록을 넘겨서 목록 패널이
-          지도와 같은 결과를 그대로 재사용할 수 있게 한다. */}
-      <div className="fml-panel">
-        <Outlet
-          context={{
-            facilities: filteredFacilities,
-            facilitiesLoading,
-            selectedFacilityId,
-            setSelectedFacilityId,
-            query,
-            setQuery,
-            sportOptions: sports,
-            regionOptions,
-            // 위치 기반 초기 화면(추천 시설 + 주변 시설)용.
-            locationStatus,
-            retryLocation,
-            nearbyFacilities: nearby.list,
-            nearbyRadius: nearby.radius,
-            recommendedFacility,
-            refreshRecommendation,
-            // 찜 — 상세페이지 버튼, 지도 강조 토글, 좌측 목록이 모두 여기서 씀.
-            wishedIds,
-            toggleWish,
-            showWishOnly,
-          }}
-        />
-      </div>
+      {/* 좌측 패널(PC) / 바텀시트(모바일): 목록/상세 등 자식 라우트 내용이
+          여기로 들어온다. 검색/필터 쿼리와 필터링된 시설 목록을 넘겨서
+          목록 패널이 지도와 같은 결과를 그대로 재사용할 수 있게 한다.
+          PC 는 항상 같은 마크업(.fml-panel)이라 기존 데스크톱 스타일이
+          그대로 적용된다. 모바일에서는 홈("/")이든 상세류 라우트든 항상
+          같은 바텀시트 패턴 — 안쪽 Outlet 내용(FacilityListPanel /
+          FacilityDetail 등)은 손대지 않는다. */}
+      <FacilityBottomSheet resetKey={location.pathname}>
+        <Outlet context={outletContext} />
+      </FacilityBottomSheet>
 
       {/* 우측: 지도. 라우트가 바뀌어도 이 아래는 리렌더링만 되고 재마운트되지 않는다. */}
       <div className="fml-map">
