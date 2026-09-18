@@ -1393,6 +1393,27 @@
   display: none;
 }
 
+/* =========================================================
+   작은 PC / 태블릿 가로 대응
+   사이드바는 유지하고 캘린더 영역만 1열로 변경
+========================================================= */
+
+@media (max-width: 1180px) and (min-width: 769px) {
+
+  .mypage-style-02 {
+    width: calc(100% - 32px);
+    gap: 20px;
+  }
+
+  .mypage-sidebar-style-07 {
+    width: 210px;
+  }
+
+  .program-status-style-23 {
+    grid-template-columns: 1fr;
+  }
+
+}
 
 @media (max-width: 768px) {
 
