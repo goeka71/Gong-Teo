@@ -2007,3 +2007,53 @@
   }
 
 }
+
+/* =========================================================
+   중간 크기 PC에서 제목 / 버튼 줄바꿈 방지
+========================================================= */
+
+/* 수강 프로그램 등록 버튼 글자 줄바꿈 방지 */
+.program-status-style-24 .btn {
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+
+/* 내가 쓴 리뷰 제목은 항상 한 줄 */
+.my-reviews-style-13 {
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+.my-reviews-style-12 {
+  white-space: nowrap;
+}
+
+
+/* 필터 버튼들끼리는 필요하면 다음 줄로 */
+.my-reviews-style-10 {
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+
+/* 작은 PC / 태블릿 가로 */
+@media (max-width: 1180px) and (min-width: 769px) {
+
+  /* 수강 프로그램 설명문 한 줄 유지 */
+  .program-status-style-24 .page-description {
+    white-space: nowrap;
+  }
+
+
+  /* 리뷰 제목은 지키고,
+     공간 부족하면 필터 부분이 아래로 내려감 */
+  .my-reviews-style-14 {
+    flex-wrap: wrap;
+    align-items: flex-start;
+  }
+
+  .my-reviews-style-10 {
+    margin-left: auto;
+  }
+}
