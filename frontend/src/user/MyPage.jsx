@@ -1312,22 +1312,28 @@ useEffect(() => {
   }`}
 >
 
-  <button
-    type="button"
-    className="mypage-mobile-back"
-    onClick={() => {
-      setMobileHomeOpen(
-        true
-      );
+ <button
+  type="button"
+  className="mypage-mobile-back"
+  aria-label="마이페이지 메인으로 돌아가기"
+  onClick={() => {
+    setMobileHomeOpen(
+      true
+    );
 
-      window.scrollTo({
-        top: 0,
-        behavior: "smooth",
-      });
-    }}
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth",
+    });
+  }}
+>
+  <span
+    className="mypage-mobile-back-icon"
+    aria-hidden="true"
   >
-    ‹ 마이페이지
-  </button>
+    ‹
+  </span>
+</button>
 
             {view ===
               "programs" && (
