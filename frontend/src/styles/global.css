@@ -880,3 +880,27 @@ ol {
     will-change: transform;
   }
 }
+
+/* =========================================================
+   모바일 iOS Safari 날짜 input 너비 보정
+========================================================= */
+
+@media (max-width: 768px) {
+  input[type="date"] {
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+
+    display: block;
+    box-sizing: border-box;
+  }
+
+  .program-register-style-11 {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .program-register-style-11 > * {
+    min-width: 0;
+  }
+}
