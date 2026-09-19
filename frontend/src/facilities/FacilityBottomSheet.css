@@ -1,110 +1,337 @@
 /* ============================================================
    FacilityBottomSheet 전용 스타일 (모바일 전용)
-   - 기본(unconditional) 규칙은 전부 "아무 효과 없음/숨김" 상태로 둬서
-     PC 미디어쿼리(FacilityMapLayout.css 의 min-aspect-ratio: 1/1)를
-     전혀 건드리지 않아도 데스크톱에는 아무 영향이 없다.
-   - 실제 바텀시트 모양/드래그 동작은 여기 새로 추가한
-     max-aspect-ratio: 1/1 블록 안에서만 적용된다(기존 데스크톱 블록과
-     상호 배타적인 조건이라 서로 간섭하지 않는다).
+
+   - 기본 상태에서는 기존 바텀시트 UI 유지
+   - 모바일에서 바텀시트를 크게 펼치면:
+       1. 상단 Navbar 완전히 숨김
+       2. 바텀시트가 화면 맨 위부터 전체 높이를 차지
+       3. 스크롤해도 뒤쪽 Navbar가 보이지 않음
+
+   - 시설 상세(/facility/...)로 들어간 경우에도
+     동일하게 Navbar를 숨기고 전체화면으로 표시
+   ============================================================ */
+
+
+/* ============================================================
+   기본
    ============================================================ */
 
 .fbs-handle {
   display: none;
 }
 
-@media (max-aspect-ratio: 1 / 1) {
-  /* 선택자를 ".fml-panel.fbs-sheet" 로 둬서, FacilityMapLayout.css 의 base
-     규칙 ".fml-panel { padding: 0 14px 32px; }" 과 동점 우선순위 문제 없이
-     항상 이 규칙(패딩 0, fixed 포지션)이 이기도록 한다(CSS 파일 로드 순서에
-     의존하지 않게). 실제 여백은 .fbs-body 쪽에서 준다. */
-  .fml-panel.fbs-sheet {
-    position: fixed;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    z-index: 30;
-
-    height: 92vh;
-    max-height: 92vh;
-    display: flex;
-    flex-direction: column;
-    padding: 0;
-
-    background: var(--fd-bg);
-    border-radius: 18px 18px 0 0;
-    box-shadow: 0 -8px 30px rgba(15, 23, 42, 0.18);
-
-    /* 접힌 상태(peek): 위쪽 42vh 만 보이도록 나머지를 화면 아래로 밀어둔다. */
-    transform: translateY(calc(92vh - var(--fbs-peek, 42vh)));
-    transition: transform 0.28s ease;
-  }
-
-  /* ".fbs-sheet.fbs-sheet--expanded" 처럼 항상 .fbs-sheet 와 함께 묶어서
-     써야 한다 — 위 ".fml-panel.fbs-sheet" 규칙(클래스 2개)과 특이도가
-     같아야 아래(나중에 나오는) 규칙이 확실히 이긴다. 그냥
-     ".fbs-sheet--expanded" 단독(클래스 1개)이면 특이도가 낮아 위 규칙의
-     transform 에 항상 밀려서 펼쳐지지 않는다. */
-  .fbs-sheet.fbs-sheet--expanded {
-    transform: translateY(0);
-  }
-
-  /* 드래그 중에는 트랜지션을 끄고 손가락/포인터를 그대로 따라가게 한다. */
-  .fbs-sheet.fbs-sheet--dragging {
-    transition: none;
-  }
-
-  .fbs-handle {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex: none;
-
-    padding: 10px 0 8px;
-    cursor: grab;
-    touch-action: none;
-  }
-
-  .fbs-handle-bar {
-    width: 40px;
-    height: 4px;
-    border-radius: 999px;
-    background: var(--fd-line);
-  }
-
-  .fbs-body {
-    flex: 1;
-    min-height: 0;
-    overflow-y: auto;
-    -webkit-overflow-scrolling: touch;
-    padding: 0 16px 28px;
-  }
-
-  /* 접힌 상태에서는 내부 스크롤을 막아서, 살짝 보이는 상단 내용만
-     "간단한 정보"로 보이게 하고 드래그(핸들)와 스크롤 제스처가
-     서로 충돌하지 않게 한다. */
-  .fbs-sheet:not(.fbs-sheet--expanded) .fbs-body {
-    overflow: hidden;
-  }
-}
 
 /* ============================================================
-   모바일 큰 화면에서는 상단 Navbar 숨김
+   모바일
    ============================================================ */
 
 @media (max-aspect-ratio: 1 / 1) {
 
-  body.mobile-hide-gnb .gnb {
-    display: none !important;
+  /* ----------------------------------------------------------
+     기본 바텀시트
+     ---------------------------------------------------------- */
+
+  .fml-panel.fbs-sheet {
+    position: fixed;
+
+    left: 0;
+    right: 0;
+    bottom: 0;
+
+    z-index: 30;
+
+    height: 92vh;
+    max-height: 92vh;
+
+    display: flex;
+    flex-direction: column;
+
+    padding: 0;
+
+    background: var(--fd-bg);
+
+    border-radius:
+      18px
+      18px
+      0
+      0;
+
+    box-shadow:
+      0
+      -8px
+      30px
+      rgba(15, 23, 42, 0.18);
+
+    /*
+      접힌 상태에서는
+      위쪽 42vh만 보이도록
+      나머지를 화면 아래로 내린다.
+    */
+    transform:
+      translateY(
+        calc(
+          92vh -
+          var(--fbs-peek, 42vh)
+        )
+      );
+
+    transition:
+      transform
+      0.28s
+      ease;
   }
 
-  /*
-    원래 지도는 Navbar 아래부터 시작하게
-    top: var(--gnb-height) 로 되어 있으므로,
 
-    Navbar가 사라졌을 때는 지도를 화면 맨 위까지 올린다.
+  /* ----------------------------------------------------------
+     펼친 상태
+     ---------------------------------------------------------- */
+
+  .fbs-sheet.fbs-sheet--expanded {
+    transform:
+      translateY(0);
+  }
+
+
+  /* ----------------------------------------------------------
+     드래그 중
+     ---------------------------------------------------------- */
+
+  .fbs-sheet.fbs-sheet--dragging {
+    transition: none;
+  }
+
+
+  /* ----------------------------------------------------------
+     드래그 손잡이
+     ---------------------------------------------------------- */
+
+  .fbs-handle {
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    flex: none;
+
+    padding:
+      10px
+      0
+      8px;
+
+    cursor: grab;
+
+    touch-action: none;
+
+    background: #fff;
+
+    border-radius:
+      18px
+      18px
+      0
+      0;
+  }
+
+
+  .fbs-handle-bar {
+    width: 40px;
+    height: 4px;
+
+    border-radius: 999px;
+
+    background:
+      var(--fd-line);
+  }
+
+
+  /* ----------------------------------------------------------
+     바텀시트 내부 내용
+     ---------------------------------------------------------- */
+
+  .fbs-body {
+    flex: 1;
+
+    min-height: 0;
+
+    overflow-y: auto;
+    overflow-x: hidden;
+
+    -webkit-overflow-scrolling:
+      touch;
+
+    padding:
+      0
+      16px
+      28px;
+
+    background: #fff;
+  }
+
+
+  /*
+    접힌 상태에서는 내부 스크롤 방지
   */
-  body.mobile-hide-gnb .fml-map {
+
+  .fbs-sheet:not(
+    .fbs-sheet--expanded
+  )
+  .fbs-body {
+    overflow: hidden;
+  }
+
+
+  /* ==========================================================
+     전체화면 상태
+
+     JSX에서 body에
+     mobile-hide-gnb 클래스가 붙으면 적용됨.
+
+     적용 조건:
+     - 주변시설 찾기 바텀시트를 크게 펼침
+     - /facility/... 상세 화면에 들어감
+     ========================================================== */
+
+
+  /* ----------------------------------------------------------
+     Navbar 완전히 제거
+     ---------------------------------------------------------- */
+
+  body.mobile-hide-gnb
+  .gnb {
+    display: none !important;
+
+    visibility: hidden !important;
+
+    height: 0 !important;
+    min-height: 0 !important;
+
+    margin: 0 !important;
+    padding: 0 !important;
+
+    border: 0 !important;
+
+    overflow: hidden !important;
+  }
+
+
+  /* ----------------------------------------------------------
+     바텀시트 자체를 화면 전체로 확대
+     ---------------------------------------------------------- */
+
+  body.mobile-hide-gnb
+  .fml-panel.fbs-sheet {
+    position: fixed !important;
+
+    top: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    left: 0 !important;
+
+    width: 100% !important;
+
+    height: 100dvh !important;
+    max-height: 100dvh !important;
+
+    margin: 0 !important;
+    padding: 0 !important;
+
+    border-radius: 0 !important;
+
+    background: #fff !important;
+
+    box-shadow: none !important;
+
+    z-index: 9999 !important;
+
+    transform:
+      translateY(0)
+      !important;
+
+    transition:
+      transform
+      0.28s
+      ease;
+  }
+
+
+  /* ----------------------------------------------------------
+     전체화면에서는 손잡이 상단 둥근 모서리 제거
+     ---------------------------------------------------------- */
+
+  body.mobile-hide-gnb
+  .fbs-handle {
+    border-radius: 0;
+
+    background: #fff;
+  }
+
+
+  /* ----------------------------------------------------------
+     전체화면 내용 스크롤
+     ---------------------------------------------------------- */
+
+  body.mobile-hide-gnb
+  .fbs-body {
+    flex: 1;
+
+    min-height: 0;
+
+    height: auto;
+
+    overflow-y: auto !important;
+    overflow-x: hidden;
+
+    background: #fff;
+
+    -webkit-overflow-scrolling:
+      touch;
+  }
+
+
+  /*
+    접힌 클래스가 남아 있어도
+    전체화면 상태에서는
+    내용 스크롤 가능하게 강제한다.
+  */
+
+  body.mobile-hide-gnb
+  .fbs-sheet:not(
+    .fbs-sheet--expanded
+  )
+  .fbs-body {
+    overflow-y:
+      auto
+      !important;
+  }
+
+
+  /* ----------------------------------------------------------
+     뒤쪽 지도도 Navbar 높이만큼
+     비워두지 않도록 맨 위로 이동
+     ---------------------------------------------------------- */
+
+  body.mobile-hide-gnb
+  .fml-map {
     top: 0 !important;
   }
 
+
+  /* ----------------------------------------------------------
+     100dvh 미지원 브라우저 대비
+     ---------------------------------------------------------- */
+
+  @supports not (
+    height: 100dvh
+  ) {
+
+    body.mobile-hide-gnb
+    .fml-panel.fbs-sheet {
+      height:
+        100vh
+        !important;
+
+      max-height:
+        100vh
+        !important;
+    }
+  }
 }

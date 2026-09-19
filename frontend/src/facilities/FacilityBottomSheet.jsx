@@ -21,55 +21,72 @@ function FacilityBottomSheet({
   resetKey,
   children,
 }) {
+
   const [
     expanded,
     setExpanded,
   ] = useState(false);
 
-  const sheetRef = useRef(null);
-  const bodyRef = useRef(null);
-  const dragRef = useRef(null);
 
-  const location = useLocation();
+  const sheetRef =
+    useRef(null);
+
+  const bodyRef =
+    useRef(null);
+
+  const dragRef =
+    useRef(null);
+
+
+  const location =
+    useLocation();
 
 
   /* =========================================================
      모바일 Navbar 표시 / 숨김
-  ========================================================= */
+
+     Navbar 숨기는 경우:
+
+     1. 주변시설 찾기 바텀시트를 크게 펼친 경우
+     2. /facility/... 시설 상세 화면에 들어간 경우
+     ========================================================= */
 
   useEffect(() => {
-    const media = window.matchMedia(
-      "(max-aspect-ratio: 1 / 1)"
-    );
 
-    const syncNavbar = () => {
-      const isMobile =
-        media.matches;
-
-      /*
-        1. 바텀시트를 크게 펼쳤을 때
-        2. 시설 상세 화면에 들어갔을 때
-
-        모바일 Navbar 숨김
-      */
-      const isFacilityDetail =
-        location.pathname.startsWith(
-          "/facility/"
-        );
-
-      const shouldHide =
-        isMobile &&
-        (
-          expanded ||
-          isFacilityDetail
-        );
-
-
-      document.body.classList.toggle(
-        "mobile-hide-gnb",
-        shouldHide
+    const media =
+      window.matchMedia(
+        "(max-aspect-ratio: 1 / 1)"
       );
-    };
+
+
+    const syncNavbar =
+      () => {
+
+        const isMobile =
+          media.matches;
+
+
+        const isFacilityDetail =
+          location.pathname.startsWith(
+            "/facility/"
+          );
+
+
+        const shouldHide =
+          isMobile &&
+          (
+            expanded ||
+            isFacilityDetail
+          );
+
+
+        document.body
+          .classList
+          .toggle(
+            "mobile-hide-gnb",
+            shouldHide
+          );
+      };
 
 
     syncNavbar();
@@ -82,14 +99,17 @@ function FacilityBottomSheet({
 
 
     return () => {
+
       media.removeEventListener?.(
         "change",
         syncNavbar
       );
 
-      document.body.classList.remove(
-        "mobile-hide-gnb"
-      );
+      document.body
+        .classList
+        .remove(
+          "mobile-hide-gnb"
+        );
     };
 
   }, [
@@ -99,19 +119,22 @@ function FacilityBottomSheet({
 
 
   /* =========================================================
-     resetKey 변경
-  ========================================================= */
+     화면이 바뀌면 바텀시트 다시 접기
+     ========================================================= */
 
   const [
     prevResetKey,
     setPrevResetKey,
-  ] = useState(resetKey);
+  ] = useState(
+    resetKey
+  );
 
 
   if (
     resetKey !==
     prevResetKey
   ) {
+
     setPrevResetKey(
       resetKey
     );
@@ -121,29 +144,36 @@ function FacilityBottomSheet({
 
 
   /* =========================================================
-     새 화면 이동 시 스크롤 초기화
-  ========================================================= */
+     새로운 시설 / 화면으로 바뀌면
+     내부 스크롤 맨 위로
+     ========================================================= */
 
   useEffect(() => {
+
     if (
       bodyRef.current
     ) {
+
       bodyRef.current.scrollTop =
         0;
     }
+
   }, [resetKey]);
 
 
   /* =========================================================
      접기
-  ========================================================= */
+     ========================================================= */
 
   function collapse() {
+
     setExpanded(false);
+
 
     if (
       bodyRef.current
     ) {
+
       bodyRef.current.scrollTop =
         0;
     }
@@ -151,10 +181,11 @@ function FacilityBottomSheet({
 
 
   /* =========================================================
-     최대 이동거리
-  ========================================================= */
+     최대 이동 거리
+     ========================================================= */
 
   function currentMaxTranslatePx() {
+
     return (
       window.innerHeight *
       (
@@ -167,13 +198,15 @@ function FacilityBottomSheet({
 
   /* =========================================================
      드래그 시작
-  ========================================================= */
+     ========================================================= */
 
   function handlePointerDown(
     event
   ) {
+
     const sheet =
       sheetRef.current;
+
 
     if (!sheet) {
       return;
@@ -181,6 +214,7 @@ function FacilityBottomSheet({
 
 
     dragRef.current = {
+
       startY:
         event.clientY,
 
@@ -192,7 +226,8 @@ function FacilityBottomSheet({
       maxTranslate:
         currentMaxTranslatePx(),
 
-      moved: false,
+      moved:
+        false,
     };
 
 
@@ -210,11 +245,12 @@ function FacilityBottomSheet({
 
   /* =========================================================
      드래그 중
-  ========================================================= */
+     ========================================================= */
 
   function handlePointerMove(
     event
   ) {
+
     const drag =
       dragRef.current;
 
@@ -226,6 +262,7 @@ function FacilityBottomSheet({
       !drag ||
       !sheet
     ) {
+
       return;
     }
 
@@ -239,17 +276,21 @@ function FacilityBottomSheet({
       Math.abs(delta) >
       TAP_THRESHOLD_PX
     ) {
-      drag.moved = true;
+
+      drag.moved =
+        true;
     }
 
 
     const next =
       Math.min(
+
         Math.max(
           drag.startTranslate +
             delta,
           0
         ),
+
         drag.maxTranslate
       );
 
@@ -261,11 +302,12 @@ function FacilityBottomSheet({
 
   /* =========================================================
      드래그 종료
-  ========================================================= */
+     ========================================================= */
 
   function endDrag(
     event
   ) {
+
     const drag =
       dragRef.current;
 
@@ -273,13 +315,15 @@ function FacilityBottomSheet({
       sheetRef.current;
 
 
-    dragRef.current = null;
+    dragRef.current =
+      null;
 
 
     if (
       !drag ||
       !sheet
     ) {
+
       return;
     }
 
@@ -294,15 +338,27 @@ function FacilityBottomSheet({
 
 
     /*
-      움직임이 거의 없었다면
-      드래그가 아니라 탭
+      거의 움직이지 않았다면
+      드래그가 아니라 탭으로 판단
     */
-    if (!drag.moved) {
-      if (expanded) {
+
+    if (
+      !drag.moved
+    ) {
+
+      if (
+        expanded
+      ) {
+
         collapse();
+
       } else {
-        setExpanded(true);
+
+        setExpanded(
+          true
+        );
       }
+
 
       return;
     }
@@ -315,21 +371,34 @@ function FacilityBottomSheet({
 
     const finalTranslate =
       Math.min(
+
         Math.max(
           drag.startTranslate +
             delta,
           0
         ),
+
         drag.maxTranslate
       );
 
+
+    /*
+      절반 이상 올렸으면 펼침
+
+      아니면 다시 접기
+    */
 
     if (
       finalTranslate <
       drag.maxTranslate / 2
     ) {
-      setExpanded(true);
+
+      setExpanded(
+        true
+      );
+
     } else {
+
       collapse();
     }
   }
@@ -337,11 +406,14 @@ function FacilityBottomSheet({
 
   /* =========================================================
      화면
-  ========================================================= */
+     ========================================================= */
 
   return (
+
     <div
-      ref={sheetRef}
+      ref={
+        sheetRef
+      }
 
       className={
         "fml-panel fbs-sheet" +
@@ -352,6 +424,10 @@ function FacilityBottomSheet({
         )
       }
     >
+
+      {/* ===============================
+          바텀시트 드래그 손잡이
+         =============================== */}
 
       <div
         className="fbs-handle"
@@ -374,7 +450,9 @@ function FacilityBottomSheet({
 
         role="button"
 
-        tabIndex={0}
+        tabIndex={
+          0
+        }
 
         aria-label={
           expanded
@@ -385,17 +463,25 @@ function FacilityBottomSheet({
         onKeyDown={(
           event
         ) => {
+
           if (
             event.key ===
               "Enter" ||
             event.key ===
               " "
           ) {
+
             event.preventDefault();
 
-            if (expanded) {
+
+            if (
+              expanded
+            ) {
+
               collapse();
+
             } else {
+
               setExpanded(
                 true
               );
@@ -403,18 +489,29 @@ function FacilityBottomSheet({
           }
         }}
       >
+
         <span
           className="fbs-handle-bar"
           aria-hidden="true"
         />
+
       </div>
 
 
+      {/* ===============================
+          주변시설 / 시설상세 내용
+         =============================== */}
+
       <div
         className="fbs-body"
-        ref={bodyRef}
+
+        ref={
+          bodyRef
+        }
       >
+
         {children}
+
       </div>
 
     </div>
