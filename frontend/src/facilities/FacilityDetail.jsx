@@ -5,8 +5,18 @@ import {
   getFacilityReviewPreview,
   updateFacilityDetail,
 } from "../api/facilities";
+import { BASE_URL } from "../api/client";
 import HeartIcon from "./HeartIcon";
 import "./FacilityDetail.css";
+
+// Django MEDIA 상대경로("/media/...")를 절대주소로 바꿔준다.
+// (FacilityDetailPageSerializer 가 request context 없이 만들어져서 image 값이
+//  상대경로로 오기 때문 - FacilityListPanel.jsx 와 동일한 처리.)
+function resolveImageUrl(image) {
+  if (!image) return null;
+  if (/^https?:\/\//i.test(image)) return image;
+  return `${BASE_URL}${image}`;
+}
 
 // 시설 상세 화면.
 // props.facilityId: 보여줄 시설 id. 없으면 1번.
@@ -293,9 +303,9 @@ function FacilityDetail({ facilityId = 1 }) {
       {/* ---------- 상단: 이미지 + 기본정보 ---------- */}
       <div className="fd-top">
         {/* 1. 시설 이미지 (없으면 회색 placeholder) */}
-        {data.image ? (
+        {resolveImageUrl(data.image) ? (
           <div className="fd-hero">
-            <img src={data.image} alt={data.facility_name} />
+            <img src={resolveImageUrl(data.image)} alt={data.facility_name} />
           </div>
         ) : (
           <div className="fd-hero fd-hero--empty">이미지 준비 중</div>
