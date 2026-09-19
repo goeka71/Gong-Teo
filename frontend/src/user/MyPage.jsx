@@ -450,7 +450,10 @@ function TimeSelect({
 }
 
 function MyPage() {
-  const [searchParams] = useSearchParams();
+  const [
+  searchParams,
+  setSearchParams,
+] = useSearchParams();
   const isLoggedIn =
   !!localStorage.getItem("accessToken");
 
@@ -463,18 +466,39 @@ function MyPage() {
   const [view, setView] =
     useState("programs");
 
+    
+
   const [
   mobileHomeOpen,
   setMobileHomeOpen,
 ] = useState(true);
 
-    useEffect(() => {
-  const requestedView = searchParams.get("view");
+ useEffect(() => {
+  const requestedView =
+    searchParams.get("view");
 
-  if (requestedView === "coins") {
-    setView("coins");
+  if (
+    requestedView &&
+    MY_PAGE_MENUS.some(
+      (menu) =>
+        menu.key === requestedView
+    )
+  ) {
+    setView(requestedView);
+
+    setMobileHomeOpen(false);
   }
 }, [searchParams]);
+
+const handleViewChange = (
+  nextView
+) => {
+  setView(nextView);
+
+  setSearchParams({
+    view: nextView,
+  });
+};
 
 
   /* 수강 프로그램 */
@@ -1258,7 +1282,7 @@ useEffect(() => {
 
           <MyPageSidebar
   view={view}
-  setView={setView}
+  setView={handleViewChange}
   user={user}
 />
 
@@ -1267,8 +1291,7 @@ useEffect(() => {
   user={user}
   open={mobileHomeOpen}
   onSelect={(menuKey) => {
-    setView(menuKey);
-
+    handleViewChange(menuKey);
     setMobileHomeOpen(
       false
     );
