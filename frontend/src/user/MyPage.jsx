@@ -5887,6 +5887,8 @@ function SettingsView({
   user,
   setUser,
 }) {
+  const navigate = useNavigate();
+
   const [form, setForm] =
     useState({
       name: user.name || "",
@@ -6174,9 +6176,7 @@ function SettingsView({
             type="button"
             className="btn btn-outline"
             onClick={() =>
-              alert(
-                "비밀번호 변경 기능은 추후 연결됩니다."
-              )
+              navigate("/password-reset")
             }
           >
             변경
