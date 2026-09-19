@@ -86,3 +86,25 @@
     overflow: hidden;
   }
 }
+
+/* ============================================================
+   모바일 큰 화면에서는 상단 Navbar 숨김
+   ============================================================ */
+
+@media (max-aspect-ratio: 1 / 1) {
+
+  body.mobile-hide-gnb .gnb {
+    display: none !important;
+  }
+
+  /*
+    원래 지도는 Navbar 아래부터 시작하게
+    top: var(--gnb-height) 로 되어 있으므로,
+
+    Navbar가 사라졌을 때는 지도를 화면 맨 위까지 올린다.
+  */
+  body.mobile-hide-gnb .fml-map {
+    top: 0 !important;
+  }
+
+}

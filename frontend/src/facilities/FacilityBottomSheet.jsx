@@ -1,23 +1,16 @@
-// 모바일 전용 바텀시트 껍데기.
-//
-// FacilityMapLayout 이 지도 위에 상세류 라우트(시설 상세 / 세부시설 상세 /
-// 리뷰) 의 Outlet 내용을 감쌀 때 쓴다.
-//
-// 기존 바텀시트의 peek / expanded / drag 기능은 그대로 유지하고,
-// 모바일에서 내부 내용을 스크롤할 때 상단 Navbar도
-// 일반 본문처럼 자연스럽게 위로 사라지도록 처리한다.
-
 import {
   useEffect,
   useRef,
   useState,
 } from "react";
 
+import {
+  useLocation,
+} from "react-router-dom";
+
 import "./FacilityBottomSheet.css";
 
 
-// FacilityBottomSheet.css 의
-// --fbs-peek / height(92vh) 값과 맞춰서 사용
 const FULL_VH = 92;
 const PEEK_VH = 42;
 
@@ -34,89 +27,79 @@ function FacilityBottomSheet({
   ] = useState(false);
 
   const sheetRef = useRef(null);
-
   const bodyRef = useRef(null);
-
   const dragRef = useRef(null);
 
+  const location = useLocation();
+
 
   /* =========================================================
-     Navbar 원래 위치로 복구
+     모바일 Navbar 표시 / 숨김
   ========================================================= */
 
-  function resetNavbarPosition() {
-    const navbar =
-      document.querySelector(
-        ".gnb"
+  useEffect(() => {
+    const media = window.matchMedia(
+      "(max-aspect-ratio: 1 / 1)"
+    );
+
+    const syncNavbar = () => {
+      const isMobile =
+        media.matches;
+
+      /*
+        1. 바텀시트를 크게 펼쳤을 때
+        2. 시설 상세 화면에 들어갔을 때
+
+        모바일 Navbar 숨김
+      */
+      const isFacilityDetail =
+        location.pathname.startsWith(
+          "/facility/"
+        );
+
+      const shouldHide =
+        isMobile &&
+        (
+          expanded ||
+          isFacilityDetail
+        );
+
+
+      document.body.classList.toggle(
+        "mobile-hide-gnb",
+        shouldHide
+      );
+    };
+
+
+    syncNavbar();
+
+
+    media.addEventListener?.(
+      "change",
+      syncNavbar
+    );
+
+
+    return () => {
+      media.removeEventListener?.(
+        "change",
+        syncNavbar
       );
 
-    if (!navbar) {
-      return;
-    }
+      document.body.classList.remove(
+        "mobile-hide-gnb"
+      );
+    };
 
-    navbar.style.transform = "";
-  }
+  }, [
+    expanded,
+    location.pathname,
+  ]);
 
 
   /* =========================================================
-     바텀시트 내부 스크롤 시
-     Navbar도 함께 위로 이동
-  ========================================================= */
-
-  function handleBodyScroll(event) {
-    const navbar =
-      document.querySelector(
-        ".gnb"
-      );
-
-    if (!navbar) {
-      return;
-    }
-
-    /*
-      PC에서는 Navbar를 건드리지 않는다.
-      세로형 모바일 화면에서만 적용.
-    */
-    const isMobile =
-      window.matchMedia(
-        "(max-aspect-ratio: 1 / 1)"
-      ).matches;
-
-    if (!isMobile) {
-      navbar.style.transform = "";
-      return;
-    }
-
-
-    const scrollTop =
-      event.currentTarget.scrollTop;
-
-    const navbarHeight =
-      navbar.offsetHeight;
-
-
-    /*
-      Navbar 높이만큼 스크롤하면
-      화면 위로 완전히 사라진다.
-
-      다시 맨 위로 올라오면
-      transform 값도 0이 되면서
-      Navbar가 다시 나타난다.
-    */
-    const moveAmount =
-      Math.min(
-        scrollTop,
-        navbarHeight
-      );
-
-
-    navbar.style.transform =
-      `translateY(-${moveAmount}px)`;
-  }
-
-
-  /* =========================================================
-     새로운 시설 화면으로 이동
+     resetKey 변경
   ========================================================= */
 
   const [
@@ -137,50 +120,38 @@ function FacilityBottomSheet({
   }
 
 
-  /*
-    새 시설 / 세부시설 / 리뷰로 이동하면
-    내부 스크롤을 맨 위로 되돌리고
-    Navbar도 다시 보여준다.
-  */
+  /* =========================================================
+     새 화면 이동 시 스크롤 초기화
+  ========================================================= */
+
   useEffect(() => {
-    if (bodyRef.current) {
-      bodyRef.current.scrollTop = 0;
+    if (
+      bodyRef.current
+    ) {
+      bodyRef.current.scrollTop =
+        0;
     }
-
-    resetNavbarPosition();
-
   }, [resetKey]);
 
 
-  /*
-    다른 페이지로 이동해서
-    FacilityBottomSheet가 사라질 경우에도
-    Navbar 위치를 반드시 원래대로 복구한다.
-  */
-  useEffect(() => {
-    return () => {
-      resetNavbarPosition();
-    };
-  }, []);
-
-
   /* =========================================================
-     바텀시트 접기
+     접기
   ========================================================= */
 
   function collapse() {
     setExpanded(false);
 
-    if (bodyRef.current) {
-      bodyRef.current.scrollTop = 0;
+    if (
+      bodyRef.current
+    ) {
+      bodyRef.current.scrollTop =
+        0;
     }
-
-    resetNavbarPosition();
   }
 
 
   /* =========================================================
-     최대 드래그 거리 계산
+     최대 이동거리
   ========================================================= */
 
   function currentMaxTranslatePx() {
@@ -279,7 +250,6 @@ function FacilityBottomSheet({
             delta,
           0
         ),
-
         drag.maxTranslate
       );
 
@@ -324,8 +294,8 @@ function FacilityBottomSheet({
 
 
     /*
-      거의 움직이지 않았다면
-      드래그가 아니라 탭으로 판단
+      움직임이 거의 없었다면
+      드래그가 아니라 탭
     */
     if (!drag.moved) {
       if (expanded) {
@@ -350,7 +320,6 @@ function FacilityBottomSheet({
             delta,
           0
         ),
-
         drag.maxTranslate
       );
 
@@ -384,7 +353,6 @@ function FacilityBottomSheet({
       }
     >
 
-      {/* 기존 바텀시트 손잡이 유지 */}
       <div
         className="fbs-handle"
 
@@ -442,15 +410,9 @@ function FacilityBottomSheet({
       </div>
 
 
-      {/* 기존 주변시설/시설상세 등 모든 내용 유지 */}
       <div
         className="fbs-body"
-
         ref={bodyRef}
-
-        onScroll={
-          handleBodyScroll
-        }
       >
         {children}
       </div>
