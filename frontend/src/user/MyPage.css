@@ -679,10 +679,30 @@
 }
 
 .program-register-style-11 {
-  display: grid;
-  grid-template-columns: 1fr 30px 1fr;
-  align-items: center;
+  width: 100%;
+  min-width: 0;
+
+  grid-template-columns: minmax(0, 1fr);
+
   gap: 8px;
+}
+
+.program-register-style-11 > * {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.program-register-style-11 input[type="date"] {
+  display: block;
+
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+
+  inline-size: 100% !important;
+  min-inline-size: 0 !important;
+
+  box-sizing: border-box !important;
 }
 
 .program-register-style-10 {
