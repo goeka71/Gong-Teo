@@ -12,7 +12,7 @@ import "./FacilityBottomSheet.css";
 
 
 const FULL_VH = 92;
-const PEEK_VH = 42;
+const PEEK_VH = 20;
 
 const TAP_THRESHOLD_PX = 6;
 

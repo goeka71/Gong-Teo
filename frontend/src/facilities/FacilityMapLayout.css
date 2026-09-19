@@ -75,7 +75,7 @@
 @media (max-aspect-ratio: 1 / 1) {
 
   .fml-layout {
-    --fbs-peek: 42vh;
+    --fbs-peek: 20vh;
 
     width: 100%;
 
