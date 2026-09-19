@@ -9,6 +9,7 @@ from datetime import timedelta
 from pathlib import Path
 
 import dj_database_url
+from dotenv import load_dotenv
 
 
 # =========================================================
@@ -16,6 +17,11 @@ import dj_database_url
 # =========================================================
 
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+# 로컬 개발 시 루트 .env 파일을 환경변수로 읽어들인다.
+# 배포 서버(Render 등)는 대시보드에 등록된 환경변수를 그대로 쓰므로
+# .env 파일이 없어도 무시되고 넘어간다.
+load_dotenv(BASE_DIR / ".env")
 
 
 # =========================================================
@@ -211,30 +217,23 @@ MEDIA_ROOT = BASE_DIR / 'media'
 # Email
 # =========================================================
 #
-# 비밀번호 재설정 인증번호 발송에 사용.
+# 비밀번호 재설정 인증번호 발송에 사용 (Gmail SMTP).
 #
-# 로컬에서 EMAIL_HOST_USER / EMAIL_HOST_PASSWORD 환경변수가 없으면
-# 콘솔(터미널)에 이메일 내용을 출력하는 것으로 대체한다.
-# 실제 발송을 테스트하려면 아래 환경변수를 .env 등에 설정할 것:
-#   EMAIL_HOST_USER=발신용 지메일 주소
-#   EMAIL_HOST_PASSWORD=지메일 앱 비밀번호 (일반 로그인 비밀번호 아님)
+# EMAIL_HOST_USER=발신용 지메일 주소
+# EMAIL_HOST_PASSWORD=지메일 앱 비밀번호 (일반 로그인 비밀번호 아님, 구글 계정 > 보안 >
+# 2단계 인증 활성화 후 "앱 비밀번호"에서 발급받아야 함)
+# DEFAULT_FROM_EMAIL=수신자에게 보여줄 발신 주소 (보통 EMAIL_HOST_USER와 동일)
 #
-# Gmail 앱 비밀번호는 구글 계정 > 보안 > 2단계 인증 활성화 후
-# "앱 비밀번호"에서 발급받아야 함.
+# 값은 코드에 넣지 않고 전부 환경변수로 주입한다 (로컬: .env, 배포: Render Environment).
 #
 
-EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER", "")
-EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD", "")
-
-if EMAIL_HOST_USER and EMAIL_HOST_PASSWORD:
-    EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
-    EMAIL_HOST = os.environ.get("EMAIL_HOST", "smtp.gmail.com")
-    EMAIL_PORT = int(os.environ.get("EMAIL_PORT", "587"))
-    EMAIL_USE_TLS = True
-else:
-    EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
-
-DEFAULT_FROM_EMAIL = EMAIL_HOST_USER or "noreply@gong-teo.local"
+EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+EMAIL_HOST = "smtp.gmail.com"
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER")
+EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD")
+DEFAULT_FROM_EMAIL = os.environ.get("DEFAULT_FROM_EMAIL")
 
 
 # =========================================================

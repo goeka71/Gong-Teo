@@ -1,3 +1,4 @@
+import logging
 import random
 import string
 
@@ -5,6 +6,8 @@ from django.conf import settings
 from django.core.mail import send_mail
 from django.shortcuts import get_object_or_404
 from django.db import transaction
+
+logger = logging.getLogger(__name__)
 
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
@@ -66,22 +69,37 @@ def password_reset_send_code(request):
     email = serializer.validated_data["email"]
     user = User.objects.filter(email=email).order_by("id").first()
 
+    if user is None:
+        return Response(
+            {"detail": "해당 이메일로 가입된 계정을 찾을 수 없습니다."},
+            status=status.HTTP_404_NOT_FOUND,
+        )
+
     code = "".join(
         random.choices(string.ascii_uppercase + string.digits, k=6)
     )
 
     PasswordResetCode.objects.create(user=user, code=code)
 
-    send_mail(
-        subject="공 [터] 비밀번호 재설정 인증번호",
-        message=(
-            f"회원님의 아이디는 {user.username} 입니다.\n\n"
-            f"인증번호는 {code} 입니다.\n"
-            f"인증번호는 발급 후 {PasswordResetCode.CODE_VALID_MINUTES}분간 유효합니다."
-        ),
-        from_email=settings.DEFAULT_FROM_EMAIL,
-        recipient_list=[email],
-    )
+    from_email = f"GongTeo <{settings.DEFAULT_FROM_EMAIL}>"
+
+    try:
+        send_mail(
+            subject="공 [터] 비밀번호 재설정 인증번호",
+            message=(
+                f"회원님의 아이디는 {user.username} 입니다.\n\n"
+                f"인증번호는 {code} 입니다.\n"
+                f"인증번호는 발급 후 {PasswordResetCode.CODE_VALID_MINUTES}분간 유효합니다."
+            ),
+            from_email=from_email,
+            recipient_list=[email],
+        )
+    except Exception:
+        logger.exception("비밀번호 재설정 이메일 발송 실패 (email=%s)", email)
+        return Response(
+            {"detail": "이메일 발송에 실패했습니다. 잠시 후 다시 시도해주세요."},
+            status=status.HTTP_502_BAD_GATEWAY,
+        )
 
     return Response(
         {"detail": "인증번호가 이메일로 발송되었습니다."},
