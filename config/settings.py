@@ -9,6 +9,7 @@ from datetime import timedelta
 from pathlib import Path
 
 import dj_database_url
+from dotenv import load_dotenv
 
 
 # =========================================================
@@ -16,6 +17,11 @@ import dj_database_url
 # =========================================================
 
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+# 로컬 개발 시 루트 .env 파일을 환경변수로 읽어들인다.
+# 배포 서버(Render 등)는 대시보드에 등록된 환경변수를 그대로 쓰므로
+# .env 파일이 없어도 무시되고 넘어간다.
+load_dotenv(BASE_DIR / ".env")
 
 
 # =========================================================
