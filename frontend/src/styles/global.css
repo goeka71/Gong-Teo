@@ -853,3 +853,30 @@ ol {
     padding-right: 20px;
   }
 }
+
+/* =========================================================
+   실제 모바일 기기에서는 Navbar 고정 해제
+   - PC에서 창만 줄인 경우에는 영향 없음
+========================================================= */
+
+@media (max-width: 768px) and (hover: none) and (pointer: coarse) {
+  .gnb {
+    position: static !important;
+    top: auto !important;
+    left: auto !important;
+    right: auto !important;
+    z-index: auto !important;
+  }
+}
+
+/* 모바일에서 바텀시트 스크롤과 함께 Navbar가 이동 */
+@media (max-aspect-ratio: 1 / 1) {
+  .gnb {
+    position: relative !important;
+    top: auto !important;
+
+    z-index: 50;
+
+    will-change: transform;
+  }
+}

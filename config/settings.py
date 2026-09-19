@@ -188,16 +188,24 @@ STORAGES = {
     },
 }
 
+# CLOUDINARY_URL 환경변수가 있으면 업로드 이미지를 Cloudinary에 저장한다.
+# (Render 무료 플랜은 디스크가 영구 저장소가 아니고, DEBUG=False에서는
+#  /media/ 를 서빙하지 않아서 배포 환경에서는 반드시 필요하다.)
+# 환경변수가 없는 로컬 개발 환경에서는 기존처럼 MEDIA_ROOT 폴더를 사용한다.
+if os.environ.get("CLOUDINARY_URL"):
+    STORAGES["default"] = {
+        "BACKEND": "cloudinary_storage.storage.MediaCloudinaryStorage",
+    }
+
 
 # =========================================================
 # Media files
 # =========================================================
 #
-# proof_image 등 사용자가 업로드하는 이미지
+# facility image, proof_image 등 업로드하는 이미지
 #
-# 주의:
-# WhiteNoise는 media 영구 저장용이 아님.
-# 실제 배포 시 media 저장 방식은 별도로 설정해야 함.
+# 배포 환경에서는 위 STORAGES 설정에 따라 Cloudinary에 저장되고,
+# 이 MEDIA_URL/MEDIA_ROOT는 로컬 개발 환경에서만 실제로 쓰인다.
 #
 
 MEDIA_URL = '/media/'
