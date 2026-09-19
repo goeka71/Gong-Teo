@@ -546,11 +546,13 @@ const handleApplySuccess = (updatedPost) => {
 
           <div className="filter-group">
             <label className="filter-label">양도 날짜</label>
-            <input
-              type="date"
-              value={dateFilter}
-              onChange={(e) => setDateFilter(e.target.value)}
-            />
+            <div className="date-box">
+              <input
+                type="date"
+                value={dateFilter}
+                onChange={(e) => setDateFilter(e.target.value)}
+              />
+            </div>
           </div>
 
           <div className="filter-group">
