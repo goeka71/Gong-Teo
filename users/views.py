@@ -81,7 +81,7 @@ def password_reset_send_code(request):
 
     PasswordResetCode.objects.create(user=user, code=code)
 
-    from_email = f"공터 <{settings.DEFAULT_FROM_EMAIL}>"
+    from_email = f"GongTeo <{settings.DEFAULT_FROM_EMAIL}>"
 
     try:
         send_mail(
