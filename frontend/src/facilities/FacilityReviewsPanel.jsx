@@ -7,6 +7,7 @@ import {
 } from "../api/facilities";
 import { getProgramsByFacility, createReview } from "../api/user";
 import { BASE_URL } from "../api/client";
+import { MAX_IMAGE_BYTES, imageTooLargeMessage } from "../utils/upload";
 import "./FacilityDetail.css";
 import "./FacilityReviewsPanel.css";
 
@@ -460,8 +461,10 @@ function ReviewWriteModal({
       return;
     }
 
-    if (file.size > 10 * 1024 * 1024) {
-      setError("이미지는 10MB 이하만 첨부할 수 있습니다.");
+    if (file.size > MAX_IMAGE_BYTES) {
+      setError(imageTooLargeMessage("이미지는", file));
+      // 거부된 파일이 input 에 남지 않게 비운다. (같은 파일 재선택 대비)
+      event.target.value = "";
       return;
     }
 

@@ -22,10 +22,15 @@ import {
 import { getMyOnedayApplications } from "../api/oneday";
 import { getMyFavorites } from "../api/facilities";
 import { formatWalkTime } from "../utils/time";
+import {
+  MAX_IMAGE_BYTES,
+  MAX_IMAGE_MB,
+  imageTooLargeMessage,
+} from "../utils/upload";
 import HeartIcon from "../facilities/HeartIcon";
 
 
-import { BASE_URL } from "../api/client";
+import { BASE_URL, extractServerMessage } from "../api/client";
 
 import "./MyPage.css";
 import CoinHistory from "./CoinHistory";
@@ -921,9 +926,10 @@ useEffect(() => {
      수강증
   ========================= */
 
+  // 통과하면 true, 거부하면 false (거부된 파일은 state 에 저장하지 않는다)
   const validateFile = (file) => {
     if (!file) {
-      return;
+      return true;
     }
 
     const allowedTypes = [
@@ -940,23 +946,28 @@ useEffect(() => {
         "JPG 또는 PNG 파일만 첨부할 수 있습니다."
       );
 
-      return;
+      return false;
     }
 
     if (
       file.size >
-      10 * 1024 * 1024
+      MAX_IMAGE_BYTES
     ) {
       setSubmitError(
-        "수강증 파일은 10MB 이하만 첨부할 수 있습니다."
+        imageTooLargeMessage(
+          "수강증 파일은",
+          file
+        )
       );
 
-      return;
+      return false;
     }
 
     setSubmitError("");
 
     setProofFile(file);
+
+    return true;
   };
 
 
@@ -965,7 +976,11 @@ useEffect(() => {
       const file =
         event.target.files?.[0];
 
-      validateFile(file);
+      // 거부된 파일이 input 에 남아 있으면 같은 파일을 다시 골라도
+      // change 가 발생하지 않으므로 비워 준다.
+      if (!validateFile(file)) {
+        event.target.value = "";
+      }
     };
 
 
@@ -1222,8 +1237,10 @@ useEffect(() => {
       } catch (err) {
         console.error(err);
 
+        // 서버가 준 사유(예: 수강증 용량 초과)가 있으면 그걸 보여준다.
         setSubmitError(
-          "프로그램 등록에 실패했습니다. 입력 내용을 확인해주세요."
+          extractServerMessage(err?.data) ||
+            "프로그램 등록에 실패했습니다. 입력 내용을 확인해주세요."
         );
 
       } finally {
@@ -3956,11 +3973,17 @@ function ReviewFormModal({
 
       if (
         file.size >
-        10 * 1024 * 1024
+        MAX_IMAGE_BYTES
       ) {
         setFormError(
-          "이미지는 10MB 이하만 첨부할 수 있습니다."
+          imageTooLargeMessage(
+            "이미지는",
+            file
+          )
         );
+
+        // 거부된 파일이 input 에 남지 않게 비운다. (같은 파일 재선택 대비)
+        event.target.value = "";
 
         return;
       }
@@ -5370,7 +5393,7 @@ function ProgramRegisterView({
                 <span
                   className="program-register-style-05"
                 >
-                  JPG, PNG · 10MB 이하
+                  JPG, PNG · {MAX_IMAGE_MB}MB 이하
                 </span>
 
 

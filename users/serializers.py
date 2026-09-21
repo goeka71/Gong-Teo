@@ -1,8 +1,26 @@
+import math
+
 from rest_framework import serializers
 
 from .models import User, CoinHistory
 from oneday.models import MyProgram
 from facilities.models import Program, Review
+
+
+# 업로드 이미지(리뷰 사진, 수강증) 최대 용량. 프론트(utils/upload.js)와 같은 값.
+MAX_IMAGE_SIZE = 5 * 1024 * 1024
+
+
+def validate_image_size(file):
+    """업로드 이미지가 MAX_IMAGE_SIZE 를 넘으면 거부한다. (None/빈 값은 통과)"""
+    if file and file.size > MAX_IMAGE_SIZE:
+        # 5MB 를 살짝 넘는 파일이 "5.0MB" 로 보이지 않도록 소수 첫째 자리에서 올림
+        size_mb = math.ceil(file.size / (1024 * 1024) * 10) / 10
+        raise serializers.ValidationError(
+            f"이미지 용량은 {MAX_IMAGE_SIZE // (1024 * 1024)}MB 이하여야 합니다. "
+            f"(현재 {size_mb:.1f}MB)"
+        )
+    return file
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -233,6 +251,9 @@ class MyProgramCreateSerializer(serializers.ModelSerializer):
             "proof_image",
         ]
 
+    def validate_proof_image(self, value):
+        return validate_image_size(value)
+
     def validate(self, data):
         program = data.get("program")
         facility_id = data.get("facility")
@@ -340,6 +361,9 @@ class MyReviewSerializer(serializers.ModelSerializer):
                 "별점은 1점부터 5점 사이여야 합니다."
             )
         return value
+
+    def validate_image(self, value):
+        return validate_image_size(value)
 
     def validate(self, data):
         facility = data.get(

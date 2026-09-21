@@ -8,6 +8,14 @@ import {
   createMyProgram,
 } from "../api/user";
 
+import { extractServerMessage } from "../api/client";
+
+import {
+  MAX_IMAGE_BYTES,
+  MAX_IMAGE_MB,
+  imageTooLargeMessage,
+} from "../utils/upload";
+
 import "./ProgramRegisterModal.css";
 
 // 마이페이지의 "수강 프로그램 등록하기"와 같은 입력 항목을
@@ -206,27 +214,33 @@ function ProgramRegisterModal({ onClose, onSaved }) {
   // ----------------------------------------------
   // 수강증 파일
   // ----------------------------------------------
+  // 통과하면 true, 거부하면 false (거부된 파일은 state 에 저장하지 않는다)
   const validateFile = (file) => {
-    if (!file) return;
+    if (!file) return true;
 
     const allowedTypes = ["image/jpeg", "image/png"];
 
     if (!allowedTypes.includes(file.type)) {
       setSubmitError("JPG 또는 PNG 파일만 첨부할 수 있습니다.");
-      return;
+      return false;
     }
 
-    if (file.size > 10 * 1024 * 1024) {
-      setSubmitError("수강증 파일은 10MB 이하만 첨부할 수 있습니다.");
-      return;
+    if (file.size > MAX_IMAGE_BYTES) {
+      setSubmitError(imageTooLargeMessage("수강증 파일은", file));
+      return false;
     }
 
     setSubmitError("");
     setProofFile(file);
+    return true;
   };
 
   const handleFileChange = (event) => {
-    validateFile(event.target.files?.[0]);
+    // 거부된 파일이 input 에 남아 있으면 같은 파일을 다시 골라도 change 가
+    // 발생하지 않으므로 비워 준다.
+    if (!validateFile(event.target.files?.[0])) {
+      event.target.value = "";
+    }
   };
 
   const handleDragOver = (event) => {
@@ -334,7 +348,11 @@ function ProgramRegisterModal({ onClose, onSaved }) {
       }
     } catch (err) {
       console.error(err);
-      setSubmitError("프로그램 등록에 실패했습니다. 입력 내용을 확인해주세요.");
+      // 서버가 준 사유(예: 수강증 용량 초과)가 있으면 그걸 보여준다.
+      setSubmitError(
+        extractServerMessage(err?.data) ||
+          "프로그램 등록에 실패했습니다. 입력 내용을 확인해주세요."
+      );
     } finally {
       setSubmitting(false);
     }
@@ -563,7 +581,7 @@ function ProgramRegisterModal({ onClose, onSaved }) {
                     {proofFile ? proofFile.name : "파일 선택 또는 드래그"}
                   </strong>
 
-                  <span className="prm-help-text">JPG, PNG · 10MB 이하</span>
+                  <span className="prm-help-text">JPG, PNG · {MAX_IMAGE_MB}MB 이하</span>
 
                   {proofFile && (
                     <button
