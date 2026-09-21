@@ -169,8 +169,9 @@ def facility_sport_list(request):
 # =========================================================
 # 프로그램 목록
 #
-# 전체:
-# /api/facilities/programs/
+# Program 이 9만 건 규모라 전체 조회는 OOM 위험이 있어서,
+# facility 또는 subfacility 중 하나는 반드시 있어야 한다 (없으면 400).
+# 결과는 최대 PROGRAM_LIST_MAX_RESULTS 건까지만 반환한다.
 #
 # 특정 시설:
 # /api/facilities/programs/?facility=3
@@ -178,12 +179,21 @@ def facility_sport_list(request):
 # 특정 시설 + 세부시설:
 # /api/facilities/programs/?facility=3&subfacility=7
 # =========================================================
+PROGRAM_LIST_MAX_RESULTS = 200
+
+
 @api_view(["GET"])
 def program_list(request):
-    data = Program.objects.all()
-
     facility_id = request.GET.get("facility")
     subfacility_id = request.GET.get("subfacility")
+
+    if not facility_id and not subfacility_id:
+        return Response(
+            {"detail": "facility 또는 subfacility 파라미터가 필요합니다."},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    data = Program.objects.all()
 
     if facility_id:
         data = data.filter(
@@ -194,6 +204,9 @@ def program_list(request):
         data = data.filter(
             subfacility_id=subfacility_id
         )
+
+    # 하드 캡 (안전장치). 잘리는 범위가 매번 같도록 id 순으로 정렬.
+    data = data.order_by("id")[:PROGRAM_LIST_MAX_RESULTS]
 
     serializer = ProgramSerializer(
         data,

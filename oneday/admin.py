@@ -18,6 +18,8 @@ class MyProgramAdmin(admin.ModelAdmin):
     list_display_links = ("id", "user", "program")
     list_filter = ("status",)
     search_fields = ("user__username", "program__program_name")
+    # Program 이 9만 건이라 드롭다운(select)으로 렌더링하면 메모리를 크게 먹는다.
+    raw_id_fields = ("program",)
     list_editable = ("status",)
     fields = (
         "user",

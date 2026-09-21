@@ -287,6 +287,13 @@ REST_FRAMEWORK = {
     ),
 }
 
+# 배포 환경(DEBUG=False)에서는 BrowsableAPIRenderer(HTML 렌더링) 오버헤드를
+# 없애기 위해 JSON만 사용. 로컬 개발(DEBUG=True)에서는 기본값(Browsable API 포함) 유지.
+if not DEBUG:
+    REST_FRAMEWORK["DEFAULT_RENDERER_CLASSES"] = (
+        "rest_framework.renderers.JSONRenderer",
+    )
+
 
 # =========================================================
 # Simple JWT
