@@ -134,6 +134,10 @@
 }
 
 .frp-photo-grid-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+
   margin-bottom: 14px;
   padding: 4px 0;
   border: none;
