@@ -217,22 +217,17 @@ MEDIA_ROOT = BASE_DIR / 'media'
 # Email
 # =========================================================
 #
-# 비밀번호 재설정 인증번호 발송에 사용 (Gmail SMTP).
+# 비밀번호 재설정 인증번호 발송에 사용 (Brevo HTTP API).
+# Render 무료 플랜이 SMTP 포트(587)를 차단하기 때문에 SMTP 대신
+# Brevo의 HTTP API(https://api.brevo.com/v3/smtp/email)로 발송한다.
 #
-# EMAIL_HOST_USER=발신용 지메일 주소
-# EMAIL_HOST_PASSWORD=지메일 앱 비밀번호 (일반 로그인 비밀번호 아님, 구글 계정 > 보안 >
-# 2단계 인증 활성화 후 "앱 비밀번호"에서 발급받아야 함)
-# DEFAULT_FROM_EMAIL=수신자에게 보여줄 발신 주소 (보통 EMAIL_HOST_USER와 동일)
+# BREVO_API_KEY=Brevo에서 발급받은 API 키
+# DEFAULT_FROM_EMAIL=수신자에게 보여줄 발신 주소
 #
 # 값은 코드에 넣지 않고 전부 환경변수로 주입한다 (로컬: .env, 배포: Render Environment).
 #
 
-EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
-EMAIL_HOST = "smtp.gmail.com"
-EMAIL_PORT = 587
-EMAIL_USE_TLS = True
-EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER")
-EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD")
+BREVO_API_KEY = os.environ.get("BREVO_API_KEY")
 DEFAULT_FROM_EMAIL = os.environ.get("DEFAULT_FROM_EMAIL")
 
 

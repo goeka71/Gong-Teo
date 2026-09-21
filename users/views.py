@@ -2,8 +2,8 @@ import logging
 import random
 import string
 
+import requests
 from django.conf import settings
-from django.core.mail import send_mail
 from django.shortcuts import get_object_or_404
 from django.db import transaction
 
@@ -81,20 +81,37 @@ def password_reset_send_code(request):
 
     PasswordResetCode.objects.create(user=user, code=code)
 
-    from_email = f"GongTeo <{settings.DEFAULT_FROM_EMAIL}>"
-
     try:
-        send_mail(
-            subject="공 [터] 비밀번호 재설정 인증번호",
-            message=(
-                f"회원님의 아이디는 {user.username} 입니다.\n\n"
-                f"인증번호는 {code} 입니다.\n"
-                f"인증번호는 발급 후 {PasswordResetCode.CODE_VALID_MINUTES}분간 유효합니다."
-            ),
-            from_email=from_email,
-            recipient_list=[email],
+        response = requests.post(
+            "https://api.brevo.com/v3/smtp/email",
+            headers={
+                "api-key": settings.BREVO_API_KEY,
+                "Content-Type": "application/json",
+                "accept": "application/json",
+            },
+            json={
+                "sender": {"name": "GONGTEO", "email": settings.DEFAULT_FROM_EMAIL},
+                "to": [{"email": email}],
+                "subject": "공 [터] 비밀번호 재설정 인증번호",
+                "htmlContent": (
+                    f"<p>회원님의 아이디는 {user.username} 입니다.</p>"
+                    f"<p>인증번호는 <b>{code}</b> 입니다.<br>"
+                    f"인증번호는 발급 후 {PasswordResetCode.CODE_VALID_MINUTES}분간 유효합니다.</p>"
+                ),
+            },
+            timeout=10,
         )
-    except Exception:
+
+        if response.status_code != 201:
+            logger.error(
+                "비밀번호 재설정 이메일 발송 실패 (email=%s, status=%s, body=%s)",
+                email, response.status_code, response.text,
+            )
+            return Response(
+                {"detail": "이메일 발송에 실패했습니다. 잠시 후 다시 시도해주세요."},
+                status=status.HTTP_502_BAD_GATEWAY,
+            )
+    except requests.RequestException:
         logger.exception("비밀번호 재설정 이메일 발송 실패 (email=%s)", email)
         return Response(
             {"detail": "이메일 발송에 실패했습니다. 잠시 후 다시 시도해주세요."},

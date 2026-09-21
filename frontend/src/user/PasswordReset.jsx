@@ -176,6 +176,8 @@ function PasswordReset() {
                 {codeSent && !sendError && (
                   <div className="password-reset-success">
                     인증번호가 이메일로 발송되었습니다. (5분 이내 입력)
+                    <br />
+                    메일이 안 보이면 스팸함을 확인해주세요.
                   </div>
                 )}
               </form>
