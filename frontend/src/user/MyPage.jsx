@@ -572,7 +572,7 @@ const handleViewChange = (
     setProgramId,
   ] = useState("");
 
-  // 프로그램명 검색. 서버가 한 번에 PROGRAM_LIST_LIMIT 건까지만 주므로
+  // 프로그램명 검색. 서버가 한 번에 PROGRAM_PAGE_SIZE 건까지만 주므로
   // 나머지는 검색어로 찾는다. (입력마다 요청하지 않도록 디바운스)
   const [
     programQuery,
@@ -5352,12 +5352,12 @@ function ProgramRegisterView({
 
               {!programSelectDisabled &&
                 programs.length >=
-                  PROGRAM_LIST_LIMIT && (
+                  PROGRAM_PAGE_SIZE && (
 
                 <p className="program-register-hint">
                   {programSearch
-                    ? `검색 결과가 많아 상위 ${PROGRAM_LIST_LIMIT}건만 표시 중이에요. 검색어를 더 입력해 좁혀보세요.`
-                    : `상위 ${PROGRAM_LIST_LIMIT}건만 표시 중이에요. 프로그램명으로 검색해 찾아보세요.`}
+                    ? `검색 결과가 많아 상위 ${PROGRAM_PAGE_SIZE}건만 표시 중이에요. 검색어를 더 입력해 좁혀보세요.`
+                    : `상위 ${PROGRAM_PAGE_SIZE}건만 표시 중이에요. 프로그램명으로 검색해 찾아보세요.`}
                 </p>
               )}
 
