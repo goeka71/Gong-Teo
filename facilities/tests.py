@@ -11,7 +11,7 @@ from PIL import Image
 
 from .image_fetch import ImageFetchError, fetch_image
 from .models import Facility, Program, SubFacility
-from .views import PROGRAM_LIST_MAX_RESULTS
+from .views import ProgramPagination
 
 
 def make_image_bytes(image_format="PNG"):
@@ -185,7 +185,10 @@ class FacilityAdminImageTests(TestCase):
 
 
 class ProgramListSearchTests(TestCase):
-    """GET /api/facilities/programs/ : 필수 파라미터, q 검색, 결과 개수 캡, 정렬"""
+    """GET /api/facilities/programs/ : 필수 파라미터, q 검색, 페이지네이션, 정렬
+
+    응답은 {count, next, previous, results} 형태의 페이지네이션 응답이다.
+    """
 
     @classmethod
     def setUpTestData(cls):
@@ -211,12 +214,16 @@ class ProgramListSearchTests(TestCase):
         program(cls.f2, "수영 초급")            # 다른 시설의 같은 이름
 
     url = "/api/facilities/programs/"
+    page_size = ProgramPagination.page_size
 
     def get(self, **params):
         return self.client.get(self.url, params)
 
+    def results(self, response):
+        return response.json()["results"]
+
     def names(self, response):
-        return [p["program_name"] for p in response.json()]
+        return [p["program_name"] for p in self.results(response)]
 
     # ---- 필수 파라미터 (기존 동작 유지) ----
     def test_no_params_is_400(self):
@@ -243,7 +250,7 @@ class ProgramListSearchTests(TestCase):
     def test_same_name_is_ordered_by_id(self):
         first = Program.objects.create(facility=self.f2, program_name="동명")
         second = Program.objects.create(facility=self.f2, program_name="동명")
-        ids = [p["id"] for p in self.get(facility=self.f2.id, q="동명").json()]
+        ids = [p["id"] for p in self.results(self.get(facility=self.f2.id, q="동명"))]
         self.assertEqual(ids, [first.id, second.id])
 
     def test_subfacility_filter(self):
@@ -256,7 +263,7 @@ class ProgramListSearchTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(sorted(self.names(response)), ["수영 고급", "수영 초급"])
         # 시설2 의 같은 이름 프로그램은 섞이지 않는다
-        self.assertEqual(len(self.get(facility=self.f2.id, q="수영").json()), 1)
+        self.assertEqual(len(self.results(self.get(facility=self.f2.id, q="수영"))), 1)
 
     def test_q_matches_substring_anywhere(self):
         self.assertEqual(self.names(self.get(facility=self.f1.id, q="급")),
@@ -268,54 +275,75 @@ class ProgramListSearchTests(TestCase):
     def test_q_is_stripped_and_blank_q_means_no_filter(self):
         self.assertEqual(self.names(self.get(facility=self.f1.id, q="  수영  ")),
                          ["수영 고급", "수영 초급"])
-        self.assertEqual(len(self.get(facility=self.f1.id, q="   ").json()), 5)
+        self.assertEqual(len(self.results(self.get(facility=self.f1.id, q="   "))), 5)
 
-    def test_q_without_match_returns_empty_list(self):
+    def test_q_without_match_returns_empty_results(self):
         response = self.get(facility=self.f1.id, q="없는프로그램")
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.json(), [])
+        self.assertEqual(response.json()["count"], 0)
+        self.assertEqual(self.results(response), [])
 
     def test_q_combines_with_subfacility(self):
         response = self.get(facility=self.f1.id, subfacility=self.sub1.id, q="고급")
         self.assertEqual(self.names(response), ["수영 고급"])
         # 다른 세부시설의 프로그램은 q 가 맞아도 나오지 않는다
-        self.assertEqual(self.get(facility=self.f1.id, subfacility=self.sub2.id, q="수영").json(), [])
+        self.assertEqual(
+            self.results(self.get(facility=self.f1.id, subfacility=self.sub2.id, q="수영")), []
+        )
 
     def test_like_wildcards_in_q_are_literal(self):
-        self.assertEqual(self.get(facility=self.f1.id, q="%").json(), [])
-        self.assertEqual(self.get(facility=self.f1.id, q="_").json(), [])
+        self.assertEqual(self.results(self.get(facility=self.f1.id, q="%")), [])
+        self.assertEqual(self.results(self.get(facility=self.f1.id, q="_")), [])
 
-    # ---- 결과 개수 캡 ----
+    # ---- 페이지네이션 ----
     def _bulk(self, prefix, count):
         Program.objects.bulk_create([
             Program(facility=self.f3, program_name=f"{prefix}-{i:03d}")
             for i in range(count)
         ])
 
-    def test_result_is_capped_without_q(self):
-        self._bulk("일반", PROGRAM_LIST_MAX_RESULTS + 10)
-        response = self.get(facility=self.f3.id)
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(response.json()), PROGRAM_LIST_MAX_RESULTS)
+    def test_first_page_has_page_size_items_and_reports_total(self):
+        self._bulk("일반", self.page_size + 10)
+        data = self.get(facility=self.f3.id).json()
+        self.assertEqual(len(data["results"]), self.page_size)
+        self.assertEqual(data["count"], self.page_size + 10)
+        self.assertIsNotNone(data["next"])
+        self.assertIsNone(data["previous"])
 
-    def test_result_is_capped_with_q_too(self):
-        self._bulk("수영반", PROGRAM_LIST_MAX_RESULTS + 10)
+    def test_second_page_has_the_remainder(self):
+        self._bulk("일반", self.page_size + 10)
+        data = self.get(facility=self.f3.id, page=2).json()
+        self.assertEqual(len(data["results"]), 10)
+        self.assertIsNone(data["next"])
+        self.assertIsNotNone(data["previous"])
+
+    def test_pagination_applies_with_q_too(self):
+        self._bulk("수영반", self.page_size + 10)
         self._bulk("요가반", 5)
-        response = self.get(facility=self.f3.id, q="수영")
-        names = self.names(response)
-        self.assertEqual(len(names), PROGRAM_LIST_MAX_RESULTS)
+        data = self.get(facility=self.f3.id, q="수영").json()
+        names = [p["program_name"] for p in data["results"]]
+        self.assertEqual(len(names), self.page_size)
+        self.assertEqual(data["count"], self.page_size + 10)
         self.assertTrue(all("수영" in n for n in names))
 
-    def test_cap_keeps_the_first_names_in_order(self):
-        self._bulk("프로그램", PROGRAM_LIST_MAX_RESULTS + 10)
-        names = self.names(self.get(facility=self.f3.id))
-        expected = [f"프로그램-{i:03d}" for i in range(PROGRAM_LIST_MAX_RESULTS)]
+    def test_pages_keep_name_order_without_gaps_or_overlap(self):
+        self._bulk("프로그램", self.page_size + 10)
+        names = (
+            self.names(self.get(facility=self.f3.id, page=1))
+            + self.names(self.get(facility=self.f3.id, page=2))
+        )
+        expected = [f"프로그램-{i:03d}" for i in range(self.page_size + 10)]
         self.assertEqual(names, expected)
 
-    def test_search_finds_program_beyond_the_default_cap(self):
-        """기본 목록(상위 N건)에는 안 보이는 프로그램도 q 로는 찾을 수 있어야 한다."""
-        self._bulk("가나다", PROGRAM_LIST_MAX_RESULTS + 10)
+    def test_search_finds_program_beyond_the_first_page(self):
+        """첫 페이지에는 안 보이는 프로그램도 q 로는 찾을 수 있어야 한다."""
+        self._bulk("가나다", self.page_size + 10)
         Program.objects.create(facility=self.f3, program_name="힣마지막프로그램")
         self.assertNotIn("힣마지막프로그램", self.names(self.get(facility=self.f3.id)))
         self.assertEqual(self.names(self.get(facility=self.f3.id, q="마지막")),
                          ["힣마지막프로그램"])
+
+    def test_page_size_param_is_capped_at_max_page_size(self):
+        self._bulk("일반", ProgramPagination.max_page_size + 10)
+        data = self.get(facility=self.f3.id, page_size=1000).json()
+        self.assertEqual(len(data["results"]), ProgramPagination.max_page_size)
