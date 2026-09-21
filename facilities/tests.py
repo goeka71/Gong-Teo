@@ -248,8 +248,9 @@ class ProgramListSearchTests(TestCase):
         self.assertEqual(names, sorted(names))  # 이름순
 
     def test_same_name_is_ordered_by_id(self):
-        first = Program.objects.create(facility=self.f2, program_name="동명")
-        second = Program.objects.create(facility=self.f2, program_name="동명")
+        # 요일이 달라 묶이지 않는 같은 이름 프로그램은 id 순으로 나온다.
+        first = Program.objects.create(facility=self.f2, program_name="동명", program_day="월수")
+        second = Program.objects.create(facility=self.f2, program_name="동명", program_day="화목")
         ids = [p["id"] for p in self.results(self.get(facility=self.f2.id, q="동명"))]
         self.assertEqual(ids, [first.id, second.id])
 
@@ -294,6 +295,75 @@ class ProgramListSearchTests(TestCase):
     def test_like_wildcards_in_q_are_literal(self):
         self.assertEqual(self.results(self.get(facility=self.f1.id, q="%")), [])
         self.assertEqual(self.results(self.get(facility=self.f1.id, q="_")), [])
+
+    # ---- 같은 항목 묶기 ----
+    # 시설·세부시설·이름·요일·시간이 모두 같은 행은 가장 작은 id 하나만 내려준다.
+    def _make(self, name, fac=None, sub=None, **fields):
+        return Program.objects.create(
+            facility=fac or self.f3, subfacility=sub, program_name=name, **fields
+        )
+
+    def test_identical_rows_collapse_to_the_lowest_id(self):
+        rows = [
+            self._make("다이어트댄스", program_day="월수금", program_time="19:00~19:50")
+            for _ in range(5)
+        ]
+        response = self.get(facility=self.f3.id)
+        self.assertEqual(response.json()["count"], 1)
+        self.assertEqual([p["id"] for p in self.results(response)], [rows[0].id])
+
+    def test_rows_differing_only_in_capacity_collapse(self):
+        first = self._make("수영", program_day="월", program_time="09:00~09:50", program_cap=0)
+        self._make("수영", program_day="월", program_time="09:00~09:50", program_cap=20)
+        response = self.get(facility=self.f3.id)
+        self.assertEqual([p["id"] for p in self.results(response)], [first.id])
+
+    def test_different_day_or_time_stay_separate(self):
+        self._make("수영", program_day="월수", program_time="09:00~09:50")
+        self._make("수영", program_day="화목", program_time="09:00~09:50")
+        self._make("수영", program_day="월수", program_time="10:00~10:50")
+        self.assertEqual(self.get(facility=self.f3.id).json()["count"], 3)
+
+    def test_blank_time_and_filled_time_stay_separate(self):
+        self._make("자율탁구", program_day="화목", program_time="")
+        self._make("자율탁구", program_day="화목", program_time="12:00~13:50")
+        self.assertEqual(self.get(facility=self.f3.id).json()["count"], 2)
+
+    def test_different_subfacility_stays_separate(self):
+        self._make("수영", fac=self.f1, sub=self.sub1, program_day="월")
+        self._make("수영", fac=self.f1, sub=self.sub2, program_day="월")
+        # 시드의 "수영 초급/고급"(sub1) 2건 + 새로 만든 "수영"(sub1, sub2) 2건
+        self.assertEqual(self.get(facility=self.f1.id, q="수영").json()["count"], 4)
+        # sub1 만 보면 시드 2건 + "수영" 1건
+        response = self.get(facility=self.f1.id, subfacility=self.sub1.id, q="수영")
+        self.assertEqual(sorted(self.names(response)), ["수영", "수영 고급", "수영 초급"])
+
+    def test_grouping_is_applied_within_the_filtered_result(self):
+        self._make("수영", fac=self.f1, sub=self.sub1, program_day="월")
+        self._make("수영", fac=self.f1, sub=self.sub1, program_day="월")
+        response = self.get(facility=self.f1.id, subfacility=self.sub1.id, q="수영")
+        # 시드의 "수영 초급/고급"(sub1) + 새로 만든 "수영"(중복 2행 → 1행)
+        self.assertEqual(sorted(self.names(response)), ["수영", "수영 고급", "수영 초급"])
+
+    def test_count_and_pages_use_grouped_rows(self):
+        # 서로 다른 이름 (page_size + 10)개를 각각 3행씩 → 묶으면 page_size + 10 항목
+        for i in range(self.page_size + 10):
+            for _ in range(3):
+                self._make(f"프로그램-{i:03d}", program_day="월")
+        first_page = self.get(facility=self.f3.id).json()
+        second_page = self.get(facility=self.f3.id, page=2).json()
+        self.assertEqual(first_page["count"], self.page_size + 10)
+        self.assertEqual(len(first_page["results"]), self.page_size)
+        self.assertEqual(len(second_page["results"]), 10)
+
+    def test_response_fields_are_unchanged(self):
+        self._make("수영", program_day="월", program_time="09:00~09:50", program_cap=8)
+        item = self.results(self.get(facility=self.f3.id))[0]
+        self.assertEqual(
+            set(item),
+            {"id", "facility", "subfacility", "program_name",
+             "program_day", "program_cap", "program_time"},
+        )
 
     # ---- 페이지네이션 ----
     def _bulk(self, prefix, count):
