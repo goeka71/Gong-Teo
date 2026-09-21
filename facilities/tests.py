@@ -1,10 +1,13 @@
+import csv
+import os
 import tempfile
-from io import BytesIO
+from io import BytesIO, StringIO
 from unittest import mock
 
 from django.contrib.auth import get_user_model
 from django.core.files.base import ContentFile
 from django.core.files.uploadedfile import SimpleUploadedFile
+from django.core.management import call_command
 from django.test import TestCase, override_settings
 from django.urls import reverse
 from PIL import Image
@@ -417,3 +420,146 @@ class ProgramListSearchTests(TestCase):
         self._bulk("일반", ProgramPagination.max_page_size + 10)
         data = self.get(facility=self.f3.id, page_size=1000).json()
         self.assertEqual(len(data["results"]), ProgramPagination.max_page_size)
+
+
+class ImportDataSubfacilityTests(TestCase):
+    """import_data 가 program.csv 의 subfacility_id 로 Program 과 세부시설을 연결한다.
+
+    subfacility_id 는 "subfacility.csv 의 N번째 행" 을 뜻한다. 실제 DB id 는 시퀀스
+    상태에 따라 N 과 다를 수 있으므로(Postgres 는 롤백돼도 시퀀스가 안 돌아간다)
+    번호가 아니라 '만들어진 SubFacility' 로 연결돼야 한다.
+    """
+
+    FACILITIES = [
+        {"id": 1, "facility_name": "시설A", "imagfe": "", "addr": "서울", "latit": 37.5,
+         "longit": 127.0, "station": "", "station_wt": "", "bus": "", "bus_wt": ""},
+        {"id": 2, "facility_name": "시설B", "imagfe": "", "addr": "서울", "latit": 37.6,
+         "longit": 127.1, "station": "", "station_wt": "", "bus": "", "bus_wt": ""},
+    ]
+    # N번째 행 = 세부시설 N
+    SUBFACILITIES = [
+        {"facility_id": 1, "subfacility_name": "수영장"},   # 1
+        {"facility_id": 1, "subfacility_name": "요가실"},   # 2
+        {"facility_id": 2, "subfacility_name": "탁구장"},   # 3
+    ]
+
+    def run_import(self, programs, subfacilities=None, program_fields=None):
+        """임시 폴더에 작은 csv 들을 만들고 import_data 를 실행한다."""
+        program_fields = program_fields or [
+            "facility_id", "subfacility_id", "program_name",
+            "program_day", "program_cap", "program_time",
+        ]
+        tables = {
+            "facility.csv": (list(self.FACILITIES[0]), self.FACILITIES),
+            "sport.csv": (["id", "sport_name"], [{"id": 1, "sport_name": "수영"}]),
+            "subfacility.csv": (
+                ["facility_id", "subfacility_name"],
+                self.SUBFACILITIES if subfacilities is None else subfacilities,
+            ),
+            "facility_sport.csv": (
+                ["facility_id", "sport_id"], [{"facility_id": 1, "sport_id": 1}]
+            ),
+            "program.csv": (program_fields, programs),
+            "facility_detail.csv": (
+                ["facility_id", "phone", "website", "in_out", "op_hour", "fee",
+                 "shower", "parking"],
+                [],
+            ),
+        }
+        with tempfile.TemporaryDirectory() as directory:
+            for name, (fields, rows) in tables.items():
+                with open(os.path.join(directory, name), "w", encoding="utf-8-sig", newline="") as f:
+                    writer = csv.DictWriter(f, fieldnames=fields)
+                    writer.writeheader()
+                    writer.writerows(rows)
+
+            out = StringIO()
+            with mock.patch("facilities.management.commands.import_data.DATA_DIR", directory):
+                call_command("import_data", stdout=out)
+        return out.getvalue()
+
+    @staticmethod
+    def program(facility_id, subfacility_id, name):
+        return {
+            "facility_id": facility_id, "subfacility_id": subfacility_id,
+            "program_name": name, "program_day": "월", "program_cap": 0, "program_time": "",
+        }
+
+    def linked_name(self, program_name):
+        program = Program.objects.get(program_name=program_name)
+        return program.subfacility.subfacility_name if program.subfacility else None
+
+    def test_programs_are_linked_to_the_subfacility_in_the_csv(self):
+        self.run_import([
+            self.program(1, 1, "수영 초급"),
+            self.program(1, 2, "요가 기초"),
+            self.program(2, 3, "탁구 초급"),
+        ])
+        self.assertEqual(self.linked_name("수영 초급"), "수영장")
+        self.assertEqual(self.linked_name("요가 기초"), "요가실")
+        self.assertEqual(self.linked_name("탁구 초급"), "탁구장")
+
+    def test_blank_subfacility_id_stays_null(self):
+        self.run_import([self.program(1, "", "자유수영")])
+        self.assertIsNone(Program.objects.get().subfacility_id)
+
+    def test_program_csv_without_subfacility_column_still_imports(self):
+        # subfacility_id 컬럼이 없던 옛 csv 형식
+        fields = ["facility_id", "program_name", "program_day", "program_cap", "program_time"]
+        rows = [{k: v for k, v in self.program(1, 1, "수영 초급").items() if k in fields}]
+        self.run_import(rows, program_fields=fields)
+        program = Program.objects.get()
+        self.assertEqual(program.program_name, "수영 초급")
+        self.assertIsNone(program.subfacility_id)
+
+    def test_linking_follows_csv_order_even_if_db_ids_are_shifted(self):
+        # 운영 Postgres 처럼 시퀀스가 밀린 상황: 앞선 (롤백된) 시도가 id 를 소비했다.
+        # SQLite 는 AUTOINCREMENT 라 지운 id 를 재사용하지 않아서 같은 상황이 된다.
+        facility = Facility.objects.create(facility_name="임시", addr="x", latit=0, longit=0)
+        for _ in range(5):
+            SubFacility.objects.create(facility=facility, subfacility_name="임시").delete()
+        facility.delete()
+
+        self.run_import([
+            self.program(1, 1, "수영 초급"),
+            self.program(2, 3, "탁구 초급"),
+        ])
+
+        # 실제 id 가 CSV 번호(1, 3)와 어긋나 있는지 먼저 확인한다 (테스트 전제)
+        self.assertNotEqual(SubFacility.objects.get(subfacility_name="수영장").id, 1)
+        # 그래도 올바른 세부시설에 연결된다
+        self.assertEqual(self.linked_name("수영 초급"), "수영장")
+        self.assertEqual(self.linked_name("탁구 초급"), "탁구장")
+
+    def test_subfacility_of_another_facility_is_not_linked(self):
+        # 시설 2 의 프로그램이 시설 1 의 세부시설(1번)을 가리키면 연결하지 않는다.
+        output = self.run_import([self.program(2, 1, "탁구 초급")])
+        program = Program.objects.get()
+        self.assertEqual(program.facility_id, 2)
+        self.assertIsNone(program.subfacility_id)
+        self.assertIn("잘못된 Program 1개", output)
+
+    def test_out_of_range_or_non_numeric_subfacility_id_is_not_linked(self):
+        output = self.run_import([
+            self.program(1, 99, "범위 밖"),
+            self.program(1, "abc", "숫자 아님"),
+            self.program(1, 1, "정상"),
+        ])
+        self.assertIsNone(Program.objects.get(program_name="범위 밖").subfacility_id)
+        self.assertIsNone(Program.objects.get(program_name="숫자 아님").subfacility_id)
+        self.assertEqual(self.linked_name("정상"), "수영장")
+        self.assertEqual(Program.objects.count(), 3)  # 잘못된 값이 있어도 프로그램은 들어간다
+        self.assertIn("잘못된 Program 2개", output)
+
+    def test_summary_reports_how_many_programs_were_linked(self):
+        output = self.run_import([
+            self.program(1, 1, "수영 초급"),
+            self.program(1, "", "자유수영"),
+        ])
+        self.assertIn("세부시설 연결 1개", output)
+
+    def test_second_run_is_skipped_when_data_exists(self):
+        self.run_import([self.program(1, 1, "수영 초급")])
+        output = self.run_import([self.program(1, 2, "요가 기초")])
+        self.assertIn("이미 데이터 있음", output)
+        self.assertEqual(Program.objects.count(), 1)
