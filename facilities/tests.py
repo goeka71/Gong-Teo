@@ -10,7 +10,8 @@ from django.urls import reverse
 from PIL import Image
 
 from .image_fetch import ImageFetchError, fetch_image
-from .models import Facility
+from .models import Facility, Program, SubFacility
+from .views import PROGRAM_LIST_MAX_RESULTS
 
 
 def make_image_bytes(image_format="PNG"):
@@ -181,3 +182,140 @@ class FacilityAdminImageTests(TestCase):
         self.assertEqual(response.status_code, 302)
         self.facility.refresh_from_db()
         self.assertTrue(self.facility.image.name.startswith("facilities/up"))
+
+
+class ProgramListSearchTests(TestCase):
+    """GET /api/facilities/programs/ : 필수 파라미터, q 검색, 결과 개수 캡, 정렬"""
+
+    @classmethod
+    def setUpTestData(cls):
+        def facility(name):
+            return Facility.objects.create(
+                facility_name=name, addr="서울", latit=37.5, longit=127.0
+            )
+
+        cls.f1 = facility("시설1")
+        cls.f2 = facility("시설2")
+        cls.f3 = facility("시설3(대량)")
+        cls.sub1 = SubFacility.objects.create(facility=cls.f1, subfacility_name="수영장")
+        cls.sub2 = SubFacility.objects.create(facility=cls.f1, subfacility_name="요가실")
+
+        def program(fac, name, sub=None):
+            return Program.objects.create(facility=fac, subfacility=sub, program_name=name)
+
+        program(cls.f1, "수영 초급", cls.sub1)
+        program(cls.f1, "수영 고급", cls.sub1)
+        program(cls.f1, "요가 기초", cls.sub2)
+        program(cls.f1, "Yoga Basic")          # 세부시설 없음(NULL)
+        program(cls.f1, "필라테스")
+        program(cls.f2, "수영 초급")            # 다른 시설의 같은 이름
+
+    url = "/api/facilities/programs/"
+
+    def get(self, **params):
+        return self.client.get(self.url, params)
+
+    def names(self, response):
+        return [p["program_name"] for p in response.json()]
+
+    # ---- 필수 파라미터 (기존 동작 유지) ----
+    def test_no_params_is_400(self):
+        response = self.get()
+        self.assertEqual(response.status_code, 400)
+        self.assertIn("detail", response.json())
+
+    def test_empty_facility_and_subfacility_is_400(self):
+        self.assertEqual(self.get(facility="", subfacility="").status_code, 400)
+
+    def test_q_alone_does_not_bypass_required_params(self):
+        self.assertEqual(self.get(q="수영").status_code, 400)
+
+    # ---- 기본 조회 / 정렬 ----
+    def test_facility_only_returns_that_facilitys_programs_sorted_by_name(self):
+        response = self.get(facility=self.f1.id)
+        self.assertEqual(response.status_code, 200)
+        names = self.names(response)
+        self.assertEqual(sorted(names), sorted(
+            ["수영 초급", "수영 고급", "요가 기초", "Yoga Basic", "필라테스"]
+        ))
+        self.assertEqual(names, sorted(names))  # 이름순
+
+    def test_same_name_is_ordered_by_id(self):
+        first = Program.objects.create(facility=self.f2, program_name="동명")
+        second = Program.objects.create(facility=self.f2, program_name="동명")
+        ids = [p["id"] for p in self.get(facility=self.f2.id, q="동명").json()]
+        self.assertEqual(ids, [first.id, second.id])
+
+    def test_subfacility_filter(self):
+        response = self.get(facility=self.f1.id, subfacility=self.sub1.id)
+        self.assertEqual(sorted(self.names(response)), ["수영 고급", "수영 초급"])
+
+    # ---- q 검색 ----
+    def test_q_filters_by_program_name_within_facility(self):
+        response = self.get(facility=self.f1.id, q="수영")
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(sorted(self.names(response)), ["수영 고급", "수영 초급"])
+        # 시설2 의 같은 이름 프로그램은 섞이지 않는다
+        self.assertEqual(len(self.get(facility=self.f2.id, q="수영").json()), 1)
+
+    def test_q_matches_substring_anywhere(self):
+        self.assertEqual(self.names(self.get(facility=self.f1.id, q="급")),
+                         ["수영 고급", "수영 초급"])
+
+    def test_q_is_case_insensitive(self):
+        self.assertEqual(self.names(self.get(facility=self.f1.id, q="yOGA")), ["Yoga Basic"])
+
+    def test_q_is_stripped_and_blank_q_means_no_filter(self):
+        self.assertEqual(self.names(self.get(facility=self.f1.id, q="  수영  ")),
+                         ["수영 고급", "수영 초급"])
+        self.assertEqual(len(self.get(facility=self.f1.id, q="   ").json()), 5)
+
+    def test_q_without_match_returns_empty_list(self):
+        response = self.get(facility=self.f1.id, q="없는프로그램")
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json(), [])
+
+    def test_q_combines_with_subfacility(self):
+        response = self.get(facility=self.f1.id, subfacility=self.sub1.id, q="고급")
+        self.assertEqual(self.names(response), ["수영 고급"])
+        # 다른 세부시설의 프로그램은 q 가 맞아도 나오지 않는다
+        self.assertEqual(self.get(facility=self.f1.id, subfacility=self.sub2.id, q="수영").json(), [])
+
+    def test_like_wildcards_in_q_are_literal(self):
+        self.assertEqual(self.get(facility=self.f1.id, q="%").json(), [])
+        self.assertEqual(self.get(facility=self.f1.id, q="_").json(), [])
+
+    # ---- 결과 개수 캡 ----
+    def _bulk(self, prefix, count):
+        Program.objects.bulk_create([
+            Program(facility=self.f3, program_name=f"{prefix}-{i:03d}")
+            for i in range(count)
+        ])
+
+    def test_result_is_capped_without_q(self):
+        self._bulk("일반", PROGRAM_LIST_MAX_RESULTS + 10)
+        response = self.get(facility=self.f3.id)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.json()), PROGRAM_LIST_MAX_RESULTS)
+
+    def test_result_is_capped_with_q_too(self):
+        self._bulk("수영반", PROGRAM_LIST_MAX_RESULTS + 10)
+        self._bulk("요가반", 5)
+        response = self.get(facility=self.f3.id, q="수영")
+        names = self.names(response)
+        self.assertEqual(len(names), PROGRAM_LIST_MAX_RESULTS)
+        self.assertTrue(all("수영" in n for n in names))
+
+    def test_cap_keeps_the_first_names_in_order(self):
+        self._bulk("프로그램", PROGRAM_LIST_MAX_RESULTS + 10)
+        names = self.names(self.get(facility=self.f3.id))
+        expected = [f"프로그램-{i:03d}" for i in range(PROGRAM_LIST_MAX_RESULTS)]
+        self.assertEqual(names, expected)
+
+    def test_search_finds_program_beyond_the_default_cap(self):
+        """기본 목록(상위 N건)에는 안 보이는 프로그램도 q 로는 찾을 수 있어야 한다."""
+        self._bulk("가나다", PROGRAM_LIST_MAX_RESULTS + 10)
+        Program.objects.create(facility=self.f3, program_name="힣마지막프로그램")
+        self.assertNotIn("힣마지막프로그램", self.names(self.get(facility=self.f3.id)))
+        self.assertEqual(self.names(self.get(facility=self.f3.id, q="마지막")),
+                         ["힣마지막프로그램"])

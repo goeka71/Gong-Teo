@@ -171,21 +171,30 @@ def facility_sport_list(request):
 #
 # Program 이 9만 건 규모라 전체 조회는 OOM 위험이 있어서,
 # facility 또는 subfacility 중 하나는 반드시 있어야 한다 (없으면 400).
-# 결과는 최대 PROGRAM_LIST_MAX_RESULTS 건까지만 반환한다.
+#
+# q 를 주면 프로그램명에 q 가 포함된 것만 DB 에서 걸러 준다
+# (program_name__icontains). 시설당 프로그램이 수천 건이라 화면에서는
+# 처음 PROGRAM_LIST_MAX_RESULTS 건만 보여 주고 나머지는 검색으로 찾게 한다.
+# q 가 있든 없든 결과는 최대 PROGRAM_LIST_MAX_RESULTS 건으로 자르고,
+# 프론트는 결과가 정확히 그 건수면 "더 있을 수 있음" 으로 안내한다.
 #
 # 특정 시설:
 # /api/facilities/programs/?facility=3
 #
 # 특정 시설 + 세부시설:
 # /api/facilities/programs/?facility=3&subfacility=7
+#
+# 검색 (프로그램명에 "수영" 포함):
+# /api/facilities/programs/?facility=3&q=수영
 # =========================================================
-PROGRAM_LIST_MAX_RESULTS = 200
+PROGRAM_LIST_MAX_RESULTS = 50
 
 
 @api_view(["GET"])
 def program_list(request):
     facility_id = request.GET.get("facility")
     subfacility_id = request.GET.get("subfacility")
+    q = request.GET.get("q", "").strip()
 
     if not facility_id and not subfacility_id:
         return Response(
@@ -205,8 +214,13 @@ def program_list(request):
             subfacility_id=subfacility_id
         )
 
-    # 하드 캡 (안전장치). 잘리는 범위가 매번 같도록 id 순으로 정렬.
-    data = data.order_by("id")[:PROGRAM_LIST_MAX_RESULTS]
+    if q:
+        data = data.filter(
+            program_name__icontains=q
+        )
+
+    # 이름순 + id 순(같은 이름끼리 순서 고정). 캡으로 잘리는 범위가 매번 같다.
+    data = data.order_by("program_name", "id")[:PROGRAM_LIST_MAX_RESULTS]
 
     serializer = ProgramSerializer(
         data,
