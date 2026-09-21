@@ -3,6 +3,8 @@ import assert from "node:assert/strict";
 import { describe, test } from "node:test";
 
 import {
+  applyProgramSchedule,
+  describeProgramSchedulePrefill,
   formatProgramLabel,
   getProgramSchedule,
   parseProgramDays,
@@ -200,5 +202,132 @@ describe("formatProgramLabel", () => {
 
   test("프로그램이 없어도 오류 없이 동작한다", () => {
     assert.equal(formatProgramLabel(null), " · 요일 정보 없음 · 시간 정보 없음");
+  });
+});
+
+describe("applyProgramSchedule", () => {
+  const empty = { days: [], startTime: "", endTime: "" };
+  const programA = { program_day: "월수", program_time: "09:00~09:50" };
+  const programB = { program_day: "화목", program_time: "19:00~19:50" };
+  const noInfo = { program_day: "", program_time: "" };
+  const dayOnly = { program_day: "토", program_time: "" };
+
+  test("처음 프로그램을 고르면 그 값으로 채운다", () => {
+    assert.deepEqual(applyProgramSchedule(empty, null, programA), {
+      days: ["월", "수"],
+      startTime: "09:00",
+      endTime: "09:50",
+    });
+  });
+
+  test("다른 프로그램으로 바꾸면 새 값으로 덮어쓴다", () => {
+    const current = { days: ["월", "수"], startTime: "09:00", endTime: "09:50" };
+    assert.deepEqual(applyProgramSchedule(current, programA, programB), {
+      days: ["화", "목"],
+      startTime: "19:00",
+      endTime: "19:50",
+    });
+  });
+
+  test("사용자가 고친 값도 새 프로그램에 값이 있으면 덮어쓴다", () => {
+    const edited = { days: ["금"], startTime: "07:00", endTime: "08:00" };
+    assert.deepEqual(applyProgramSchedule(edited, programA, programB), {
+      days: ["화", "목"],
+      startTime: "19:00",
+      endTime: "19:50",
+    });
+  });
+
+  test("정보 없는 프로그램으로 바꾸면 자동으로 채워졌던 값은 비운다", () => {
+    const current = { days: ["월", "수"], startTime: "09:00", endTime: "09:50" };
+    assert.deepEqual(applyProgramSchedule(current, programA, noInfo), empty);
+  });
+
+  test("정보 없는 프로그램으로 바꿔도 사용자가 고친 값은 지우지 않는다", () => {
+    const edited = { days: ["금"], startTime: "07:00", endTime: "08:00" };
+    assert.deepEqual(applyProgramSchedule(edited, programA, noInfo), edited);
+  });
+
+  test("정보 없는 프로그램을 처음 고를 때 미리 입력한 값은 유지한다", () => {
+    const typed = { days: ["금"], startTime: "07:00", endTime: "08:00" };
+    assert.deepEqual(applyProgramSchedule(typed, null, noInfo), typed);
+  });
+
+  test("요일/시간은 각각 따로 판단한다", () => {
+    // 이전 프로그램은 요일·시간이 다 있었고, 사용자는 시간만 고쳤다.
+    const current = { days: ["월", "수"], startTime: "10:00", endTime: "11:00" };
+    assert.deepEqual(applyProgramSchedule(current, programA, dayOnly), {
+      days: ["토"],
+      startTime: "10:00",
+      endTime: "11:00",
+    });
+  });
+
+  test("선택 해제/직접 입력(nextProgram=null)이면 자동 채움 값만 비운다", () => {
+    const auto = { days: ["화", "목"], startTime: "19:00", endTime: "19:50" };
+    assert.deepEqual(applyProgramSchedule(auto, programB, null), empty);
+
+    // 요일은 programB 가 채운 그대로(→ 비움), 시간은 사용자가 고침(→ 유지)
+    const edited = { days: ["화", "목"], startTime: "20:00", endTime: "20:50" };
+    assert.deepEqual(applyProgramSchedule(edited, programB, null), {
+      days: [],
+      startTime: "20:00",
+      endTime: "20:50",
+    });
+  });
+
+  test("입력을 바꾸지 않고 새 객체를 돌려준다", () => {
+    const current = { days: ["월", "수"], startTime: "09:00", endTime: "09:50" };
+    const snapshot = JSON.parse(JSON.stringify(current));
+    applyProgramSchedule(current, programA, programB);
+    assert.deepEqual(current, snapshot);
+  });
+});
+
+describe("describeProgramSchedulePrefill", () => {
+  test("선택한 프로그램이 없으면 빈 문자열", () => {
+    assert.equal(describeProgramSchedulePrefill(null), "");
+    assert.equal(describeProgramSchedulePrefill(undefined), "");
+  });
+
+  test("요일·시간이 모두 채워지면 수정 안내", () => {
+    assert.match(
+      describeProgramSchedulePrefill({
+        program_day: "월수",
+        program_time: "09:00~09:50",
+      }),
+      /채웠어요.*수정/
+    );
+  });
+
+  test("둘 다 없으면 직접 입력 안내", () => {
+    assert.match(
+      describeProgramSchedulePrefill({ program_day: "", program_time: "" }),
+      /요일·시간 정보가 없어요/
+    );
+  });
+
+  test("한쪽만 없으면 무엇이 채워졌고 무엇이 비었는지 알려준다", () => {
+    assert.equal(
+      describeProgramSchedulePrefill({ program_day: "토", program_time: "" }),
+      "선택한 프로그램의 요일을 채웠어요. 시간 정보는 없어서 직접 입력해주세요."
+    );
+    assert.equal(
+      describeProgramSchedulePrefill({
+        program_day: "",
+        program_time: "09:00~09:50",
+      }),
+      "선택한 프로그램의 시간을 채웠어요. 요일 정보는 없어서 직접 입력해주세요."
+    );
+  });
+
+  test("깨진 시간 값은 없는 것으로 본다", () => {
+    assert.match(
+      describeProgramSchedulePrefill({
+        program_day: "화목",
+        program_time: "3837.50%",
+      }),
+      /시간 정보는 없어서/
+    );
   });
 });

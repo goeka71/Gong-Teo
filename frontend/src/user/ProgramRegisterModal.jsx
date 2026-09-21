@@ -12,6 +12,11 @@ import {
 
 import { extractServerMessage } from "../api/client";
 import { useDebouncedValue } from "../utils/useDebouncedValue";
+import {
+  applyProgramSchedule,
+  describeProgramSchedulePrefill,
+  formatProgramLabel,
+} from "../utils/programSchedule";
 
 import {
   MAX_IMAGE_BYTES,
@@ -250,6 +255,21 @@ function ProgramRegisterModal({ onClose, onSaved }) {
   const programSelectDisabled =
     !facilityId || (subFacilities.length > 0 && !subfacilityId);
 
+  // 프로그램 선택이 바뀔 때 수강 요일/시간을 그 프로그램의 값으로 채운다.
+  // nextProgram 이 null 이면(선택 해제, 직접 입력, 지역/시설/세부시설 변경)
+  // 이전 프로그램이 자동으로 채웠던 값만 비우고, 사용자가 고친 값은 유지한다.
+  const applySchedule = (nextProgram) => {
+    const next = applyProgramSchedule(
+      { days: selectedDays, startTime, endTime },
+      selectedProgram,
+      nextProgram
+    );
+
+    setSelectedDays(next.days);
+    setStartTime(next.startTime);
+    setEndTime(next.endTime);
+  };
+
   const displayProgramName = isDirectInput
     ? newProgramName
     : selectedProgram?.program_name || "";
@@ -438,6 +458,7 @@ function ProgramRegisterModal({ onClose, onSaved }) {
                   onChange={(event) => {
                     setRegion(event.target.value);
                     setProgramQuery("");
+                    applySchedule(null);
                   }}
                 >
                   <option value="">지역을 선택해주세요</option>
@@ -461,6 +482,7 @@ function ProgramRegisterModal({ onClose, onSaved }) {
                     setFacilityId(event.target.value);
                     setSubfacilityId("");
                     setProgramQuery("");
+                    applySchedule(null);
                   }}
                 >
                   <option value="">시설을 선택해주세요</option>
@@ -493,6 +515,7 @@ function ProgramRegisterModal({ onClose, onSaved }) {
                       setIsDirectInput(false);
                       setNewProgramName("");
                       setProgramQuery("");
+                      applySchedule(null);
                     }}
                   >
                     <option value="">세부시설을 선택해주세요</option>
@@ -528,24 +551,27 @@ function ProgramRegisterModal({ onClose, onSaved }) {
                     if (value === "__direct__") {
                       setProgramId("");
                       setIsDirectInput(true);
+                      applySchedule(null);
                       return;
                     }
+
+                    const nextProgram =
+                      programOptions.find(
+                        (program) => String(program.id) === value
+                      ) || null;
 
                     setIsDirectInput(false);
                     setNewProgramName("");
                     setProgramId(value);
-                    setPinnedProgram(
-                      programOptions.find(
-                        (program) => String(program.id) === value
-                      ) || null
-                    );
+                    setPinnedProgram(nextProgram);
+                    applySchedule(nextProgram);
                   }}
                 >
                   <option value="">프로그램을 선택해주세요</option>
 
                   {programOptions.map((program) => (
                     <option key={program.id} value={program.id}>
-                      {program.program_name}
+                      {formatProgramLabel(program)}
                     </option>
                   ))}
 
@@ -553,6 +579,12 @@ function ProgramRegisterModal({ onClose, onSaved }) {
                     + 목록에 없어요 · 직접 입력
                   </option>
                 </select>
+
+                {!isDirectInput && selectedProgram && (
+                  <p className="prm-program-hint">
+                    {describeProgramSchedulePrefill(selectedProgram)}
+                  </p>
+                )}
 
                 {!programSelectDisabled &&
                   programs.length >= PROGRAM_PAGE_SIZE && (

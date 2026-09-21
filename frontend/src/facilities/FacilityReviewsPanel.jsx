@@ -5,15 +5,9 @@ import {
   getFacilityReviewPreview,
   getFacilityReviews,
 } from "../api/facilities";
-import {
-  getProgramsByFacility,
-  getProgramResults,
-  createReview,
-  PROGRAM_PAGE_SIZE,
-} from "../api/user";
+import { createReview } from "../api/user";
 import { BASE_URL } from "../api/client";
 import { MAX_IMAGE_BYTES, imageTooLargeMessage } from "../utils/upload";
-import { useDebouncedValue } from "../utils/useDebouncedValue";
 import "./FacilityDetail.css";
 import "./FacilityReviewsPanel.css";
 
@@ -21,14 +15,16 @@ import "./FacilityReviewsPanel.css";
 // 세부시설 상세(SubFacilityDetailPanel)의 "리뷰" 섹션도 이 컴포넌트를 그대로
 // 재사용한다. subfacilityId prop 이 있으면(=세부시설 상세에서 쓰는 경우):
 //   - 목록이 그 세부시설로만 자동 필터링되고(사용자가 필터를 만질 필요 없음)
-//   - 작성 폼은 세부시설이 고정돼서 카테고리(시설/프로그램)·세부시설 선택
-//     UI 자체가 뜨지 않고
+//   - 작성 폼은 세부시설이 고정돼서 세부시설 선택 UI 자체가 뜨지 않고
 //   - 페이지 전용 크롬(뒤로가기 버튼, 큰 제목, 별점 요약)은 생략하고 대신
 //     SubFacilityDetailPanel 의 다른 섹션("이용자 정보")과 톤을 맞춘 가벼운
 //     섹션 헤더로 렌더링된다(호스트가 이미 .fd-detail 래퍼와 뒤로가기
 //     버튼을 갖고 있으므로).
 // subfacilityId 가 없으면(기존 "/facility/:id/reviews" 경로) 예전 그대로
 // 동작한다 — 아래 로직은 전부 그 기본 경로를 안 건드리도록 짜여 있다.
+//
+// 이 화면에서 작성할 수 있는 것은 "시설 리뷰"뿐이다. 프로그램 리뷰는 조회(목록/필터)만
+// 되고, 작성은 마이페이지에서 내가 등록한 수강 프로그램을 골라서 한다.
 
 // Django MEDIA 상대경로("/media/...")를 절대주소로 바꿔준다.
 // (FacilityListPanel.resolveImageUrl / MyPage.resolveReviewImageUrl 과 동일한 문제.)
@@ -120,8 +116,6 @@ function FacilityReviewsPanel({ facilityId, subfacilityId = null }) {
   const [reloadKey, setReloadKey] = useState(0); // 작성 성공 후 목록/통계 재조회 트리거
 
   // 시설 기본정보(이름, 세부시설 목록).
-  // 프로그램 목록은 시설당 수천 건이라 여기서 받지 않고, 리뷰 작성 모달에서
-  // 프로그램 리뷰를 고를 때만 검색어와 함께 조회한다. (ReviewWriteModal)
   useEffect(() => {
     if (isScoped) return;
 
@@ -454,13 +448,13 @@ function FacilityReviewsPanel({ facilityId, subfacilityId = null }) {
   );
 }
 
-// 리뷰 작성 모달.
+// 리뷰 작성 모달. 작성할 수 있는 것은 "시설 리뷰"뿐이다.
 //   facilityId        : 고정 대상 시설 (route 의 :id)
-//                        프로그램 목록은 카테고리=프로그램일 때 모달이 직접 조회/검색한다.
 //   subFacilities       : 이 시설의 세부시설 목록 (있으면 선택, "시설 전체"도 가능)
 //   fixedSubfacilityId : 세부시설 상세에서 열렸을 때만 전달됨. 있으면 세부시설이
-//                        이미 정해진 채로 시작하고, 카테고리(시설/프로그램)·
-//                        세부시설 선택 UI 자체를 숨긴다.
+//                        이미 정해진 채로 시작하고, 세부시설 선택 UI 를 숨긴다.
+// 프로그램 리뷰는 여기서 쓰지 않고, 마이페이지에서 내가 등록한 수강 프로그램을
+// 골라서 작성한다.
 function ReviewWriteModal({
   facilityId,
   subFacilities,
@@ -468,63 +462,7 @@ function ReviewWriteModal({
   onClose,
   onSaved,
 }) {
-  const [category, setCategory] = useState("facility"); // "facility" | "program"
-  const [programId, setProgramId] = useState("");
   const [subfacilityId, setSubfacilityId] = useState(fixedSubfacilityId ?? "");
-
-  // 프로그램 목록 + 검색. 서버가 한 번에 PROGRAM_PAGE_SIZE 건까지만 주므로
-  // 나머지는 검색어로 찾는다. (입력마다 요청하지 않도록 디바운스)
-  const [programs, setPrograms] = useState([]);
-  const [programQuery, setProgramQuery] = useState("");
-  const debouncedProgramQuery = useDebouncedValue(programQuery, 300);
-  // 입력을 비우면 디바운스를 기다리지 않고 바로 전체 목록으로 돌아간다.
-  const programSearch =
-    programQuery.trim() === "" ? "" : debouncedProgramQuery.trim();
-  // 마지막으로 응답을 받은 검색어. null 이면 아직 한 번도 못 받음(조회 중).
-  const [loadedProgramQuery, setLoadedProgramQuery] = useState(null);
-  // 검색 결과에서 빠져도 이미 고른 프로그램이 사라지지 않게 따로 들고 있는다.
-  const [pinnedProgram, setPinnedProgram] = useState(null);
-
-  // 프로그램 리뷰를 고르는 동안에만 조회한다. (시설 리뷰/세부시설 고정 모드는 불필요)
-  const needsPrograms = !fixedSubfacilityId && category === "program";
-
-  useEffect(() => {
-    if (!needsPrograms) return;
-
-    // 응답 순서가 뒤바뀌어도(이전 검색어 응답이 늦게 도착) 최신 요청만 반영한다.
-    let ignore = false;
-
-    async function load() {
-      try {
-        const list = await getProgramsByFacility(facilityId, programSearch);
-        if (ignore) return;
-        setPrograms(getProgramResults(list));
-        setLoadedProgramQuery(programSearch);
-      } catch (err) {
-        console.error("프로그램 목록 조회 실패:", err);
-      }
-    }
-
-    load();
-    return () => {
-      ignore = true;
-    };
-  }, [facilityId, needsPrograms, programSearch]);
-
-  // 검색 결과에 없더라도 이미 고른 프로그램은 유지한다.
-  const selectedProgram =
-    programs.find((p) => String(p.id) === String(programId)) ||
-    (pinnedProgram && String(pinnedProgram.id) === String(programId)
-      ? pinnedProgram
-      : undefined);
-  const programOptions =
-    selectedProgram &&
-    !programs.some((p) => String(p.id) === String(selectedProgram.id))
-      ? [selectedProgram, ...programs]
-      : programs;
-  // 검색어 없이 조회했는데도 하나도 없음 = 이 시설에는 등록된 프로그램이 없다.
-  const noProgramsAtAll =
-    loadedProgramQuery === "" && programSearch === "" && programs.length === 0;
   const [rating, setRating] = useState(0);
   const [hoverRating, setHoverRating] = useState(0);
   const [content, setContent] = useState("");
@@ -565,17 +503,10 @@ function ReviewWriteModal({
       setError("리뷰 내용을 입력해주세요.");
       return;
     }
-    if (!fixedSubfacilityId && category === "program" && !programId) {
-      setError("리뷰를 작성할 프로그램을 선택해주세요.");
-      return;
-    }
 
     const formData = new FormData();
     formData.append("facility", facilityId);
     if (subfacilityId) formData.append("subfacility", subfacilityId);
-    if (!fixedSubfacilityId && category === "program" && programId) {
-      formData.append("program", programId);
-    }
     formData.append("rating", rating);
     formData.append("content", content.trim());
     if (imageFile) formData.append("image", imageFile);
@@ -611,81 +542,10 @@ function ReviewWriteModal({
             <p className="frp-form-hint">이 세부시설에 대한 리뷰로 등록됩니다.</p>
           ) : (
             <>
-              <div className="frp-form-group">
-                <span className="frp-form-label">카테고리</span>
-                <div className="frp-radio-row">
-                  <label>
-                    <input
-                      type="radio"
-                      name="review-category"
-                      checked={category === "facility"}
-                      onChange={() => setCategory("facility")}
-                    />
-                    시설 리뷰
-                  </label>
-                  <label>
-                    <input
-                      type="radio"
-                      name="review-category"
-                      checked={category === "program"}
-                      onChange={() => setCategory("program")}
-                    />
-                    프로그램 리뷰
-                  </label>
-                </div>
-              </div>
-
-              {category === "program" && (
-                <div className="frp-form-group">
-                  <span className="frp-form-label">프로그램</span>
-                  {noProgramsAtAll ? (
-                    <p className="frp-form-hint">등록된 프로그램이 없습니다.</p>
-                  ) : (
-                    <>
-                      <input
-                        type="search"
-                        className="frp-program-search"
-                        placeholder="프로그램명으로 검색 (예: 수영)"
-                        value={programQuery}
-                        onChange={(e) => setProgramQuery(e.target.value)}
-                      />
-                      <select
-                        value={programId}
-                        onChange={(e) => {
-                          setProgramId(e.target.value);
-                          setPinnedProgram(
-                            programOptions.find(
-                              (p) => String(p.id) === e.target.value
-                            ) || null
-                          );
-                        }}
-                      >
-                        <option value="">프로그램을 선택해주세요</option>
-                        {programOptions.map((p) => (
-                          <option key={p.id} value={p.id}>
-                            {p.program_name}
-                          </option>
-                        ))}
-                      </select>
-                      {loadedProgramQuery === null && (
-                        <p className="frp-form-hint">프로그램을 불러오는 중…</p>
-                      )}
-                      {programs.length >= PROGRAM_PAGE_SIZE && (
-                        <p className="frp-form-hint">
-                          {programSearch
-                            ? `검색 결과가 많아 상위 ${PROGRAM_PAGE_SIZE}건만 표시 중이에요. 검색어를 더 입력해 좁혀보세요.`
-                            : `상위 ${PROGRAM_PAGE_SIZE}건만 표시 중이에요. 프로그램명으로 검색해 찾아보세요.`}
-                        </p>
-                      )}
-                      {programSearch &&
-                        loadedProgramQuery === programSearch &&
-                        programs.length === 0 && (
-                          <p className="frp-form-hint">검색 결과가 없어요.</p>
-                        )}
-                    </>
-                  )}
-                </div>
-              )}
+              <p className="frp-form-hint">
+                시설 리뷰로 등록됩니다. 프로그램 리뷰는 마이페이지에서 수강 중인
+                프로그램을 선택해 작성할 수 있어요.
+              </p>
 
               {subFacilities.length > 0 && (
                 <div className="frp-form-group">
