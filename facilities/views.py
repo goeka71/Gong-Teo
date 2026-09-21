@@ -1,4 +1,4 @@
-from django.db.models import Avg, Count, F
+from django.db.models import Avg, Count, F, Min
 from django.shortcuts import get_object_or_404
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
@@ -174,10 +174,16 @@ def facility_sport_list(request):
 # facility 또는 subfacility 중 하나는 반드시 있어야 한다 (없으면 400).
 #
 # q 를 주면 프로그램명에 q 가 포함된 것만 DB 에서 걸러 준다
-# (program_name__icontains). 시설당 프로그램이 수천 건이라 화면에서는
-# 처음 PROGRAM_LIST_MAX_RESULTS 건만 보여 주고 나머지는 검색으로 찾게 한다.
-# q 가 있든 없든 결과는 최대 PROGRAM_LIST_MAX_RESULTS 건으로 자르고,
-# 프론트는 결과가 정확히 그 건수면 "더 있을 수 있음" 으로 안내한다.
+# (program_name__icontains). 시설당 프로그램이 수천 건이라 결과는
+# ProgramPagination 으로 페이지를 나눠 주고(기본 50건), 나머지는 검색으로 찾게 한다.
+#
+# 같은 항목은 하나로 묶어서 준다.
+# 초기 데이터(program.csv)에는 시설·세부시설·이름·요일·시간이 모두 같은 행이
+# 수십~수백 개씩 들어 있어서, 그대로 내려주면 화면에 똑같은 항목이 줄줄이
+# 나온다. 그래서 PROGRAM_GROUP_FIELDS 가 모두 같은 행은 가장 작은 id 의
+# 행 하나만 내려준다. (수용인원 program_cap 은 묶는 기준이 아니다.)
+# DB 의 행은 지우지 않고 조회할 때만 묶는다. 이미 다른 행을 가리키는
+# MyProgram / Review 는 그대로 유효하다.
 #
 # 특정 시설:
 # /api/facilities/programs/?facility=3
@@ -193,6 +199,16 @@ class ProgramPagination(PageNumberPagination):
     page_size = 50
     page_size_query_param = "page_size"
     max_page_size = 100
+
+
+# 이 필드가 모두 같으면 화면에서 구분할 수 없는 같은 프로그램으로 본다.
+PROGRAM_GROUP_FIELDS = (
+    "facility_id",
+    "subfacility_id",
+    "program_name",
+    "program_day",
+    "program_time",
+)
 
 
 @api_view(["GET"])
@@ -226,7 +242,18 @@ def program_list(request):
             program_name__icontains=q
         )
 
-    data = data.order_by(
+    # 같은 항목(PROGRAM_GROUP_FIELDS 가 모두 같은 행)은 대표 id 하나만 남긴다.
+    # 위에서 건 필터(시설/세부시설/q)를 적용한 뒤에 묶으므로 검색 결과 안에서만 묶인다.
+    representative_ids = (
+        data.order_by()
+        .values(*PROGRAM_GROUP_FIELDS)
+        .annotate(representative_id=Min("id"))
+        .values("representative_id")
+    )
+
+    data = Program.objects.filter(
+        id__in=representative_ids
+    ).order_by(
         "program_name",
         "id"
     )

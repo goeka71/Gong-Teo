@@ -247,23 +247,30 @@ def my_programs(request):
             pk=facility_id
         )
 
-        program, created = Program.objects.get_or_create(
-            facility=facility,
-            subfacility=subfacility,
-            program_name=new_program_name,
-            defaults={
-                "program_day":
-                    validated_data.get(
-                        "program_day",
-                        ""
-                    ),
-                "program_time":
-                    validated_data.get(
-                        "program_time",
-                        ""
-                    ),
-            },
+        # 같은 시설(+세부시설)에 같은 이름의 프로그램이 있으면 그것을 재사용하고,
+        # 없을 때만 새로 만든다. 초기 데이터에는 같은 이름의 행이 여러 개
+        # (요일/시간이 다르거나 완전히 같은 것) 들어 있어서 get_or_create 를 쓰면
+        # MultipleObjectsReturned(500)가 난다. 여러 개면 가장 작은 id 를 쓴다.
+        # (program_list 가 같은 항목을 묶어 보여줄 때 대표로 쓰는 id 와 같은 기준)
+        program = (
+            Program.objects
+            .filter(
+                facility=facility,
+                subfacility=subfacility,
+                program_name=new_program_name,
+            )
+            .order_by("id")
+            .first()
         )
+
+        if program is None:
+            program = Program.objects.create(
+                facility=facility,
+                subfacility=subfacility,
+                program_name=new_program_name,
+                program_day=validated_data.get("program_day", ""),
+                program_time=validated_data.get("program_time", ""),
+            )
 
     else:
         validated_data.pop(

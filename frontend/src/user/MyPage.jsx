@@ -26,6 +26,11 @@ import { getMyFavorites } from "../api/facilities";
 import { formatWalkTime } from "../utils/time";
 import { useDebouncedValue } from "../utils/useDebouncedValue";
 import {
+  applyProgramSchedule,
+  describeProgramSchedulePrefill,
+  formatProgramLabel,
+} from "../utils/programSchedule";
+import {
   MAX_IMAGE_BYTES,
   MAX_IMAGE_MB,
   imageTooLargeMessage,
@@ -987,6 +992,24 @@ useEffect(() => {
       !subfacilityId);
 
 
+  /*
+    프로그램 선택이 바뀔 때 수강 요일/시간을 그 프로그램의 값으로 채운다.
+    nextProgram 이 null 이면(선택 해제, 직접 입력, 지역/시설/세부시설 변경)
+    이전 프로그램이 자동으로 채웠던 값만 비우고, 사용자가 고친 값은 유지한다.
+  */
+  const applySchedule = (nextProgram) => {
+    const next = applyProgramSchedule(
+      { days: selectedDays, startTime, endTime },
+      selectedProgram,
+      nextProgram
+    );
+
+    setSelectedDays(next.days);
+    setStartTime(next.startTime);
+    setEndTime(next.endTime);
+  };
+
+
   /* 지역/시설/세부시설/프로그램 선택 (검색어 초기화, 선택값 보관) */
 
   const handleRegionChange =
@@ -994,6 +1017,8 @@ useEffect(() => {
       setRegion(value);
 
       setProgramQuery("");
+
+      applySchedule(null);
     };
 
 
@@ -1004,6 +1029,8 @@ useEffect(() => {
       setSubfacilityId("");
 
       setProgramQuery("");
+
+      applySchedule(null);
     };
 
 
@@ -1018,20 +1045,25 @@ useEffect(() => {
       setNewProgramName("");
 
       setProgramQuery("");
+
+      applySchedule(null);
     };
 
 
   const handleProgramIdChange =
     (value) => {
-      setProgramId(value);
-
-      setPinnedProgram(
+      const nextProgram =
         registerProgramOptions.find(
           (program) =>
             String(program.id) ===
             String(value)
-        ) || null
-      );
+        ) || null;
+
+      setProgramId(value);
+
+      setPinnedProgram(nextProgram);
+
+      applySchedule(nextProgram);
     };
 
 
@@ -1597,6 +1629,14 @@ useEffect(() => {
 
                 setProgramId={
                   handleProgramIdChange
+                }
+
+                programScheduleHint={
+                  describeProgramSchedulePrefill(
+                    isDirectInput
+                      ? null
+                      : selectedProgram
+                  )
                 }
 
                 isDirectInput={
@@ -4991,6 +5031,7 @@ function ProgramRegisterView({
   programSelectDisabled,
   programId,
   setProgramId,
+  programScheduleHint,
 
   isDirectInput,
   setIsDirectInput,
@@ -5336,7 +5377,9 @@ function ProgramRegisterView({
                       }
                     >
                       {
-                        program.program_name
+                        formatProgramLabel(
+                          program
+                        )
                       }
                     </option>
                   )
@@ -5348,6 +5391,14 @@ function ProgramRegisterView({
                 </option>
 
               </select>
+
+
+              {programScheduleHint && (
+
+                <p className="program-register-hint">
+                  {programScheduleHint}
+                </p>
+              )}
 
 
               {!programSelectDisabled &&
