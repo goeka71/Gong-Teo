@@ -4,6 +4,7 @@ from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
+from rest_framework.pagination import PageNumberPagination
 
 from .models import (
     Facility,
@@ -187,7 +188,11 @@ def facility_sport_list(request):
 # 검색 (프로그램명에 "수영" 포함):
 # /api/facilities/programs/?facility=3&q=수영
 # =========================================================
-PROGRAM_LIST_MAX_RESULTS = 50
+
+class ProgramPagination(PageNumberPagination):
+    page_size = 50
+    page_size_query_param = "page_size"
+    max_page_size = 100
 
 
 @api_view(["GET"])
@@ -198,7 +203,9 @@ def program_list(request):
 
     if not facility_id and not subfacility_id:
         return Response(
-            {"detail": "facility 또는 subfacility 파라미터가 필요합니다."},
+            {
+                "detail": "facility 또는 subfacility 파라미터가 필요합니다."
+            },
             status=status.HTTP_400_BAD_REQUEST,
         )
 
@@ -219,17 +226,26 @@ def program_list(request):
             program_name__icontains=q
         )
 
-    # 이름순 + id 순(같은 이름끼리 순서 고정). 캡으로 잘리는 범위가 매번 같다.
-    data = data.order_by("program_name", "id")[:PROGRAM_LIST_MAX_RESULTS]
+    data = data.order_by(
+        "program_name",
+        "id"
+    )
+
+    paginator = ProgramPagination()
+
+    page = paginator.paginate_queryset(
+        data,
+        request
+    )
 
     serializer = ProgramSerializer(
-        data,
+        page,
         many=True
     )
 
-    return Response(serializer.data)
-
-
+    return paginator.get_paginated_response(
+        serializer.data
+    )
 # =========================================================
 # 시설 리뷰 미리보기
 # 상위 3개 + 평균 별점 + 전체 개수.

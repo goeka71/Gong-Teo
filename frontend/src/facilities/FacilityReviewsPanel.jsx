@@ -7,8 +7,9 @@ import {
 } from "../api/facilities";
 import {
   getProgramsByFacility,
+  getProgramResults,
   createReview,
-  PROGRAM_LIST_LIMIT,
+  PROGRAM_PAGE_SIZE,
 } from "../api/user";
 import { BASE_URL } from "../api/client";
 import { MAX_IMAGE_BYTES, imageTooLargeMessage } from "../utils/upload";
@@ -471,7 +472,7 @@ function ReviewWriteModal({
   const [programId, setProgramId] = useState("");
   const [subfacilityId, setSubfacilityId] = useState(fixedSubfacilityId ?? "");
 
-  // 프로그램 목록 + 검색. 서버가 한 번에 PROGRAM_LIST_LIMIT 건까지만 주므로
+  // 프로그램 목록 + 검색. 서버가 한 번에 PROGRAM_PAGE_SIZE 건까지만 주므로
   // 나머지는 검색어로 찾는다. (입력마다 요청하지 않도록 디바운스)
   const [programs, setPrograms] = useState([]);
   const [programQuery, setProgramQuery] = useState("");
@@ -497,7 +498,7 @@ function ReviewWriteModal({
       try {
         const list = await getProgramsByFacility(facilityId, programSearch);
         if (ignore) return;
-        setPrograms(list);
+        setPrograms(getProgramResults(list));
         setLoadedProgramQuery(programSearch);
       } catch (err) {
         console.error("프로그램 목록 조회 실패:", err);
@@ -669,11 +670,11 @@ function ReviewWriteModal({
                       {loadedProgramQuery === null && (
                         <p className="frp-form-hint">프로그램을 불러오는 중…</p>
                       )}
-                      {programs.length >= PROGRAM_LIST_LIMIT && (
+                      {programs.length >= PROGRAM_PAGE_SIZE && (
                         <p className="frp-form-hint">
                           {programSearch
-                            ? `검색 결과가 많아 상위 ${PROGRAM_LIST_LIMIT}건만 표시 중이에요. 검색어를 더 입력해 좁혀보세요.`
-                            : `상위 ${PROGRAM_LIST_LIMIT}건만 표시 중이에요. 프로그램명으로 검색해 찾아보세요.`}
+                            ? `검색 결과가 많아 상위 ${PROGRAM_PAGE_SIZE}건만 표시 중이에요. 검색어를 더 입력해 좁혀보세요.`
+                            : `상위 ${PROGRAM_PAGE_SIZE}건만 표시 중이에요. 프로그램명으로 검색해 찾아보세요.`}
                         </p>
                       )}
                       {programSearch &&

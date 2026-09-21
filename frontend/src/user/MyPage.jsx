@@ -9,8 +9,9 @@ import {
   getSubFacilities,
   getProgramsByFacility,
   getProgramsBySubFacility,
+  getProgramResults,
   createMyProgram,
-  PROGRAM_LIST_LIMIT,
+  PROGRAM_PAGE_SIZE,
   updateMyInfo,
   getMyReviews,
   createReview,
@@ -896,34 +897,35 @@ useEffect(() => {
     let ignore = false;
 
     const loadPrograms =
-      async () => {
-        try {
-          const data =
-            subfacilityId
-              ? await getProgramsBySubFacility(
-                  facilityId,
-                  subfacilityId,
-                  programSearch
-                )
-              : await getProgramsByFacility(
-                  facilityId,
-                  programSearch
-                );
+  async () => {
+    try {
+      const data =
+        subfacilityId
+          ? await getProgramsBySubFacility(
+              facilityId,
+              subfacilityId,
+              programSearch
+            )
+          : await getProgramsByFacility(
+              facilityId,
+              programSearch
+            );
 
-          if (ignore) {
-            return;
-          }
+      if (ignore) {
+        return;
+      }
 
-          setPrograms(data);
+      setPrograms(
+        getProgramResults(data)
+      );
 
-          setLoadedProgramQuery(
-            programSearch
-          );
-        } catch (err) {
-          console.error(err);
-        }
-      };
-
+      setLoadedProgramQuery(
+        programSearch
+      );
+    } catch (err) {
+      console.error(err);
+    }
+  };
     loadPrograms();
 
     return () => {

@@ -394,13 +394,13 @@ export function getSubFacilities(
 }
 
 
-// 서버가 프로그램 목록을 한 번에 돌려주는 최대 건수.
-// facilities/views.py 의 PROGRAM_LIST_MAX_RESULTS 와 같은 값을 유지할 것.
-// 결과가 정확히 이 건수면 잘렸을 수 있으니 검색을 안내한다.
-export const PROGRAM_LIST_LIMIT = 50;
+// 프로그램 API 페이지당 조회 개수.
+// facilities/views.py 의 ProgramPagination.page_size 와 같은 값.
+export const PROGRAM_PAGE_SIZE = 50;
 
 
-// 프로그램명 검색어(q)는 있을 때만 붙인다. (서버: program_name 부분 일치)
+// 프로그램명 검색어(q)는 있을 때만 붙인다.
+// 서버에서는 program_name__icontains 로 검색한다.
 function programSearchParam(q) {
   const query = (q || "").trim();
 
@@ -410,25 +410,59 @@ function programSearchParam(q) {
 }
 
 
+// 특정 시설의 프로그램 조회
+// page 값을 넘기면 2페이지, 3페이지도 조회할 수 있다.
+//
+// 반환 형태:
+// {
+//   count: 전체 결과 개수,
+//   next: 다음 페이지 URL 또는 null,
+//   previous: 이전 페이지 URL 또는 null,
+//   results: 프로그램 배열
+// }
 export function getProgramsByFacility(
   facilityId,
-  q = ""
+  q = "",
+  page = 1
 ) {
   return apiGet(
-    `/api/facilities/programs/?facility=${facilityId}${programSearchParam(q)}`
+    `/api/facilities/programs/?facility=${facilityId}` +
+    `&page=${page}` +
+    programSearchParam(q)
   );
 }
 
 
+// 특정 시설 + 세부시설의 프로그램 조회
 export function getProgramsBySubFacility(
   facilityId,
   subfacilityId,
-  q = ""
+  q = "",
+  page = 1
 ) {
   return apiGet(
-    `/api/facilities/programs/?facility=${facilityId}&subfacility=${subfacilityId}${programSearchParam(q)}`
+    `/api/facilities/programs/?facility=${facilityId}` +
+    `&subfacility=${subfacilityId}` +
+    `&page=${page}` +
+    programSearchParam(q)
   );
 }
+
+
+// 페이지네이션 응답에서 실제 프로그램 배열만 꺼낼 때 사용.
+// 혹시 이전 배열 형식 응답이 들어와도 깨지지 않도록 처리한다.
+export function getProgramResults(
+  data
+) {
+  if (Array.isArray(data)) {
+    return data;
+  }
+
+  return data?.results ?? [];
+}
+
+
+
 
 
 export function logout() {
