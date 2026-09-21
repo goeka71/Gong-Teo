@@ -5,6 +5,16 @@ from oneday.models import MyProgram
 from facilities.models import Program, Review
 
 
+MAX_IMAGE_SIZE = 5 * 1024 * 1024  # 5MB
+
+
+def validate_image_size(image):
+    if image and image.size > MAX_IMAGE_SIZE:
+        raise serializers.ValidationError(
+            "이미지 파일은 5MB 이하만 업로드할 수 있습니다."
+        )
+
+
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
@@ -149,6 +159,11 @@ class MyProgramSerializer(serializers.ModelSerializer):
         allow_null=True
     )
 
+    proof_image = serializers.ImageField(
+        required=False,
+        validators=[validate_image_size]
+    )
+
     class Meta:
         model = MyProgram
         fields = [
@@ -216,7 +231,8 @@ class MyProgramCreateSerializer(serializers.ModelSerializer):
 
     # 새 수강 프로그램 등록에서는 수강증 필수
     proof_image = serializers.ImageField(
-        required=True
+        required=True,
+        validators=[validate_image_size]
     )
 
     class Meta:
@@ -311,6 +327,12 @@ class MyReviewSerializer(serializers.ModelSerializer):
         source="program.program_name",
         read_only=True,
         allow_null=True
+    )
+
+    image = serializers.ImageField(
+        required=False,
+        allow_null=True,
+        validators=[validate_image_size]
     )
 
     class Meta:
