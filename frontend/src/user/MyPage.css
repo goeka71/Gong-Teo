@@ -767,6 +767,16 @@
   margin-top: 10px;
 }
 
+.program-register-search {
+  margin-bottom: 8px;
+}
+
+.program-register-hint {
+  margin: 6px 0 0;
+  font-size: 12px;
+  color: var(--color-text-secondary, #666);
+}
+
 
 /* ---------- EmptyMenuView ---------- */
 .empty-menu-style-01 {

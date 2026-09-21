@@ -88,6 +88,16 @@
   margin-top: 8px;
 }
 
+.prm-program-search {
+  margin-bottom: 8px;
+}
+
+.prm-program-hint {
+  margin: 6px 0 0;
+  font-size: 12px;
+  color: var(--color-text-secondary, #666);
+}
+
 .prm-range-row {
   display: flex;
   align-items: center;
