@@ -6,7 +6,17 @@ import {
   getProgramsByFacility,
   getProgramsBySubFacility,
   createMyProgram,
+  PROGRAM_LIST_LIMIT,
 } from "../api/user";
+
+import { extractServerMessage } from "../api/client";
+import { useDebouncedValue } from "../utils/useDebouncedValue";
+
+import {
+  MAX_IMAGE_BYTES,
+  MAX_IMAGE_MB,
+  imageTooLargeMessage,
+} from "../utils/upload";
 
 import "./ProgramRegisterModal.css";
 
@@ -67,6 +77,20 @@ function ProgramRegisterModal({ onClose, onSaved }) {
 
   const [programs, setPrograms] = useState([]);
   const [programId, setProgramId] = useState("");
+
+  // 프로그램명 검색. 서버가 한 번에 PROGRAM_LIST_LIMIT 건까지만 주므로
+  // 나머지는 검색어로 찾는다. (입력마다 요청하지 않도록 디바운스)
+  const [programQuery, setProgramQuery] = useState("");
+  const debouncedProgramQuery = useDebouncedValue(programQuery, 300);
+  // 입력을 비우면 디바운스를 기다리지 않고 바로 전체 목록으로 돌아간다.
+  const programSearch =
+    programQuery.trim() === "" ? "" : debouncedProgramQuery.trim();
+  // 마지막으로 응답을 받은 검색어. ("검색 결과 없음" 안내를 조회 중에 띄우지 않으려고)
+  const [loadedProgramQuery, setLoadedProgramQuery] = useState("");
+  // 검색 결과에서 빠져도 이미 고른 프로그램이 사라지지 않게 따로 들고 있는다.
+  const [pinnedProgram, setPinnedProgram] = useState(null);
+  // 어느 시설의 세부시설 목록을 받아 왔는지. (세부시설이 없는 시설인지 판단용)
+  const [subsLoadedFor, setSubsLoadedFor] = useState("");
 
   const [isDirectInput, setIsDirectInput] = useState(false);
   const [newProgramName, setNewProgramName] = useState("");
@@ -131,53 +155,75 @@ function ProgramRegisterModal({ onClose, onSaved }) {
       setProgramId("");
       setIsDirectInput(false);
       setNewProgramName("");
+      setSubsLoadedFor("");
       return;
     }
+
+    let ignore = false;
 
     const loadSubFacilities = async () => {
       try {
         const data = await getSubFacilities(facilityId);
+
+        if (ignore) return;
+
         setSubFacilities(data);
         setSubfacilityId("");
         setPrograms([]);
         setProgramId("");
         setIsDirectInput(false);
         setNewProgramName("");
-
-        if (data.length === 0) {
-          const programData = await getProgramsByFacility(facilityId);
-          setPrograms(programData);
-        }
+        setSubsLoadedFor(String(facilityId));
       } catch (err) {
         console.error(err);
       }
     };
 
     loadSubFacilities();
+
+    return () => {
+      ignore = true;
+    };
   }, [facilityId]);
 
   // ----------------------------------------------
-  // 세부시설 → 프로그램
+  // 시설 / 세부시설 / 검색어 → 프로그램
+  //  - 세부시설이 없는 시설: 시설 기준으로 조회
+  //  - 세부시설이 있는 시설: 세부시설을 골라야 조회
+  // 선택값(programId)은 여기서 건드리지 않는다. (검색어만 바뀔 때 선택이 풀리면 안 됨)
   // ----------------------------------------------
+  const noSubFacilities =
+    subsLoadedFor === String(facilityId) && subFacilities.length === 0;
+
   useEffect(() => {
-    if (!facilityId || !subfacilityId) {
+    if (!facilityId || (!subfacilityId && !noSubFacilities)) {
       return;
     }
 
+    // 응답 순서가 뒤바뀌어도(이전 검색어 응답이 늦게 도착) 최신 요청만 반영한다.
+    let ignore = false;
+
     const loadPrograms = async () => {
       try {
-        const data = await getProgramsBySubFacility(facilityId, subfacilityId);
+        const data = subfacilityId
+          ? await getProgramsBySubFacility(facilityId, subfacilityId, programSearch)
+          : await getProgramsByFacility(facilityId, programSearch);
+
+        if (ignore) return;
+
         setPrograms(data);
-        setProgramId("");
-        setIsDirectInput(false);
-        setNewProgramName("");
+        setLoadedProgramQuery(programSearch);
       } catch (err) {
         console.error(err);
       }
     };
 
     loadPrograms();
-  }, [facilityId, subfacilityId]);
+
+    return () => {
+      ignore = true;
+    };
+  }, [facilityId, subfacilityId, noSubFacilities, programSearch]);
 
   const selectedFacility = facilities.find(
     (facility) => String(facility.id) === String(facilityId)
@@ -187,9 +233,21 @@ function ProgramRegisterModal({ onClose, onSaved }) {
     (subfacility) => String(subfacility.id) === String(subfacilityId)
   );
 
-  const selectedProgram = programs.find(
-    (program) => String(program.id) === String(programId)
-  );
+  // 검색 결과에 없더라도 이미 고른 프로그램은 유지한다.
+  const selectedProgram =
+    programs.find((program) => String(program.id) === String(programId)) ||
+    (pinnedProgram && String(pinnedProgram.id) === String(programId)
+      ? pinnedProgram
+      : undefined);
+
+  const programOptions =
+    selectedProgram &&
+    !programs.some((program) => String(program.id) === String(selectedProgram.id))
+      ? [selectedProgram, ...programs]
+      : programs;
+
+  const programSelectDisabled =
+    !facilityId || (subFacilities.length > 0 && !subfacilityId);
 
   const displayProgramName = isDirectInput
     ? newProgramName
@@ -206,27 +264,33 @@ function ProgramRegisterModal({ onClose, onSaved }) {
   // ----------------------------------------------
   // 수강증 파일
   // ----------------------------------------------
+  // 통과하면 true, 거부하면 false (거부된 파일은 state 에 저장하지 않는다)
   const validateFile = (file) => {
-    if (!file) return;
+    if (!file) return true;
 
     const allowedTypes = ["image/jpeg", "image/png"];
 
     if (!allowedTypes.includes(file.type)) {
       setSubmitError("JPG 또는 PNG 파일만 첨부할 수 있습니다.");
-      return;
+      return false;
     }
 
-    if (file.size > 10 * 1024 * 1024) {
-      setSubmitError("수강증 파일은 10MB 이하만 첨부할 수 있습니다.");
-      return;
+    if (file.size > MAX_IMAGE_BYTES) {
+      setSubmitError(imageTooLargeMessage("수강증 파일은", file));
+      return false;
     }
 
     setSubmitError("");
     setProofFile(file);
+    return true;
   };
 
   const handleFileChange = (event) => {
-    validateFile(event.target.files?.[0]);
+    // 거부된 파일이 input 에 남아 있으면 같은 파일을 다시 골라도 change 가
+    // 발생하지 않으므로 비워 준다.
+    if (!validateFile(event.target.files?.[0])) {
+      event.target.value = "";
+    }
   };
 
   const handleDragOver = (event) => {
@@ -334,7 +398,11 @@ function ProgramRegisterModal({ onClose, onSaved }) {
       }
     } catch (err) {
       console.error(err);
-      setSubmitError("프로그램 등록에 실패했습니다. 입력 내용을 확인해주세요.");
+      // 서버가 준 사유(예: 수강증 용량 초과)가 있으면 그걸 보여준다.
+      setSubmitError(
+        extractServerMessage(err?.data) ||
+          "프로그램 등록에 실패했습니다. 입력 내용을 확인해주세요."
+      );
     } finally {
       setSubmitting(false);
     }
@@ -366,7 +434,10 @@ function ProgramRegisterModal({ onClose, onSaved }) {
                 <select
                   className="select"
                   value={region}
-                  onChange={(event) => setRegion(event.target.value)}
+                  onChange={(event) => {
+                    setRegion(event.target.value);
+                    setProgramQuery("");
+                  }}
                 >
                   <option value="">지역을 선택해주세요</option>
 
@@ -385,7 +456,11 @@ function ProgramRegisterModal({ onClose, onSaved }) {
                   className="select"
                   value={facilityId}
                   disabled={!region}
-                  onChange={(event) => setFacilityId(event.target.value)}
+                  onChange={(event) => {
+                    setFacilityId(event.target.value);
+                    setSubfacilityId("");
+                    setProgramQuery("");
+                  }}
                 >
                   <option value="">시설을 선택해주세요</option>
 
@@ -409,7 +484,15 @@ function ProgramRegisterModal({ onClose, onSaved }) {
                     className="select"
                     value={subfacilityId}
                     disabled={!facilityId}
-                    onChange={(event) => setSubfacilityId(event.target.value)}
+                    onChange={(event) => {
+                      // 세부시설이 바뀌면 프로그램 선택/검색어를 처음 상태로 되돌린다.
+                      setSubfacilityId(event.target.value);
+                      setPrograms([]);
+                      setProgramId("");
+                      setIsDirectInput(false);
+                      setNewProgramName("");
+                      setProgramQuery("");
+                    }}
                   >
                     <option value="">세부시설을 선택해주세요</option>
 
@@ -425,13 +508,19 @@ function ProgramRegisterModal({ onClose, onSaved }) {
               <div className="form-group">
                 <label className="form-label">프로그램명</label>
 
+                <input
+                  className="input prm-program-search"
+                  type="search"
+                  placeholder="프로그램명으로 검색 (예: 수영)"
+                  value={programQuery}
+                  disabled={programSelectDisabled}
+                  onChange={(event) => setProgramQuery(event.target.value)}
+                />
+
                 <select
                   className="select"
                   value={isDirectInput ? "__direct__" : programId}
-                  disabled={
-                    !facilityId ||
-                    (subFacilities.length > 0 && !subfacilityId)
-                  }
+                  disabled={programSelectDisabled}
                   onChange={(event) => {
                     const value = event.target.value;
 
@@ -444,11 +533,16 @@ function ProgramRegisterModal({ onClose, onSaved }) {
                     setIsDirectInput(false);
                     setNewProgramName("");
                     setProgramId(value);
+                    setPinnedProgram(
+                      programOptions.find(
+                        (program) => String(program.id) === value
+                      ) || null
+                    );
                   }}
                 >
                   <option value="">프로그램을 선택해주세요</option>
 
-                  {programs.map((program) => (
+                  {programOptions.map((program) => (
                     <option key={program.id} value={program.id}>
                       {program.program_name}
                     </option>
@@ -458,6 +552,24 @@ function ProgramRegisterModal({ onClose, onSaved }) {
                     + 목록에 없어요 · 직접 입력
                   </option>
                 </select>
+
+                {!programSelectDisabled &&
+                  programs.length >= PROGRAM_LIST_LIMIT && (
+                    <p className="prm-program-hint">
+                      {programSearch
+                        ? `검색 결과가 많아 상위 ${PROGRAM_LIST_LIMIT}건만 표시 중이에요. 검색어를 더 입력해 좁혀보세요.`
+                        : `상위 ${PROGRAM_LIST_LIMIT}건만 표시 중이에요. 프로그램명으로 검색해 찾아보세요.`}
+                    </p>
+                  )}
+
+                {!programSelectDisabled &&
+                  programSearch &&
+                  loadedProgramQuery === programSearch &&
+                  programs.length === 0 && (
+                    <p className="prm-program-hint">
+                      검색 결과가 없어요. 목록에 없으면 &apos;직접 입력&apos;을 선택해주세요.
+                    </p>
+                  )}
 
                 {isDirectInput && (
                   <input
@@ -563,7 +675,7 @@ function ProgramRegisterModal({ onClose, onSaved }) {
                     {proofFile ? proofFile.name : "파일 선택 또는 드래그"}
                   </strong>
 
-                  <span className="prm-help-text">JPG, PNG · 10MB 이하</span>
+                  <span className="prm-help-text">JPG, PNG · {MAX_IMAGE_MB}MB 이하</span>
 
                   {proofFile && (
                     <button

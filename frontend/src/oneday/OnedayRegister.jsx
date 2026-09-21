@@ -543,7 +543,20 @@ function OnedayRegister({ onBack }) {
           className="back-button"
           onClick={onBack}
         >
-          ← 원데이 클래스
+          <svg
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            aria-hidden="true"
+          >
+            <path d="M15 18l-6-6 6-6" />
+          </svg>
+          <span>원데이 클래스</span>
         </button>
 
         <div className="register-title-area">

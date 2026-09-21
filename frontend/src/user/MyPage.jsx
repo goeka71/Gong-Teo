@@ -10,6 +10,7 @@ import {
   getProgramsByFacility,
   getProgramsBySubFacility,
   createMyProgram,
+  PROGRAM_LIST_LIMIT,
   updateMyInfo,
   getMyReviews,
   createReview,
@@ -22,10 +23,16 @@ import {
 import { getMyOnedayApplications } from "../api/oneday";
 import { getMyFavorites } from "../api/facilities";
 import { formatWalkTime } from "../utils/time";
+import { useDebouncedValue } from "../utils/useDebouncedValue";
+import {
+  MAX_IMAGE_BYTES,
+  MAX_IMAGE_MB,
+  imageTooLargeMessage,
+} from "../utils/upload";
 import HeartIcon from "../facilities/HeartIcon";
 
 
-import { BASE_URL } from "../api/client";
+import { BASE_URL, extractServerMessage } from "../api/client";
 
 import "./MyPage.css";
 import CoinHistory from "./CoinHistory";
@@ -564,6 +571,43 @@ const handleViewChange = (
     setProgramId,
   ] = useState("");
 
+  // 프로그램명 검색. 서버가 한 번에 PROGRAM_LIST_LIMIT 건까지만 주므로
+  // 나머지는 검색어로 찾는다. (입력마다 요청하지 않도록 디바운스)
+  const [
+    programQuery,
+    setProgramQuery,
+  ] = useState("");
+
+  const debouncedProgramQuery =
+    useDebouncedValue(
+      programQuery,
+      300
+    );
+
+  // 입력을 비우면 디바운스를 기다리지 않고 바로 전체 목록으로 돌아간다.
+  const programSearch =
+    programQuery.trim() === ""
+      ? ""
+      : debouncedProgramQuery.trim();
+
+  // 마지막으로 응답을 받은 검색어. ("검색 결과 없음" 안내를 조회 중에 띄우지 않으려고)
+  const [
+    loadedProgramQuery,
+    setLoadedProgramQuery,
+  ] = useState("");
+
+  // 검색 결과에서 빠져도 이미 고른 프로그램이 사라지지 않게 따로 들고 있는다.
+  const [
+    pinnedProgram,
+    setPinnedProgram,
+  ] = useState(null);
+
+  // 어느 시설의 세부시설 목록을 받아 왔는지. (세부시설이 없는 시설인지 판단용)
+  const [
+    subsLoadedFor,
+    setSubsLoadedFor,
+  ] = useState("");
+
 
   const [
     isDirectInput,
@@ -780,8 +824,12 @@ useEffect(() => {
       setIsDirectInput(false);
       setNewProgramName("");
 
+      setSubsLoadedFor("");
+
       return;
     }
+
+    let ignore = false;
 
     const loadSubFacilities =
       async () => {
@@ -790,6 +838,10 @@ useEffect(() => {
             await getSubFacilities(
               facilityId
             );
+
+          if (ignore) {
+            return;
+          }
 
           setSubFacilities(data);
 
@@ -801,15 +853,9 @@ useEffect(() => {
           setIsDirectInput(false);
           setNewProgramName("");
 
-
-          if (data.length === 0) {
-            const programData =
-              await getProgramsByFacility(
-                facilityId
-              );
-
-            setPrograms(programData);
-          }
+          setSubsLoadedFor(
+            String(facilityId)
+          );
         } catch (err) {
           console.error(err);
         }
@@ -817,37 +863,62 @@ useEffect(() => {
 
     loadSubFacilities();
 
+    return () => {
+      ignore = true;
+    };
+
   }, [facilityId]);
 
 
   /* =========================
-     세부시설 → 프로그램
+     시설 / 세부시설 / 검색어 → 프로그램
+     - 세부시설이 없는 시설: 시설 기준으로 조회
+     - 세부시설이 있는 시설: 세부시설을 골라야 조회
+     선택값(programId)은 여기서 건드리지 않는다.
+     (검색어만 바뀔 때 선택이 풀리면 안 됨)
   ========================= */
+
+  const noSubFacilities =
+    subsLoadedFor ===
+      String(facilityId) &&
+    subFacilities.length === 0;
 
   useEffect(() => {
     if (
       !facilityId ||
-      !subfacilityId
+      (!subfacilityId &&
+        !noSubFacilities)
     ) {
       return;
     }
+
+    // 응답 순서가 뒤바뀌어도(이전 검색어 응답이 늦게 도착) 최신 요청만 반영한다.
+    let ignore = false;
 
     const loadPrograms =
       async () => {
         try {
           const data =
-            await getProgramsBySubFacility(
-              facilityId,
-              subfacilityId
-            );
+            subfacilityId
+              ? await getProgramsBySubFacility(
+                  facilityId,
+                  subfacilityId,
+                  programSearch
+                )
+              : await getProgramsByFacility(
+                  facilityId,
+                  programSearch
+                );
+
+          if (ignore) {
+            return;
+          }
 
           setPrograms(data);
 
-          setProgramId("");
-
-          setIsDirectInput(false);
-
-          setNewProgramName("");
+          setLoadedProgramQuery(
+            programSearch
+          );
         } catch (err) {
           console.error(err);
         }
@@ -855,9 +926,15 @@ useEffect(() => {
 
     loadPrograms();
 
+    return () => {
+      ignore = true;
+    };
+
   }, [
     facilityId,
     subfacilityId,
+    noSubFacilities,
+    programSearch,
   ]);
 
 
@@ -877,12 +954,83 @@ useEffect(() => {
     );
 
 
+  // 검색 결과에 없더라도 이미 고른 프로그램은 유지한다.
   const selectedProgram =
     programs.find(
       (program) =>
         String(program.id) ===
         String(programId)
-    );
+    ) ||
+    (pinnedProgram &&
+    String(pinnedProgram.id) ===
+      String(programId)
+      ? pinnedProgram
+      : undefined);
+
+
+  const registerProgramOptions =
+    selectedProgram &&
+    !programs.some(
+      (program) =>
+        String(program.id) ===
+        String(selectedProgram.id)
+    )
+      ? [selectedProgram, ...programs]
+      : programs;
+
+
+  const programSelectDisabled =
+    !facilityId ||
+    (subFacilities.length > 0 &&
+      !subfacilityId);
+
+
+  /* 지역/시설/세부시설/프로그램 선택 (검색어 초기화, 선택값 보관) */
+
+  const handleRegionChange =
+    (value) => {
+      setRegion(value);
+
+      setProgramQuery("");
+    };
+
+
+  const handleFacilityChange =
+    (value) => {
+      setFacilityId(value);
+
+      setSubfacilityId("");
+
+      setProgramQuery("");
+    };
+
+
+  const handleSubfacilityChange =
+    (value) => {
+      setSubfacilityId(value);
+
+      setPrograms([]);
+      setProgramId("");
+
+      setIsDirectInput(false);
+      setNewProgramName("");
+
+      setProgramQuery("");
+    };
+
+
+  const handleProgramIdChange =
+    (value) => {
+      setProgramId(value);
+
+      setPinnedProgram(
+        registerProgramOptions.find(
+          (program) =>
+            String(program.id) ===
+            String(value)
+        ) || null
+      );
+    };
 
 
   const displayProgramName =
@@ -921,9 +1069,10 @@ useEffect(() => {
      수강증
   ========================= */
 
+  // 통과하면 true, 거부하면 false (거부된 파일은 state 에 저장하지 않는다)
   const validateFile = (file) => {
     if (!file) {
-      return;
+      return true;
     }
 
     const allowedTypes = [
@@ -940,23 +1089,28 @@ useEffect(() => {
         "JPG 또는 PNG 파일만 첨부할 수 있습니다."
       );
 
-      return;
+      return false;
     }
 
     if (
       file.size >
-      10 * 1024 * 1024
+      MAX_IMAGE_BYTES
     ) {
       setSubmitError(
-        "수강증 파일은 10MB 이하만 첨부할 수 있습니다."
+        imageTooLargeMessage(
+          "수강증 파일은",
+          file
+        )
       );
 
-      return;
+      return false;
     }
 
     setSubmitError("");
 
     setProofFile(file);
+
+    return true;
   };
 
 
@@ -965,7 +1119,11 @@ useEffect(() => {
       const file =
         event.target.files?.[0];
 
-      validateFile(file);
+      // 거부된 파일이 input 에 남아 있으면 같은 파일을 다시 골라도
+      // change 가 발생하지 않으므로 비워 준다.
+      if (!validateFile(file)) {
+        event.target.value = "";
+      }
     };
 
 
@@ -1014,6 +1172,8 @@ useEffect(() => {
 
     setPrograms([]);
     setProgramId("");
+    setProgramQuery("");
+    setPinnedProgram(null);
 
     setIsDirectInput(false);
     setNewProgramName("");
@@ -1222,8 +1382,10 @@ useEffect(() => {
       } catch (err) {
         console.error(err);
 
+        // 서버가 준 사유(예: 수강증 용량 초과)가 있으면 그걸 보여준다.
         setSubmitError(
-          "프로그램 등록에 실패했습니다. 입력 내용을 확인해주세요."
+          extractServerMessage(err?.data) ||
+            "프로그램 등록에 실패했습니다. 입력 내용을 확인해주세요."
         );
 
       } finally {
@@ -1327,12 +1489,20 @@ useEffect(() => {
     });
   }}
 >
-  <span
+  <svg
     className="mypage-mobile-back-icon"
+    width="22"
+    height="22"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
     aria-hidden="true"
   >
-    ‹
-  </span>
+    <path d="M15 18l-6-6 6-6" />
+  </svg>
 </button>
 
             {view ===
@@ -1365,7 +1535,7 @@ useEffect(() => {
 
               <ProgramRegisterView
                 region={region}
-                setRegion={setRegion}
+                setRegion={handleRegionChange}
 
                 facilities={
                   facilities
@@ -1376,7 +1546,7 @@ useEffect(() => {
                 }
 
                 setFacilityId={
-                  setFacilityId
+                  handleFacilityChange
                 }
 
                 subFacilities={
@@ -1388,11 +1558,35 @@ useEffect(() => {
                 }
 
                 setSubfacilityId={
-                  setSubfacilityId
+                  handleSubfacilityChange
                 }
 
                 programs={
                   programs
+                }
+
+                programOptions={
+                  registerProgramOptions
+                }
+
+                programQuery={
+                  programQuery
+                }
+
+                setProgramQuery={
+                  setProgramQuery
+                }
+
+                programSearch={
+                  programSearch
+                }
+
+                loadedProgramQuery={
+                  loadedProgramQuery
+                }
+
+                programSelectDisabled={
+                  programSelectDisabled
                 }
 
                 programId={
@@ -1400,7 +1594,7 @@ useEffect(() => {
                 }
 
                 setProgramId={
-                  setProgramId
+                  handleProgramIdChange
                 }
 
                 isDirectInput={
@@ -3956,11 +4150,17 @@ function ReviewFormModal({
 
       if (
         file.size >
-        10 * 1024 * 1024
+        MAX_IMAGE_BYTES
       ) {
         setFormError(
-          "이미지는 10MB 이하만 첨부할 수 있습니다."
+          imageTooLargeMessage(
+            "이미지는",
+            file
+          )
         );
+
+        // 거부된 파일이 input 에 남지 않게 비운다. (같은 파일 재선택 대비)
+        event.target.value = "";
 
         return;
       }
@@ -4781,6 +4981,12 @@ function ProgramRegisterView({
   setSubfacilityId,
 
   programs,
+  programOptions,
+  programQuery,
+  setProgramQuery,
+  programSearch,
+  loadedProgramQuery,
+  programSelectDisabled,
   programId,
   setProgramId,
 
@@ -5036,6 +5242,31 @@ function ProgramRegisterView({
               </label>
 
 
+              <input
+                className="input program-register-search"
+
+                type="search"
+
+                placeholder="프로그램명으로 검색 (예: 수영)"
+
+                value={
+                  programQuery
+                }
+
+                disabled={
+                  programSelectDisabled
+                }
+
+                onChange={(
+                  event
+                ) =>
+                  setProgramQuery(
+                    event.target.value
+                  )
+                }
+              />
+
+
               <select
                 className="select"
 
@@ -5046,12 +5277,7 @@ function ProgramRegisterView({
                 }
 
                 disabled={
-                  !facilityId ||
-                  (
-                    subFacilities.length >
-                      0 &&
-                    !subfacilityId
-                  )
+                  programSelectDisabled
                 }
 
                 onChange={(
@@ -5095,7 +5321,7 @@ function ProgramRegisterView({
                 </option>
 
 
-                {programs.map(
+                {programOptions.map(
                   (program) => (
 
                     <option
@@ -5120,6 +5346,30 @@ function ProgramRegisterView({
                 </option>
 
               </select>
+
+
+              {!programSelectDisabled &&
+                programs.length >=
+                  PROGRAM_LIST_LIMIT && (
+
+                <p className="program-register-hint">
+                  {programSearch
+                    ? `검색 결과가 많아 상위 ${PROGRAM_LIST_LIMIT}건만 표시 중이에요. 검색어를 더 입력해 좁혀보세요.`
+                    : `상위 ${PROGRAM_LIST_LIMIT}건만 표시 중이에요. 프로그램명으로 검색해 찾아보세요.`}
+                </p>
+              )}
+
+
+              {!programSelectDisabled &&
+                programSearch &&
+                loadedProgramQuery ===
+                  programSearch &&
+                programs.length === 0 && (
+
+                <p className="program-register-hint">
+                  검색 결과가 없어요. 목록에 없으면 &apos;직접 입력&apos;을 선택해주세요.
+                </p>
+              )}
 
 
               {isDirectInput && (
@@ -5370,7 +5620,7 @@ function ProgramRegisterView({
                 <span
                   className="program-register-style-05"
                 >
-                  JPG, PNG · 10MB 이하
+                  JPG, PNG · {MAX_IMAGE_MB}MB 이하
                 </span>
 
 
@@ -5887,6 +6137,8 @@ function SettingsView({
   user,
   setUser,
 }) {
+  const navigate = useNavigate();
+
   const [form, setForm] =
     useState({
       name: user.name || "",
@@ -6174,9 +6426,7 @@ function SettingsView({
             type="button"
             className="btn btn-outline"
             onClick={() =>
-              alert(
-                "비밀번호 변경 기능은 추후 연결됩니다."
-              )
+              navigate("/password-reset")
             }
           >
             변경

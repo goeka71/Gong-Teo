@@ -57,6 +57,13 @@ admin.site.register(FacilityDetail)
 admin.site.register(Sport)
 admin.site.register(FacilitySport)
 admin.site.register(Program)
-admin.site.register(Review)
+
+
+@admin.register(Review)
+class ReviewAdmin(admin.ModelAdmin):
+    # Program 이 9만 건이라 드롭다운(select)으로 렌더링하면 메모리를 크게 먹는다.
+    raw_id_fields = ("program",)
+
+
 admin.site.register(Favorite)
 admin.site.register(SubFacilityDetail)

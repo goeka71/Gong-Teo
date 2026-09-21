@@ -5,8 +5,14 @@ import {
   getFacilityReviewPreview,
   getFacilityReviews,
 } from "../api/facilities";
-import { getProgramsByFacility, createReview } from "../api/user";
+import {
+  getProgramsByFacility,
+  createReview,
+  PROGRAM_LIST_LIMIT,
+} from "../api/user";
 import { BASE_URL } from "../api/client";
+import { MAX_IMAGE_BYTES, imageTooLargeMessage } from "../utils/upload";
+import { useDebouncedValue } from "../utils/useDebouncedValue";
 import "./FacilityDetail.css";
 import "./FacilityReviewsPanel.css";
 
@@ -90,7 +96,6 @@ function FacilityReviewsPanel({ facilityId, subfacilityId = null }) {
   // 조회하지 않는다 — 호스트(SubFacilityDetailPanel)가 이미 같은 정보를
   // 따로 갖고 있어 중복 요청이 된다.
   const [facility, setFacility] = useState(null);
-  const [programs, setPrograms] = useState([]);
 
   // 평균 별점 + 전체 개수. 시설 전체 기준 엔드포인트라 세부시설 단위로는
   // 못 쪼개서, 세부시설 고정 모드에서는 조회하지 않는다.
@@ -113,7 +118,9 @@ function FacilityReviewsPanel({ facilityId, subfacilityId = null }) {
   const [loginRequired, setLoginRequired] = useState(false);
   const [reloadKey, setReloadKey] = useState(0); // 작성 성공 후 목록/통계 재조회 트리거
 
-  // 시설 기본정보(이름, 세부시설 목록) + 프로그램 목록(작성 폼 선택지)
+  // 시설 기본정보(이름, 세부시설 목록).
+  // 프로그램 목록은 시설당 수천 건이라 여기서 받지 않고, 리뷰 작성 모달에서
+  // 프로그램 리뷰를 고를 때만 검색어와 함께 조회한다. (ReviewWriteModal)
   useEffect(() => {
     if (isScoped) return;
 
@@ -121,13 +128,9 @@ function FacilityReviewsPanel({ facilityId, subfacilityId = null }) {
 
     async function load() {
       try {
-        const [detail, programList] = await Promise.all([
-          getFacilityDetail(facilityId),
-          getProgramsByFacility(facilityId),
-        ]);
+        const detail = await getFacilityDetail(facilityId);
         if (!ignore) {
           setFacility(detail);
-          setPrograms(programList);
         }
       } catch (err) {
         console.error("시설 정보 조회 실패:", err);
@@ -281,7 +284,20 @@ function FacilityReviewsPanel({ facilityId, subfacilityId = null }) {
             className="frp-photo-grid-back"
             onClick={() => setShowPhotoGrid(false)}
           >
-            ‹ 목록으로
+            <svg
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
+              <path d="M15 18l-6-6 6-6" />
+            </svg>
+            <span>목록으로</span>
           </button>
 
           {photoReviewsLoading ? (
@@ -393,7 +409,6 @@ function FacilityReviewsPanel({ facilityId, subfacilityId = null }) {
       {writeOpen && (
         <ReviewWriteModal
           facilityId={facilityId}
-          programs={programs}
           subFacilities={subFacilities}
           fixedSubfacilityId={subfacilityId}
           onClose={() => setWriteOpen(false)}
@@ -417,7 +432,20 @@ function FacilityReviewsPanel({ facilityId, subfacilityId = null }) {
         className="fd-back-btn"
         onClick={() => navigate(`/facility/${facilityId}`)}
       >
-        ‹ 시설로 돌아가기
+        <svg
+          width="20"
+          height="20"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          aria-hidden="true"
+        >
+          <path d="M15 18l-6-6 6-6" />
+        </svg>
+        <span>시설로 돌아가기</span>
       </button>
 
       {body}
@@ -427,14 +455,13 @@ function FacilityReviewsPanel({ facilityId, subfacilityId = null }) {
 
 // 리뷰 작성 모달.
 //   facilityId        : 고정 대상 시설 (route 의 :id)
-//   programs           : 이 시설의 Program 목록 (카테고리=프로그램일 때 선택지)
+//                        프로그램 목록은 카테고리=프로그램일 때 모달이 직접 조회/검색한다.
 //   subFacilities       : 이 시설의 세부시설 목록 (있으면 선택, "시설 전체"도 가능)
 //   fixedSubfacilityId : 세부시설 상세에서 열렸을 때만 전달됨. 있으면 세부시설이
 //                        이미 정해진 채로 시작하고, 카테고리(시설/프로그램)·
 //                        세부시설 선택 UI 자체를 숨긴다.
 function ReviewWriteModal({
   facilityId,
-  programs,
   subFacilities,
   fixedSubfacilityId = null,
   onClose,
@@ -443,6 +470,60 @@ function ReviewWriteModal({
   const [category, setCategory] = useState("facility"); // "facility" | "program"
   const [programId, setProgramId] = useState("");
   const [subfacilityId, setSubfacilityId] = useState(fixedSubfacilityId ?? "");
+
+  // 프로그램 목록 + 검색. 서버가 한 번에 PROGRAM_LIST_LIMIT 건까지만 주므로
+  // 나머지는 검색어로 찾는다. (입력마다 요청하지 않도록 디바운스)
+  const [programs, setPrograms] = useState([]);
+  const [programQuery, setProgramQuery] = useState("");
+  const debouncedProgramQuery = useDebouncedValue(programQuery, 300);
+  // 입력을 비우면 디바운스를 기다리지 않고 바로 전체 목록으로 돌아간다.
+  const programSearch =
+    programQuery.trim() === "" ? "" : debouncedProgramQuery.trim();
+  // 마지막으로 응답을 받은 검색어. null 이면 아직 한 번도 못 받음(조회 중).
+  const [loadedProgramQuery, setLoadedProgramQuery] = useState(null);
+  // 검색 결과에서 빠져도 이미 고른 프로그램이 사라지지 않게 따로 들고 있는다.
+  const [pinnedProgram, setPinnedProgram] = useState(null);
+
+  // 프로그램 리뷰를 고르는 동안에만 조회한다. (시설 리뷰/세부시설 고정 모드는 불필요)
+  const needsPrograms = !fixedSubfacilityId && category === "program";
+
+  useEffect(() => {
+    if (!needsPrograms) return;
+
+    // 응답 순서가 뒤바뀌어도(이전 검색어 응답이 늦게 도착) 최신 요청만 반영한다.
+    let ignore = false;
+
+    async function load() {
+      try {
+        const list = await getProgramsByFacility(facilityId, programSearch);
+        if (ignore) return;
+        setPrograms(list);
+        setLoadedProgramQuery(programSearch);
+      } catch (err) {
+        console.error("프로그램 목록 조회 실패:", err);
+      }
+    }
+
+    load();
+    return () => {
+      ignore = true;
+    };
+  }, [facilityId, needsPrograms, programSearch]);
+
+  // 검색 결과에 없더라도 이미 고른 프로그램은 유지한다.
+  const selectedProgram =
+    programs.find((p) => String(p.id) === String(programId)) ||
+    (pinnedProgram && String(pinnedProgram.id) === String(programId)
+      ? pinnedProgram
+      : undefined);
+  const programOptions =
+    selectedProgram &&
+    !programs.some((p) => String(p.id) === String(selectedProgram.id))
+      ? [selectedProgram, ...programs]
+      : programs;
+  // 검색어 없이 조회했는데도 하나도 없음 = 이 시설에는 등록된 프로그램이 없다.
+  const noProgramsAtAll =
+    loadedProgramQuery === "" && programSearch === "" && programs.length === 0;
   const [rating, setRating] = useState(0);
   const [hoverRating, setHoverRating] = useState(0);
   const [content, setContent] = useState("");
@@ -460,8 +541,10 @@ function ReviewWriteModal({
       return;
     }
 
-    if (file.size > 10 * 1024 * 1024) {
-      setError("이미지는 10MB 이하만 첨부할 수 있습니다.");
+    if (file.size > MAX_IMAGE_BYTES) {
+      setError(imageTooLargeMessage("이미지는", file));
+      // 거부된 파일이 input 에 남지 않게 비운다. (같은 파일 재선택 대비)
+      event.target.value = "";
       return;
     }
 
@@ -554,20 +637,51 @@ function ReviewWriteModal({
               {category === "program" && (
                 <div className="frp-form-group">
                   <span className="frp-form-label">프로그램</span>
-                  {programs.length === 0 ? (
+                  {noProgramsAtAll ? (
                     <p className="frp-form-hint">등록된 프로그램이 없습니다.</p>
                   ) : (
-                    <select
-                      value={programId}
-                      onChange={(e) => setProgramId(e.target.value)}
-                    >
-                      <option value="">프로그램을 선택해주세요</option>
-                      {programs.map((p) => (
-                        <option key={p.id} value={p.id}>
-                          {p.program_name}
-                        </option>
-                      ))}
-                    </select>
+                    <>
+                      <input
+                        type="search"
+                        className="frp-program-search"
+                        placeholder="프로그램명으로 검색 (예: 수영)"
+                        value={programQuery}
+                        onChange={(e) => setProgramQuery(e.target.value)}
+                      />
+                      <select
+                        value={programId}
+                        onChange={(e) => {
+                          setProgramId(e.target.value);
+                          setPinnedProgram(
+                            programOptions.find(
+                              (p) => String(p.id) === e.target.value
+                            ) || null
+                          );
+                        }}
+                      >
+                        <option value="">프로그램을 선택해주세요</option>
+                        {programOptions.map((p) => (
+                          <option key={p.id} value={p.id}>
+                            {p.program_name}
+                          </option>
+                        ))}
+                      </select>
+                      {loadedProgramQuery === null && (
+                        <p className="frp-form-hint">프로그램을 불러오는 중…</p>
+                      )}
+                      {programs.length >= PROGRAM_LIST_LIMIT && (
+                        <p className="frp-form-hint">
+                          {programSearch
+                            ? `검색 결과가 많아 상위 ${PROGRAM_LIST_LIMIT}건만 표시 중이에요. 검색어를 더 입력해 좁혀보세요.`
+                            : `상위 ${PROGRAM_LIST_LIMIT}건만 표시 중이에요. 프로그램명으로 검색해 찾아보세요.`}
+                        </p>
+                      )}
+                      {programSearch &&
+                        loadedProgramQuery === programSearch &&
+                        programs.length === 0 && (
+                          <p className="frp-form-hint">검색 결과가 없어요.</p>
+                        )}
+                    </>
                   )}
                 </div>
               )}

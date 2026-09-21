@@ -95,12 +95,61 @@ async function request(path, options = {}) {
   }
 
   if (!response.ok) {
-    throw new Error(
-      `API 요청 실패: ${response.status} ${response.statusText} (${path})`
+    let errorData = {};
+
+    try {
+      errorData = await response.json();
+    } catch {
+      // JSON 응답이 아니면(프록시 오류 페이지 등) 무시
+    }
+
+    // 서버가 내려준 메시지가 있으면 그걸 쓰고, 없으면 기존 문구로 대체한다.
+    const error = new Error(
+      extractServerMessage(errorData) ||
+        `API 요청 실패: ${response.status} ${response.statusText} (${path})`
     );
+
+    // api/user.js 의 authenticatedRequest 와 같은 형태로 붙여 둔다.
+    error.status = response.status;
+    error.data = errorData;
+
+    throw error;
   }
 
   return response.json();
+}
+
+// DRF 에러 응답에서 사람이 읽을 첫 메시지를 꺼낸다.
+//   {"detail": "..."}                 -> "..."
+//   {"image": ["...", ...], ...}      -> 첫 필드의 첫 메시지
+//   ["...", ...] / "..."              -> 첫 메시지 / 그대로
+// 메시지를 찾지 못하면 "" 을 돌려준다.
+// (api/user.js 의 authenticatedRequest 가 던지는 error.data 에도 그대로 쓸 수 있다.)
+export function extractServerMessage(data) {
+  if (typeof data === "string") {
+    return data.trim();
+  }
+
+  if (Array.isArray(data)) {
+    for (const item of data) {
+      const message = extractServerMessage(item);
+      if (message) return message;
+    }
+    return "";
+  }
+
+  if (data && typeof data === "object") {
+    if (typeof data.detail === "string" && data.detail.trim()) {
+      return data.detail.trim();
+    }
+
+    for (const value of Object.values(data)) {
+      const message = extractServerMessage(value);
+      if (message) return message;
+    }
+  }
+
+  return "";
 }
 
 export function apiGet(path) {

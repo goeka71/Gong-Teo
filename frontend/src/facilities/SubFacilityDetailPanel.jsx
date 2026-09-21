@@ -210,7 +210,20 @@ function SubFacilityDetailPanel({ facilityId, subfacilityId }) {
         className="sfd-back-link"
         onClick={() => navigate(`/facility/${facilityId}`)}
       >
-        ‹ {facilityName || "시설 상세"}
+        <svg
+          width="20"
+          height="20"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          aria-hidden="true"
+        >
+          <path d="M15 18l-6-6 6-6" />
+        </svg>
+        <span>{facilityName || "시설 상세"}</span>
       </button>
 
       <h1 className="fd-name">{subfacilityName || "세부시설"}</h1>

@@ -394,21 +394,39 @@ export function getSubFacilities(
 }
 
 
+// 서버가 프로그램 목록을 한 번에 돌려주는 최대 건수.
+// facilities/views.py 의 PROGRAM_LIST_MAX_RESULTS 와 같은 값을 유지할 것.
+// 결과가 정확히 이 건수면 잘렸을 수 있으니 검색을 안내한다.
+export const PROGRAM_LIST_LIMIT = 50;
+
+
+// 프로그램명 검색어(q)는 있을 때만 붙인다. (서버: program_name 부분 일치)
+function programSearchParam(q) {
+  const query = (q || "").trim();
+
+  return query
+    ? `&q=${encodeURIComponent(query)}`
+    : "";
+}
+
+
 export function getProgramsByFacility(
-  facilityId
+  facilityId,
+  q = ""
 ) {
   return apiGet(
-    `/api/facilities/programs/?facility=${facilityId}`
+    `/api/facilities/programs/?facility=${facilityId}${programSearchParam(q)}`
   );
 }
 
 
 export function getProgramsBySubFacility(
   facilityId,
-  subfacilityId
+  subfacilityId,
+  q = ""
 ) {
   return apiGet(
-    `/api/facilities/programs/?facility=${facilityId}&subfacility=${subfacilityId}`
+    `/api/facilities/programs/?facility=${facilityId}&subfacility=${subfacilityId}${programSearchParam(q)}`
   );
 }
 
