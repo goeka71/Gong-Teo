@@ -168,8 +168,9 @@ class Command(BaseCommand):
     def _report_name_collisions(self):
         """완전 동일 중복을 제거한 뒤에도 (시설, 이름)이 겹치는 경우를 센다.
 
-        직접 입력 등록(users/views.py 의 Program get_or_create)은 시설+세부시설+이름
-        으로만 찾기 때문에, 이런 이름은 MultipleObjectsReturned 위험이 남는다.
+        이런 이름은 요일/시간/정원이 달라 서로 다른 행으로 남는다. 직접 입력 등록
+        (users/views.py my_programs)은 같은 시설+세부시설+이름의 Program 이 여러 개면
+        가장 작은 id 를 재사용한다.
         """
         kinds = Counter()
         combos = Program.objects.values(*KEY_FIELDS).distinct().order_by()
