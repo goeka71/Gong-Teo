@@ -1,3 +1,7 @@
+import re
+
+from datetime import datetime, time
+
 from django.utils import timezone
 from django.db import transaction
 
@@ -18,6 +22,43 @@ from .serializers import (
     OnedayPostSerializer,
     OnedayApplicationSerializer,
 )
+
+
+# ==========================================
+# 원데이 게시글 만료(노출 종료) 시점 계산
+#
+# "program_time" 은 "07:00 - 08:00" 형태의 문자열이라
+# DB 쿼리만으로 걸러낼 수 없어 파이썬에서 직접 계산한다.
+# 시작 시간을 파싱하지 못하면 안전하게 그 날 자정 직전까지로 본다.
+# ==========================================
+PROGRAM_START_TIME_PATTERN = re.compile(r"^(\d{1,2}):(\d{2})")
+
+
+def _get_post_expire_datetime(post):
+
+    program_time = (post.enroll.program_time or "").strip()
+
+    match = PROGRAM_START_TIME_PATTERN.match(program_time)
+
+    if match:
+        hour = int(match.group(1))
+        minute = int(match.group(2))
+    else:
+        hour, minute = 23, 59
+
+    naive_expire_at = datetime.combine(
+        post.transfer_date,
+        time(hour, minute),
+    )
+
+    return timezone.make_aware(
+        naive_expire_at,
+        timezone.get_current_timezone(),
+    )
+
+
+def _is_post_expired(post, now):
+    return _get_post_expire_datetime(post) <= now
 
 
 # ==========================================
@@ -80,6 +121,8 @@ def onedaypost_list(request):
 
     if request.method == "GET":
 
+        now = timezone.now()
+
         data = OnedayPost.objects.select_related(
             "enroll",
             "enroll__program",
@@ -87,8 +130,19 @@ def onedaypost_list(request):
         ).all().order_by("-created_at")
 
 
+        # ==================================
+        # 원데이클래스 날짜/시작 시간이 지난 게시글은
+        # 목록에서 제외 (모집중/마감 상태 모두 적용)
+        # ==================================
+
+        active_posts = [
+            post for post in data
+            if not _is_post_expired(post, now)
+        ]
+
+
         serializer = OnedayPostSerializer(
-            data,
+            active_posts,
             many=True
         )
 
