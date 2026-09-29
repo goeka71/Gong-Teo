@@ -3059,7 +3059,7 @@ function getStatusInfo(status) {
   ) {
     return {
       text:
-        "진행중",
+        "등록완료",
       background:
         "#eaf7ef",
       color:
