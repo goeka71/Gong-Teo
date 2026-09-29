@@ -1,4 +1,5 @@
 from rest_framework import serializers
+from rest_framework.validators import UniqueTogetherValidator
 
 from .models import (
     MyProgram,
@@ -200,6 +201,19 @@ class OnedayPostSerializer(serializers.ModelSerializer):
 
         read_only_fields = [
             "created_at",
+        ]
+
+        # ModelSerializer 가 OnedayPost.Meta.constraints 의
+        # UniqueConstraint(enroll, transfer_date) 를 자동으로 검증기로
+        # 붙여주긴 하는데, 그때 메시지가 영어 기본 문구("The fields enroll,
+        # transfer_date must make a unique set.")라 사용자에게 보여주기엔
+        # 부적절해서 한국어 메시지로 직접 지정한다.
+        validators = [
+            UniqueTogetherValidator(
+                queryset=OnedayPost.objects.all(),
+                fields=["enroll", "transfer_date"],
+                message="이미 이 날짜로 등록한 양도 글이 있습니다.",
+            )
         ]
 
 

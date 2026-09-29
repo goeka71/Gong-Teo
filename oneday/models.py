@@ -111,6 +111,19 @@ class OnedayPost(models.Model):
         auto_now_add=True
     )
 
+    class Meta:
+        # 같은 수강 등록(enroll)의 같은 결석일로 글을 두 개 이상 만들 수 없게 한다.
+        # 자리는 하나뿐인데 여러 글이 생기면 서로 다른 신청자에게 같은 자리를
+        # 중복으로 내주게 된다. views.py 의 onedaypost_list(POST) 가 저장 전에
+        # 먼저 같은 조건으로 걸러주지만, 동시 요청(더블클릭 등) 경쟁 상황까지
+        # 막으려면 DB 제약이 최종 방어선으로 필요하다.
+        constraints = [
+            models.UniqueConstraint(
+                fields=["enroll", "transfer_date"],
+                name="unique_enroll_transfer_date",
+            )
+        ]
+
     def __str__(self):
         return f"{self.enroll.program.program_name} - {self.transfer_date}"
 

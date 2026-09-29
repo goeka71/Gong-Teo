@@ -3,7 +3,7 @@ import re
 from datetime import datetime, time
 
 from django.utils import timezone
-from django.db import transaction
+from django.db import transaction, IntegrityError
 
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
@@ -224,11 +224,37 @@ def onedaypost_list(request):
 
             # ==================================
             # 실제 게시글 DB 저장
+            #
+            # 같은 enroll + 같은 결석일 중복은 OnedayPostSerializer 의
+            # UniqueTogetherValidator(위 is_valid() 단계)가 대부분 걸러준다.
+            # 다만 그 확인도 결국 SELECT 후 판단하는 방식이라, 두 요청이
+            # 거의 동시에 들어오면(더블클릭 등) 둘 다 통과해버릴 수 있다.
+            # 그 경우의 최종 방어선이 models.py 의 UniqueConstraint 이고,
+            # 그게 걸렸을 때 500 대신 같은 형식의 400 을 돌려주기 위해
+            # IntegrityError 를 여기서 잡는다.
+            #
+            # save() 를 transaction.atomic() 으로 감싸는 이유: IntegrityError 를
+            # savepoint 없이 그냥 잡기만 하면, 이 요청을 감싸고 있는 트랜잭션
+            # 전체가 "broken" 상태가 돼서 이후의 모든 쿼리가 실패한다(테스트의
+            # TestCase.atomic() 블록에서 바로 재현됨 - 운영에서도 나중에 이
+            # 뷰가 다른 atomic 블록 안에서 호출되면 같은 문제가 생길 수 있다).
+            # atomic() 은 savepoint 를 만들어서, 실패해도 그 지점까지만
+            # 롤백되고 바깥 트랜잭션은 멀쩡하게 유지되도록 해준다.
             # ==================================
 
-            post = serializer.save(
-                status="open"
-            )
+            try:
+                with transaction.atomic():
+                    post = serializer.save(
+                        status="open"
+                    )
+            except IntegrityError:
+                return Response(
+                    {
+                        "detail":
+                            "이미 이 날짜로 등록한 양도 글이 있습니다."
+                    },
+                    status=status.HTTP_400_BAD_REQUEST
+                )
 
 
             # ==================================
