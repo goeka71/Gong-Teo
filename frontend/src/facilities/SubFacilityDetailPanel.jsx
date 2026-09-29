@@ -18,6 +18,12 @@ import {
 import FacilityReviewsPanel from "./FacilityReviewsPanel";
 import "./FacilityDetail.css";
 import "./FacilityReviewsPanel.css";
+
+// facilities/models.py 의 SubFacilityDetail.HIDE_DISAGREE_THRESHOLD 와 같은 값.
+// 서버는 이 값 이상인 항목을 애초에 목록 응답에 안 실어주므로, 새로고침 없이도
+// 이미 열려 있는 화면에서 막 비동의를 눌러 이 값을 넘긴 항목을 바로 감추는
+// 용도로만 쓴다(진짜 판정 기준은 서버 쪽).
+const HIDE_DISAGREE_THRESHOLD = 10;
 import "./SubFacilityDetailPanel.css";
 
 // 기여 정보 작성 폼. FacilityDetail.jsx 의 FacilityInfoForm 패턴을 따른다
@@ -190,7 +196,9 @@ function SubFacilityDetailPanel({ facilityId, subfacilityId }) {
         : await disagreeSubFacilityDetail(id);
 
     setContributions((prev) =>
-      prev.map((item) => (item.id === id ? updated : item))
+      prev
+        .map((item) => (item.id === id ? updated : item))
+        .filter((item) => item.disagree_count < HIDE_DISAGREE_THRESHOLD)
     );
   }
 

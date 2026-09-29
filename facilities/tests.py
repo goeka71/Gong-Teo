@@ -14,7 +14,7 @@ from django.urls import reverse
 from PIL import Image
 
 from .image_fetch import ImageFetchError, fetch_image
-from .models import Facility, FacilityDetail, Program, SubFacility
+from .models import Facility, FacilityDetail, Program, SubFacility, SubFacilityDetail
 from .views import ProgramPagination
 
 
@@ -263,6 +263,85 @@ class FacilityDetailUpsertTests(TestCase):
         self.assertEqual(response.status_code, 200)
         detail = FacilityDetail.objects.get(facility=self.facility)
         self.assertEqual(detail.phone, "02-1234-5678")
+
+
+class SubFacilityDetailHiddenTests(TestCase):
+    """비동의수가 HIDE_DISAGREE_THRESHOLD(10) 이상이면 조회/투표 대상에서 빠지는지 확인.
+
+    DB 에서 지우는 게 아니라 조회 쿼리에서만 빼는 것이므로, 레코드 자체는
+    그대로 남아 있어야 한다(아래 각 테스트에서 objects.count() 로 같이 확인).
+    """
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.facility = Facility.objects.create(
+            facility_name="테스트시설", addr="서울", latit=37.5, longit=127.0
+        )
+        cls.subfacility = SubFacility.objects.create(
+            facility=cls.facility, subfacility_name="테스트세부시설"
+        )
+
+    def make_detail(self, disagree_count):
+        return SubFacilityDetail.objects.create(
+            facility=self.facility,
+            subfacility=self.subfacility,
+            category="수심",
+            contents="1.2m~1.5m",
+            disagree_count=disagree_count,
+        )
+
+    def test_list_excludes_item_at_threshold_but_keeps_it_in_db(self):
+        visible = self.make_detail(disagree_count=9)
+        hidden = self.make_detail(disagree_count=10)
+
+        response = self.client.get(
+            reverse("subfacility-detail-list"),
+            {"subfacility": self.subfacility.pk},
+        )
+
+        ids = [item["id"] for item in response.json()]
+        self.assertIn(visible.id, ids)
+        self.assertNotIn(hidden.id, ids)
+        # 삭제된 게 아니라 여전히 DB 에 남아 있어야 한다.
+        self.assertEqual(SubFacilityDetail.objects.count(), 2)
+
+    def test_list_without_subfacility_param_also_excludes_hidden(self):
+        self.make_detail(disagree_count=0)
+        self.make_detail(disagree_count=10)
+
+        response = self.client.get(reverse("subfacility-detail-list"))
+
+        self.assertEqual(len(response.json()), 1)
+
+    def test_agree_and_disagree_404_on_already_hidden_item(self):
+        hidden = self.make_detail(disagree_count=10)
+
+        agree_response = self.client.post(
+            reverse("subfacility-detail-agree", args=[hidden.pk])
+        )
+        disagree_response = self.client.post(
+            reverse("subfacility-detail-disagree", args=[hidden.pk])
+        )
+
+        self.assertEqual(agree_response.status_code, 404)
+        self.assertEqual(disagree_response.status_code, 404)
+        # 투표 시도가 막혔으니 카운트도 그대로여야 한다.
+        hidden.refresh_from_db()
+        self.assertEqual(hidden.agree_count, 0)
+        self.assertEqual(hidden.disagree_count, 10)
+
+    def test_disagree_that_crosses_threshold_still_succeeds(self):
+        # 9 -> 10 으로 만드는 "그" 요청 자체는 성공해야 한다(그 다음부터 숨김).
+        detail = self.make_detail(disagree_count=9)
+
+        response = self.client.post(
+            reverse("subfacility-detail-disagree", args=[detail.pk])
+        )
+
+        self.assertEqual(response.status_code, 200)
+        detail.refresh_from_db()
+        self.assertEqual(detail.disagree_count, 10)
+        self.assertTrue(detail.is_hidden)
 
 
 class ProgramListSearchTests(TestCase):

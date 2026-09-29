@@ -170,6 +170,10 @@ class Favorite(models.Model):
 
 
 class SubFacilityDetail(models.Model):
+    # 비동의수가 이 값 이상이면 조회 목록/투표 대상에서 제외한다(DB 삭제 아님).
+    # views.py 의 subfacility_detail_list/agree/disagree 가 이 값을 그대로 참조한다.
+    HIDE_DISAGREE_THRESHOLD = 10
+
     facility = models.ForeignKey(
         Facility, on_delete=models.CASCADE, related_name="subfacility_details"
     )
@@ -184,3 +188,7 @@ class SubFacilityDetail(models.Model):
 
     def __str__(self):
         return f"{self.subfacility.subfacility_name} - {self.category}"
+
+    @property
+    def is_hidden(self):
+        return self.disagree_count >= self.HIDE_DISAGREE_THRESHOLD

@@ -415,6 +415,15 @@ def favorite_list(request):
 # =========================================================
 # 세부시설 상세정보 목록
 # =========================================================
+
+# 비동의수가 임계값 이상인 건 DB 에서 지우지 않고 조회/투표 대상에서만 뺀다.
+# (나중에 관리자가 disagree_count 를 낮추면 그냥 다시 노출된다.)
+def _visible_subfacility_details():
+    return SubFacilityDetail.objects.exclude(
+        disagree_count__gte=SubFacilityDetail.HIDE_DISAGREE_THRESHOLD
+    )
+
+
 @api_view(["GET", "POST"])
 def subfacility_detail_list(request):
     # POST: 세부시설 기여 정보 작성. 로그인 불필요 - 작성자 필드 없음.
@@ -428,7 +437,7 @@ def subfacility_detail_list(request):
 
     # GET: ?subfacility=<id> 로 특정 세부시설의 기여 정보만 필터링.
     # 쿼리 파라미터가 없으면 기존과 동일하게 전체 반환.
-    data = SubFacilityDetail.objects.all()
+    data = _visible_subfacility_details()
     subfacility_id = request.query_params.get("subfacility")
     if subfacility_id:
         data = data.filter(subfacility_id=subfacility_id)
@@ -439,7 +448,8 @@ def subfacility_detail_list(request):
 @api_view(["POST"])
 def subfacility_detail_agree(request, pk):
     # 중복 방지 로직 없이 단순히 +1 만 한다 (의도된 설계).
-    detail = get_object_or_404(SubFacilityDetail, pk=pk)
+    # 이미 숨김 처리된 항목은 목록에서와 마찬가지로 존재하지 않는 것처럼 404.
+    detail = get_object_or_404(_visible_subfacility_details(), pk=pk)
     detail.agree_count = F("agree_count") + 1
     detail.save(update_fields=["agree_count"])
     detail.refresh_from_db()
@@ -450,7 +460,7 @@ def subfacility_detail_agree(request, pk):
 @api_view(["POST"])
 def subfacility_detail_disagree(request, pk):
     # 중복 방지 로직 없이 단순히 +1 만 한다 (의도된 설계).
-    detail = get_object_or_404(SubFacilityDetail, pk=pk)
+    detail = get_object_or_404(_visible_subfacility_details(), pk=pk)
     detail.disagree_count = F("disagree_count") + 1
     detail.save(update_fields=["disagree_count"])
     detail.refresh_from_db()
