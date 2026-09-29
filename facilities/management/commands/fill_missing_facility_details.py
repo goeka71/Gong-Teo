@@ -18,8 +18,13 @@ TEXT_FIELDS = ("phone", "website", "in_out", "op_hour", "fee")
 
 
 def to_bool(value):
-    """import_data.py 의 _to_bool 과 동일"""
-    return str(value).strip().lower() in ("true", "1", "yes")
+    """import_data.py 의 _to_bool 과 동일. 빈 값은 미확인(None)."""
+    text = str(value or "").strip().lower()
+    if text in ("true", "1", "yes"):
+        return True
+    if text in ("false", "0", "no"):
+        return False
+    return None
 
 
 class Command(BackfillCommand):

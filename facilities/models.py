@@ -36,8 +36,9 @@ class FacilityDetail(models.Model):
     phone = models.CharField("전화번호", max_length=20, blank=True)
     website = models.URLField("URL", blank=True)
     fee = models.CharField("이용료", max_length=100, blank=True)
-    shower = models.BooleanField("샤워실 유무", default=False)
-    parking = models.BooleanField("주차장 유무", default=False)
+    # 아직 확인되지 않은 시설은 NULL(미확인) 로 둔다. True=있음 / False=없음
+    shower = models.BooleanField("샤워실 유무", null=True, blank=True, default=None)
+    parking = models.BooleanField("주차장 유무", null=True, blank=True, default=None)
     created_at = models.DateTimeField("작성일시", auto_now_add=True)
 
     def __str__(self):

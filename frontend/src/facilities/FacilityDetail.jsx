@@ -69,6 +69,33 @@ function InfoRow({ label, children }) {
   );
 }
 
+// 샤워실·주차장처럼 있음/없음/미확인 3가지 상태를 갖는 값.
+// 서버는 true / false / null 로 저장하고, select 는 문자열만 다룰 수 있으므로
+// 폼 안에서는 "true" / "false" / "" 로 바꿔서 주고받는다.
+const TRI_OPTIONS = [
+  { value: "", label: "-" },
+  { value: "true", label: "있음" },
+  { value: "false", label: "없음" },
+];
+
+// 표시용: true → "있음", false → "없음", null/undefined → null (InfoRow 가 "—" 로 그린다)
+function triLabel(value) {
+  if (value === null || value === undefined) return null;
+  return value ? "있음" : "없음";
+}
+
+// 서버 값 → select 값
+function toTriValue(value) {
+  if (value === null || value === undefined) return "";
+  return value ? "true" : "false";
+}
+
+// select 값 → 서버 값
+function fromTriValue(value) {
+  if (value === "") return null;
+  return value === "true";
+}
+
 // 시설 정보(FacilityDetail) 추가·수정 폼.
 // api/facilities.js 의 updateFacilityDetail(PATCH) 로 전송한다.
 //   facilityId : 대상 시설 id
@@ -83,20 +110,16 @@ function FacilityInfoForm({ facilityId, initial, onSaved, onCancel }) {
     phone: initial.phone ?? "",
     website: initial.website ?? "",
     fee: initial.fee ?? "",
-    shower: Boolean(initial.shower),
-    parking: Boolean(initial.parking),
+    shower: toTriValue(initial.shower),
+    parking: toTriValue(initial.parking),
   });
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState(null);
 
   // 입력칸 하나가 바뀌면 form 에서 해당 키만 갱신.
-  // 체크박스는 checked, 나머지는 value 를 쓴다.
   function handleChange(e) {
-    const { name, type, value, checked } = e.target;
-    setForm((prev) => ({
-      ...prev,
-      [name]: type === "checkbox" ? checked : value,
-    }));
+    const { name, value } = e.target;
+    setForm((prev) => ({ ...prev, [name]: value }));
   }
 
   async function handleSubmit(e) {
@@ -104,7 +127,11 @@ function FacilityInfoForm({ facilityId, initial, onSaved, onCancel }) {
     setSaving(true);
     setError(null);
     try {
-      await updateFacilityDetail(facilityId, form);
+      await updateFacilityDetail(facilityId, {
+        ...form,
+        shower: fromTriValue(form.shower),
+        parking: fromTriValue(form.parking),
+      });
       onSaved();
     } catch (err) {
       setError(err.message);
@@ -160,23 +187,25 @@ function FacilityInfoForm({ facilityId, initial, onSaved, onCancel }) {
           onChange={handleChange}
         />
       </label>
-      <label className="fd-field fd-field--check">
-        <input
-          name="shower"
-          type="checkbox"
-          checked={form.shower}
-          onChange={handleChange}
-        />
-        <span>샤워실 있음</span>
+      <label className="fd-field">
+        <span>샤워실</span>
+        <select name="shower" value={form.shower} onChange={handleChange}>
+          {TRI_OPTIONS.map((opt) => (
+            <option key={opt.value} value={opt.value}>
+              {opt.label}
+            </option>
+          ))}
+        </select>
       </label>
-      <label className="fd-field fd-field--check">
-        <input
-          name="parking"
-          type="checkbox"
-          checked={form.parking}
-          onChange={handleChange}
-        />
-        <span>주차장 있음</span>
+      <label className="fd-field">
+        <span>주차장</span>
+        <select name="parking" value={form.parking} onChange={handleChange}>
+          {TRI_OPTIONS.map((opt) => (
+            <option key={opt.value} value={opt.value}>
+              {opt.label}
+            </option>
+          ))}
+        </select>
       </label>
 
       {error && <p className="fd-form-error">{error}</p>}
@@ -429,12 +458,8 @@ function FacilityDetail({ facilityId = 1 }) {
               )}
             </InfoRow>
             <InfoRow label="이용료(1회)">{detail.fee}</InfoRow>
-            <InfoRow label="샤워실">
-              {detail.shower ? "있음" : "없음"}
-            </InfoRow>
-            <InfoRow label="주차장">
-              {detail.parking ? "있음" : "없음"}
-            </InfoRow>
+            <InfoRow label="샤워실">{triLabel(detail.shower)}</InfoRow>
+            <InfoRow label="주차장">{triLabel(detail.parking)}</InfoRow>
           </dl>
         </section>
 

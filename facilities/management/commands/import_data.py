@@ -200,5 +200,10 @@ class Command(BaseCommand):
         return subfacility_id, True
 
     def _to_bool(self, value):
-        """'True'/'False' 문자열을 불리언으로"""
-        return str(value).strip().lower() in ("true", "1", "yes")
+        """'True'/'False' 문자열을 불리언으로. 빈 값은 미확인(None)."""
+        text = str(value or "").strip().lower()
+        if text in ("true", "1", "yes"):
+            return True
+        if text in ("false", "0", "no"):
+            return False
+        return None

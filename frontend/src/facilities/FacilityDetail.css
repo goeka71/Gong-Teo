@@ -352,17 +352,13 @@
   color: #566473;
 }
 
-.fd-field input[type="text"] {
+.fd-field input[type="text"],
+.fd-field select {
   padding: 8px 10px;
   border: 1px solid var(--fd-line);
   border-radius: 6px;
   font: inherit;
-}
-
-.fd-field--check {
-  flex-direction: row;
-  align-items: center;
-  gap: 8px;
+  background: #fff;
 }
 
 .fd-form-actions {
