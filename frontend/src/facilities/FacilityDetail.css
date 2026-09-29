@@ -361,6 +361,12 @@
   background: #fff;
 }
 
+.fd-day-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
 .fd-form-actions {
   display: flex;
   gap: 8px;

@@ -42,7 +42,7 @@ export function getFacilityDetail(id) {
 
 // 시설 세부정보(FacilityDetail) 추가·수정 (upsert, 시설당 1개).
 // PATCH /api/facilities/${id}/detail/
-// data 예: { op_hour, in_out, phone, website, fee, shower, parking }
+// data 예: { op_hour, weekend_op_hour, closed_day, in_out, phone, website, fee, shower, parking }
 // 응답: 갱신된 detail 객체 (없던 경우 새로 생성 후 201)
 export function updateFacilityDetail(id, data) {
   return apiPatch(`/api/facilities/${id}/detail/`, data);

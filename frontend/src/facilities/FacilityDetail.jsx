@@ -7,6 +7,7 @@ import {
 } from "../api/facilities";
 import { BASE_URL } from "../api/client";
 import HeartIcon from "./HeartIcon";
+import { parseProgramDays } from "../utils/programSchedule";
 import "./FacilityDetail.css";
 
 // Django MEDIA 상대경로("/media/...")를 절대주소로 바꿔준다.
@@ -96,6 +97,17 @@ function fromTriValue(value) {
   return value === "true";
 }
 
+// 휴관일 선택 버튼에 쓰는 요일 목록.
+// Program.program_day 와 형식을 맞춘다 (ProgramRegisterModal.jsx 의 DAYS 와 동일).
+const WEEK_DAYS = ["일", "월", "화", "수", "목", "금", "토"];
+
+// "월,목" -> "월, 목 휴관". 값이 없거나 해석할 수 없으면 null(InfoRow 가 "—" 로 그린다).
+function closedDayLabel(value) {
+  const days = parseProgramDays(value ?? "");
+  if (days.length === 0) return null;
+  return `${days.join(", ")} 휴관`;
+}
+
 // 시설 정보(FacilityDetail) 추가·수정 폼.
 // api/facilities.js 의 updateFacilityDetail(PATCH) 로 전송한다.
 //   facilityId : 대상 시설 id
@@ -106,6 +118,7 @@ function FacilityInfoForm({ facilityId, initial, onSaved, onCancel }) {
   // 폼이 열릴 때(이 컴포넌트가 새로 mount 될 때) 현재 값으로 입력칸을 채운다.
   const [form, setForm] = useState({
     op_hour: initial.op_hour ?? "",
+    weekend_op_hour: initial.weekend_op_hour ?? "",
     in_out: initial.in_out ?? "",
     phone: initial.phone ?? "",
     website: initial.website ?? "",
@@ -113,6 +126,11 @@ function FacilityInfoForm({ facilityId, initial, onSaved, onCancel }) {
     shower: toTriValue(initial.shower),
     parking: toTriValue(initial.parking),
   });
+  // 휴관일은 콤마로 이어붙인 문자열("월,목")로 저장되므로, 버튼으로 고를 수 있게
+  // 편집 중에는 배열로 풀어서 들고 있다가 저장할 때 다시 합친다.
+  const [closedDays, setClosedDays] = useState(() =>
+    parseProgramDays(initial.closed_day ?? "")
+  );
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState(null);
 
@@ -120,6 +138,14 @@ function FacilityInfoForm({ facilityId, initial, onSaved, onCancel }) {
   function handleChange(e) {
     const { name, value } = e.target;
     setForm((prev) => ({ ...prev, [name]: value }));
+  }
+
+  function toggleClosedDay(day) {
+    setClosedDays((current) =>
+      current.includes(day)
+        ? current.filter((item) => item !== day)
+        : [...current, day]
+    );
   }
 
   async function handleSubmit(e) {
@@ -131,6 +157,7 @@ function FacilityInfoForm({ facilityId, initial, onSaved, onCancel }) {
         ...form,
         shower: fromTriValue(form.shower),
         parking: fromTriValue(form.parking),
+        closed_day: closedDays.join(","),
       });
       onSaved();
     } catch (err) {
@@ -143,7 +170,7 @@ function FacilityInfoForm({ facilityId, initial, onSaved, onCancel }) {
   return (
     <form className="fd-edit-form" onSubmit={handleSubmit}>
       <label className="fd-field">
-        <span>운영시간</span>
+        <span>평일 운영시간</span>
         <input
           name="op_hour"
           type="text"
@@ -151,6 +178,33 @@ function FacilityInfoForm({ facilityId, initial, onSaved, onCancel }) {
           onChange={handleChange}
         />
       </label>
+      <label className="fd-field">
+        <span>주말 운영시간</span>
+        <input
+          name="weekend_op_hour"
+          type="text"
+          value={form.weekend_op_hour}
+          onChange={handleChange}
+        />
+      </label>
+      <div className="fd-field">
+        <span>휴관일</span>
+        <div className="fd-day-row">
+          {WEEK_DAYS.map((day) => {
+            const selected = closedDays.includes(day);
+            return (
+              <button
+                key={day}
+                type="button"
+                className={selected ? "btn btn-primary" : "btn btn-secondary"}
+                onClick={() => toggleClosedDay(day)}
+              >
+                {day}
+              </button>
+            );
+          })}
+        </div>
+      </div>
       <label className="fd-field">
         <span>실내/야외</span>
         <input
@@ -443,7 +497,9 @@ function FacilityDetail({ facilityId = 1 }) {
           )}
 
           <dl className="fd-info-card">
-            <InfoRow label="운영시간">{detail.op_hour}</InfoRow>
+            <InfoRow label="평일 운영시간">{detail.op_hour}</InfoRow>
+            <InfoRow label="주말 운영시간">{detail.weekend_op_hour}</InfoRow>
+            <InfoRow label="휴관일">{closedDayLabel(detail.closed_day)}</InfoRow>
             <InfoRow label="실내/야외">{detail.in_out}</InfoRow>
             <InfoRow label="전화번호">{detail.phone}</InfoRow>
             <InfoRow label="홈페이지">
