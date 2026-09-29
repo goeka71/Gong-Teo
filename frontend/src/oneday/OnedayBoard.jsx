@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { apiGet } from "../api/client";
 import { formatWalkTime } from "../utils/time";
 import OnedayDetail from "./OnedayDetail";
@@ -77,6 +78,8 @@ const SPORT_MATCH_ORDER = [...SPORT_CATEGORIES].sort(
 const ETC_SPORT_CATEGORY = { label: "기타", icon: "🏅" };
 
 function OnedayBoard() {
+  const navigate = useNavigate();
+
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -157,7 +160,7 @@ function OnedayBoard() {
   };
 
   // -----------------------------------------
-// 원데이 신청 성공 → 게시글 상태 + 코인 반영
+// 원데이 신청 성공 → 게시글 상태 + 코인 반영 + 마이페이지로 이동
 // -----------------------------------------
 const handleApplySuccess = (updatedPost) => {
   setSelectedPost(updatedPost);
@@ -170,6 +173,10 @@ const handleApplySuccess = (updatedPost) => {
 
   // 양도받기 성공 후 Navbar의 최신 코인 개수 다시 불러오기
   window.dispatchEvent(new Event("auth-change"));
+
+  // 신청 완료 후에는 원데이 게시판에 머무를 이유가 없으니,
+  // 신청 내역을 바로 확인할 수 있는 마이페이지로 이동한다.
+  navigate("/mypage?view=oneday");
 };
 
   // -----------------------------------------
