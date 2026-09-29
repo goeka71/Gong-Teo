@@ -246,6 +246,24 @@ class FacilityDetailUpsertTests(TestCase):
         self.assertEqual(detail.created_at, original_created_at)
         self.assertGreaterEqual(detail.updated_at, original_updated_at)
 
+    def test_website_without_scheme_is_accepted(self):
+        # website 가 URLField 였을 때는 스킴(http://, https://) 없는 값이 거부됐다.
+        # 실제 존재하는 정상 주소가 스킴 없이 입력되는 경우가 많아 지금은 그냥 텍스트로 받는다.
+        response = self.patch({"website": "gssi.or.kr"})
+        self.assertEqual(response.status_code, 201)
+        detail = FacilityDetail.objects.get(facility=self.facility)
+        self.assertEqual(detail.website, "gssi.or.kr")
+
+    def test_editing_unrelated_field_no_longer_blocked_by_legacy_website(self):
+        # 프론트는 저장할 때 폼 전체(website 포함)를 매번 다시 보낸다.
+        # website 가 URLField 였을 때는, 과거에 스킴 없이 잘못 들어간 기존 값이
+        # 껴서 다시 전송되기만 해도 이 필드 하나 때문에 요청 전체가 막혔다.
+        FacilityDetail.objects.create(facility=self.facility, website="gssi.or.kr")
+        response = self.patch({"phone": "02-1234-5678", "website": "gssi.or.kr"})
+        self.assertEqual(response.status_code, 200)
+        detail = FacilityDetail.objects.get(facility=self.facility)
+        self.assertEqual(detail.phone, "02-1234-5678")
+
 
 class ProgramListSearchTests(TestCase):
     """GET /api/facilities/programs/ : 필수 파라미터, q 검색, 페이지네이션, 정렬

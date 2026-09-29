@@ -38,7 +38,11 @@ class FacilityDetail(models.Model):
     closed_day = models.CharField("휴관일", max_length=50, blank=True)
     in_out = models.CharField("실내외 구분", max_length=20, blank=True)
     phone = models.CharField("전화번호", max_length=20, blank=True)
-    website = models.URLField("URL", blank=True)
+    # URLField 였을 때는 스킴(http://, https://)이 없으면 저장이 거부됐다.
+    # 실제로는 스킴 없이 써도 되는 주소가 대부분이고(표시할 때 withProtocol() 이
+    # https:// 를 붙여준다), 사용자가 값을 채워 넣는 필드에서 이 검증이 오히려
+    # "정상 주소인데 저장이 안 된다"는 혼란만 줘서 일반 텍스트로 바꾼다.
+    website = models.CharField("URL", max_length=200, blank=True)
     fee = models.CharField("이용료", max_length=100, blank=True)
     # 아직 확인되지 않은 시설은 NULL(미확인) 로 둔다. True=있음 / False=없음
     shower = models.BooleanField("샤워실 유무", null=True, blank=True, default=None)
