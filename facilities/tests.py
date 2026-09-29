@@ -1,4 +1,5 @@
 import csv
+import json
 import os
 import tempfile
 from io import BytesIO, StringIO
@@ -13,7 +14,7 @@ from django.urls import reverse
 from PIL import Image
 
 from .image_fetch import ImageFetchError, fetch_image
-from .models import Facility, Program, SubFacility
+from .models import Facility, FacilityDetail, Program, SubFacility
 from .views import ProgramPagination
 
 
@@ -185,6 +186,65 @@ class FacilityAdminImageTests(TestCase):
         self.assertEqual(response.status_code, 302)
         self.facility.refresh_from_db()
         self.assertTrue(self.facility.image.name.startswith("facilities/up"))
+
+
+class FacilityDetailUpsertTests(TestCase):
+    """PATCH /api/facilities/<id>/detail/ - 평일/주말 운영시간, 휴관일 필드 왕복 확인."""
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.facility = Facility.objects.create(
+            facility_name="테스트시설", addr="서울", latit=37.5, longit=127.0
+        )
+
+    def setUp(self):
+        self.url = reverse("facility-detail-upsert", args=[self.facility.pk])
+
+    def patch(self, data):
+        return self.client.patch(
+            self.url, data=json.dumps(data), content_type="application/json"
+        )
+
+    def test_create_with_new_fields(self):
+        response = self.patch(
+            {
+                "op_hour": "09:00~18:00",
+                "weekend_op_hour": "10:00~15:00",
+                "closed_day": "월,목",
+            }
+        )
+        self.assertEqual(response.status_code, 201)
+        detail = FacilityDetail.objects.get(facility=self.facility)
+        self.assertEqual(detail.op_hour, "09:00~18:00")
+        self.assertEqual(detail.weekend_op_hour, "10:00~15:00")
+        self.assertEqual(detail.closed_day, "월,목")
+        self.assertIsNotNone(detail.updated_at)
+
+    def test_partial_update_from_old_client_keeps_new_fields(self):
+        # 구버전 프론트처럼 새 필드를 아예 안 보내는 PATCH 는 기존 값을 건드리지 않아야 한다.
+        FacilityDetail.objects.create(
+            facility=self.facility,
+            op_hour="09:00~18:00",
+            weekend_op_hour="10:00~15:00",
+            closed_day="월",
+        )
+        response = self.patch({"phone": "02-1234-5678"})
+        self.assertEqual(response.status_code, 200)
+        detail = FacilityDetail.objects.get(facility=self.facility)
+        self.assertEqual(detail.phone, "02-1234-5678")
+        self.assertEqual(detail.weekend_op_hour, "10:00~15:00")
+        self.assertEqual(detail.closed_day, "월")
+
+    def test_updated_at_changes_on_edit_unlike_created_at(self):
+        detail = FacilityDetail.objects.create(facility=self.facility, op_hour="09:00~18:00")
+        original_created_at = detail.created_at
+        original_updated_at = detail.updated_at
+
+        response = self.patch({"op_hour": "10:00~19:00"})
+        self.assertEqual(response.status_code, 200)
+        detail.refresh_from_db()
+        self.assertEqual(detail.created_at, original_created_at)
+        self.assertGreaterEqual(detail.updated_at, original_updated_at)
 
 
 class ProgramListSearchTests(TestCase):

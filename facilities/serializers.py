@@ -44,6 +44,8 @@ class FacilityDetailWriteSerializer(serializers.ModelSerializer):
             "id",
             "facility",
             "op_hour",
+            "weekend_op_hour",
+            "closed_day",
             "in_out",
             "phone",
             "website",
@@ -51,8 +53,9 @@ class FacilityDetailWriteSerializer(serializers.ModelSerializer):
             "shower",
             "parking",
             "created_at",
+            "updated_at",
         )
-        read_only_fields = ("id", "facility", "created_at")
+        read_only_fields = ("id", "facility", "created_at", "updated_at")
 
 
 class SportSerializer(serializers.ModelSerializer):

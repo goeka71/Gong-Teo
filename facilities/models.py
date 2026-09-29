@@ -31,7 +31,11 @@ class FacilityDetail(models.Model):
     facility = models.ForeignKey(
         Facility, on_delete=models.CASCADE, related_name="details"
     )
-    op_hour = models.CharField("운영시간", max_length=100, blank=True)
+    # 실제 필드명은 그대로 두되(마이그레이션 최소화), 평일 운영시간의 실체로 재사용.
+    op_hour = models.CharField("평일 운영시간", max_length=100, blank=True)
+    weekend_op_hour = models.CharField("주말 운영시간", max_length=100, blank=True)
+    # Program.program_day 와 같은 표기: 선택된 요일을 "월,목" 처럼 콤마로 이어붙인 문자열.
+    closed_day = models.CharField("휴관일", max_length=50, blank=True)
     in_out = models.CharField("실내외 구분", max_length=20, blank=True)
     phone = models.CharField("전화번호", max_length=20, blank=True)
     website = models.URLField("URL", blank=True)
@@ -40,6 +44,9 @@ class FacilityDetail(models.Model):
     shower = models.BooleanField("샤워실 유무", null=True, blank=True, default=None)
     parking = models.BooleanField("주차장 유무", null=True, blank=True, default=None)
     created_at = models.DateTimeField("작성일시", auto_now_add=True)
+    # created_at 은 최초 생성 시각만 남고 수정 시 안 바뀐다.
+    # 언제 마지막으로 갱신됐는지 알 수 있도록 별도로 둔다.
+    updated_at = models.DateTimeField("수정일시", auto_now=True)
 
     def __str__(self):
         return f"{self.facility.facility_name} 상세정보"
