@@ -157,6 +157,24 @@ AUTH_PASSWORD_VALIDATORS = [
 
 
 # =========================================================
+# 비밀번호 해셔 - 로그인 지연 완화
+# =========================================================
+# 기본 PBKDF2(150만회 반복)가 배포 환경(Render 무료 플랜)에서 로그인 응답
+# 시간을 4~5초까지 늘려서, users/hashers.py 의 FastArgon2PasswordHasher 를
+# 1순위로 둔다. 목록 나머지는 Django 기본 PASSWORD_HASHERS 그대로라
+# 기존에 PBKDF2 로 저장된 비밀번호도 그대로 로그인되고, 로그인에 성공하는
+# 순간 자동으로 Argon2 로 재해시되어 저장된다(Django 내장 동작, 별도 코드 불필요).
+PASSWORD_HASHERS = [
+    'users.hashers.FastArgon2PasswordHasher',
+    'django.contrib.auth.hashers.PBKDF2PasswordHasher',
+    'django.contrib.auth.hashers.PBKDF2SHA1PasswordHasher',
+    'django.contrib.auth.hashers.Argon2PasswordHasher',
+    'django.contrib.auth.hashers.BCryptSHA256PasswordHasher',
+    'django.contrib.auth.hashers.ScryptPasswordHasher',
+]
+
+
+# =========================================================
 # Internationalization
 # =========================================================
 

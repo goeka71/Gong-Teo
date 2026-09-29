@@ -2,6 +2,7 @@ import tempfile
 from io import BytesIO
 
 from django.contrib.auth import get_user_model
+from django.contrib.auth.hashers import make_password
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase, override_settings
 from PIL import Image
@@ -15,6 +16,62 @@ def make_png():
     buffer = BytesIO()
     Image.new("RGB", (20, 20), (10, 120, 200)).save(buffer, "PNG")
     return buffer.getvalue()
+
+
+class LoginHasherTests(TestCase):
+    """로그인 지연 완화용 Argon2 전환(users/hashers.py, settings.PASSWORD_HASHERS) 확인.
+
+    기존 PBKDF2 해시가 여전히 로그인되고, 로그인 성공 시 자동으로 Argon2 로
+    재해시되는지가 핵심 - 이게 깨지면 기존 사용자 전원이 로그인을 못 하게 된다.
+    """
+
+    url = "/api/users/login/"
+
+    def login(self, username, password):
+        return self.client.post(
+            self.url,
+            {"username": username, "password": password},
+            content_type="application/json",
+        )
+
+    def test_new_user_password_is_hashed_with_tuned_argon2(self):
+        user = get_user_model().objects.create_user(
+            username="newuser", password="pw12345!", name="새유저"
+        )
+        self.assertTrue(user.password.startswith("argon2$argon2id$"))
+        self.assertIn("m=19456,t=2,p=1", user.password)
+
+    def test_legacy_pbkdf2_user_can_still_log_in(self):
+        user = get_user_model().objects.create_user(
+            username="legacyuser", password="pw12345!", name="옛유저"
+        )
+        # 마이그레이션 전 실제 데이터를 흉내내서 PBKDF2 해시로 강제로 되돌린다.
+        legacy_hash = make_password("pw12345!", hasher="pbkdf2_sha256")
+        get_user_model().objects.filter(pk=user.pk).update(password=legacy_hash)
+
+        response = self.login("legacyuser", "pw12345!")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("access", response.json())
+
+    def test_legacy_pbkdf2_user_is_upgraded_to_argon2_after_login(self):
+        user = get_user_model().objects.create_user(
+            username="upgradeuser", password="pw12345!", name="업그레이드"
+        )
+        legacy_hash = make_password("pw12345!", hasher="pbkdf2_sha256")
+        get_user_model().objects.filter(pk=user.pk).update(password=legacy_hash)
+
+        self.login("upgradeuser", "pw12345!")
+
+        user.refresh_from_db()
+        self.assertTrue(user.password.startswith("argon2$argon2id$"))
+
+    def test_wrong_password_is_still_rejected(self):
+        get_user_model().objects.create_user(
+            username="wrongpw", password="correct-pw", name="틀림"
+        )
+        response = self.login("wrongpw", "wrong-pw")
+        self.assertEqual(response.status_code, 401)
 
 
 @override_settings(MEDIA_ROOT=tempfile.mkdtemp())
