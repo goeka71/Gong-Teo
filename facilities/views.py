@@ -127,7 +127,9 @@ def subfacility_list(request):
 # =========================================================
 @api_view(["GET"])
 def facility_detail_list(request):
-    data = FacilityDetail.objects.all()
+    # facility_detail_upsert 가 "시설당 id 가 가장 작은 detail" 을 수정하므로,
+    # 프론트가 "첫 번째 detail" 을 고를 때 같은 항목이 되도록 id 순으로 고정한다.
+    data = FacilityDetail.objects.order_by("id")
 
     serializer = FacilityDetailSerializer(
         data,

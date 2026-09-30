@@ -112,7 +112,7 @@ function closedDayLabel(value) {
 // api/facilities.js 의 updateFacilityDetail(PATCH) 로 전송한다.
 //   facilityId : 대상 시설 id
 //   initial    : 현재 저장돼 있는 detail 값 (없으면 빈 객체)
-//   onSaved    : 저장 성공 시 호출 (부모가 폼 닫기 + 정보 재조회)
+//   onSaved    : 저장 성공 시 PATCH 응답(detail)과 함께 호출 (부모가 폼 닫기 + 정보 재조회)
 //   onCancel   : 취소/닫기
 function FacilityInfoForm({ facilityId, initial, onSaved, onCancel }) {
   // 폼이 열릴 때(이 컴포넌트가 새로 mount 될 때) 현재 값으로 입력칸을 채운다.
@@ -153,13 +153,13 @@ function FacilityInfoForm({ facilityId, initial, onSaved, onCancel }) {
     setSaving(true);
     setError(null);
     try {
-      await updateFacilityDetail(facilityId, {
+      const saved = await updateFacilityDetail(facilityId, {
         ...form,
         shower: fromTriValue(form.shower),
         parking: fromTriValue(form.parking),
         closed_day: closedDays.join(","),
       });
-      onSaved();
+      onSaved(saved);
     } catch (err) {
       setError(err.message);
     } finally {
@@ -292,7 +292,7 @@ function FacilityDetail({ facilityId = 1 }) {
 
   // 찜 여부/토글은 부모(FacilityMapLayout)가 들고 있는 공용 상태를 그대로 쓴다.
   // 지도 쪽 "찜한 시설만 보기" 토글과 같은 값을 봐야 하기 때문(찜 API 는 아직 없음).
-  const { wishedIds, toggleWish } = useOutletContext();
+  const { wishedIds, toggleWish, applySavedFacilityDetail } = useOutletContext();
   const wished = wishedIds.has(facilityId);
 
   // facilityId 가 바뀔 때마다 API를 다시 호출한다.
@@ -488,10 +488,11 @@ function FacilityDetail({ facilityId = 1 }) {
               facilityId={facilityId}
               initial={detail}
               onCancel={() => setEditing(false)}
-              onSaved={() => {
+              onSaved={(saved) => {
                 setEditing(false);
                 setSaveOk(true);
                 setReloadKey((k) => k + 1); // 기존 GET 을 다시 호출 → 카드 갱신
+                applySavedFacilityDetail(saved); // 메인 화면 필터용 목록도 갱신
               }}
             />
           )}

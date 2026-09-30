@@ -167,6 +167,24 @@ function FacilityMapLayout() {
       });
   }, []);
 
+  // 상세페이지에서 시설 정보를 저장했을 때 PATCH 응답(detail)을 목록에 반영한다.
+  // 레이아웃은 한 번만 마운트되어 위의 목록을 다시 불러오지 않으므로, 이게 없으면
+  // 메인 화면 편의시설 필터가 수정 전 값으로 계속 걸러진다.
+  // - 같은 id 가 있으면 병합(응답에 없는 필드가 있어도 기존 값 유지)
+  // - 없으면(처음 생성된 detail) 추가
+  const applySavedFacilityDetail = useCallback((saved) => {
+    if (!saved?.id) return;
+
+    setFacilityDetails((prev) => {
+      const exists = prev.some((detail) => detail.id === saved.id);
+      if (!exists) return [...prev, saved];
+
+      return prev.map((detail) =>
+        detail.id === saved.id ? { ...detail, ...saved } : detail
+      );
+    });
+  }, []);
+
   // GPS 현재 위치 요청. 성공하면 좌표를, 실패하면 사유를 상태에 반영한다.
   const applyPosition = useCallback((promise) => {
     promise
@@ -445,6 +463,8 @@ function FacilityMapLayout() {
     wishedIds,
     toggleWish,
     showWishOnly,
+    // 상세페이지 정보 수정 → 메인 화면 필터에 즉시 반영.
+    applySavedFacilityDetail,
   };
 
   return (
