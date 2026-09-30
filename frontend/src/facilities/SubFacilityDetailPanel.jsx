@@ -241,7 +241,7 @@ function SubFacilityDetailPanel({ facilityId, subfacilityId }) {
         <h2 className="fd-block-title">이용자 정보</h2>
         <button
           type="button"
-          className="fd-text-btn fd-text-btn--accent"
+          className="fd-text-btn frp-write-btn--text"
           onClick={() => setShowForm((v) => !v)}
         >
           {showForm ? "닫기" : "+ 정보 추가"}
